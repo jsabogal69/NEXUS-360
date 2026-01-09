@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+serviceAccountKey.json
+agents/static/reports/report_*.html
+agents/static/reports/artifact_*.json
+*.log

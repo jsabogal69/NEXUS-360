@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS-360 | Comando Cognitivo OBS360</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script async defer src="https://apis.google.com/js/api.js" onload="onApiLoad()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="onGisLoad()"></script>
+    <style>
+        :root {
+            --obs-lime: #84cc16;
+            --obs-dark: #23272a;
+            --obs-bg: #f9fafb;
+            --white: #ffffff;
+            --gray-text: #4b5563;
+        }
+
+        body {
+            background-color: var(--obs-bg);
+            color: var(--obs-dark);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--white);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--obs-dark);
+        }
+
+        header .brand-tag {
+            background: var(--obs-lime);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            color: var(--gray-text);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.25rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-text);
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--obs-lime);
+            box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
+        }
+
+        .btn-ignite {
+            background: var(--obs-lime);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-ignite:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(132, 204, 22, 0.4);
+        }
+
+        .status-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: #f3f4f6;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .log-entry.success {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+        }
+
+        .log-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--obs-lime);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .artifact-link {
+            display: block;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--obs-dark);
+            color: var(--white);
+            text-align: center;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .artifact-link:hover {
+            background: #374151;
+        }
+
+        footer {
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-text);
+            border-top: 1px solid #e5e7eb;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>NEXUS-360</h1>
+        <div class="brand-tag">Powered by OBS360</div>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h2>Su Socio en el Éxito Cognitivo</h2>
+            <p>Ecosistema de BI Multi-Agente para el E-commerce Moderno.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>📥 Ingesta Manual</h3>
+                <div class="input-group">
+                    <label>Nombre de la Fuente</label>
+                    <input type="text" id="sourceName" placeholder="ej. Análisis_Competencia_Q4.pdf"
+                        value="Q4_Financial_Ingestion.pdf">
+                </div>
+                <div class="input-group">
+                    <label>Contenido Crudo / Transcripción Vision OCR</label>
+                    <textarea id="contentText" rows="4"
+                        placeholder="Pegue la información recolectada por NEXUS-1...">Ingresos brutos aumentaron 22%. Los costos de adquisición bajaron un 4%.</textarea>
+                </div>
+                <div style="margin-top: 20px;">
+                    <!-- Controls moved to Drive Card -->
+                </div>
+
+                <button class="btn-ignite" onclick="runPipeline()">Iniciar Análisis Manual</button>
+            </div>
+
+            <div class="card">
+                <h3>📂 Ingesta Google Drive (Carpeta)</h3>
+                <p style="font-size: 0.8rem; color: var(--gray-text); margin-bottom: 1rem;">
+                    NEXUS-1 escaneará la carpeta y procesará <strong>todos</strong> los archivos (PDF, CSV, etc.) de
+                    forma masiva.
+                </p>
+                <div class="input-group">
+                    <label>Folder ID de Google Drive</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="folderId" placeholder="ej. 1abc123_XYZ..."
+                            value="nexus_obs360_root_folder">
+                        <button class="btn-ignite"
+                            style="background: #4285f4; width: auto; font-size: 0.8rem; padding: 0.5rem 1rem;"
+                            onclick="loadPicker()">Navegar Drive</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Descripción Detallada del Producto (Parámetro Rector)</label>
+                    <textarea id="productDescription" rows="2"
+                        placeholder="ej. Lámpara de escritorio con carga Qi y control de voz, enfocada en salud visual..."></textarea>
+                </div>
+
+                <div style="margin-top: 20px; display:flex; align-items:center; gap:10px; margin-bottom: 15px;">
+                    <label class="switch" style="position:relative; display:inline-block; width:40px; height:24px;">
+                        <input type="checkbox" id="humanControlToggle" onchange="toggleHumanControl()">
+                        <span class="slider"
+                            style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:24px;"></span>
+                        <span class="slider-monitor"
+                            style="position:absolute; content:''; height:16px; width:16px; left:4px; bottom:4px; background-color:white; transition:.4s; border-radius:50%;"></span>
+                    </label>
+                    <span style="font-size:0.9rem; font-weight:600;">Modo Control Humano (Paso a Paso)</span>
+                    <span id="control-badge"
+                        style="display:none; background:#2563eb; color:white; font-size:0.7rem; padding:2px 6px; border-radius:4px;">ACTIVADO</span>
+                </div>
+
+                <style>
+                    input:checked+.slider {
+                        background-color: #2563eb;
+                    }
+
+                    input:checked+.slider .slider-monitor {
+                        transform: translateX(16px);
+                    }
+                </style>
+
+                <button class="btn-ignite" style="background: var(--obs-dark)" onclick="runFolderPipeline()">Escanear
+                    Carpeta Drive</button>
+            </div>
+        </div>
+
+        <!-- Google Picker Configuration (Activo) -->
+        <div id="pickerNotice" style="margin-top: 1rem; font-size: 0.75rem; color: #10b981; display: none;">
+            ✅ Motor de Ingesta Google Drive Activo.
+        </div>
+
+        <div class="card" id="statusCard" style="display:none; width: 100%; margin-top: 2rem;">
+            <h3>⚙️ Procesamiento de Agentes</h3>
+            <div class="status-panel" id="status-panel">
+                <!-- Logs will appear here -->
+            </div>
+            <div id="result-container"></div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2024 OBS360. NEXUS-360 E-commerce Intelligence Suite.
+    </footer>
+
+    <script>
+        /* GOOGLE PICKER CONFIGURATION */
+        // IMPORTANTE: El usuario debe configurar estas llaves en Google Cloud Console
+        const CLIENT_ID = '603238994052-o6cfkq8mqargniacgjvfvm4liji6vbsp.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyDTUm_93wjWwokx9H-mJgMCVSqB91c32Ac';
+        const SCOPES = 'https://www.googleapis.com/auth/drive';
+
+        let accessToken = null;
+        let pickerApiLoaded = false;
+        let gisLoaded = false;
+
+        function onApiLoad() {
+            gapi.load('picker', () => { pickerApiLoaded = true; });
+        }
+
+        function onGisLoad() {
+            gisLoaded = true;
+        }
+
+        let tokenClient;
+        function ensureAuth() {
+            return new Promise((resolve, reject) => {
+                if (accessToken) {
+                    resolve(accessToken);
+                    return;
+                }
+
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    callback: (response) => {
+                        if (response.error !== undefined) {
+                            reject(response);
+                        }
+                        accessToken = response.access_token;
+                        resolve(accessToken);
+                    },
+                });
+
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            });
+        }
+
+        async function loadPicker() {
+            if (CLIENT_ID === 'TU_CLIENT_ID_AQUI') {
+                document.getElementById('pickerNotice').style.display = 'block';
+                // Para propósitos de la demo, permitimos que el usuario vea cómo funcionaría
+                console.warn("Google Picker: CLIENT_ID no configurado.");
+            }
+
+            const tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (response) => {
+                    if (response.error !== undefined) {
+                        throw (response);
+                    }
+                    accessToken = response.access_token;
+                    createPicker();
+                },
+            });
+
+            if (accessToken === null) {
+                tokenClient.requestAccessToken({ prompt: 'consent' });
+            } else {
+                tokenClient.requestAccessToken({ prompt: '' });
+            }
+        }
+
+        function createPicker() {
+            if (pickerApiLoaded && accessToken) {
+                const view = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+                    .setSelectableMimeTypes('application/vnd.google-apps.folder')
+                    .setIncludeFolders(true)
+                    .setMode(google.picker.DocsViewMode.GRID);
+
+                const picker = new google.picker.PickerBuilder()
+                    .enableFeature(google.picker.Feature.NAV_HIDDEN)
+                    .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+                    .setDeveloperKey(API_KEY)
+                    .setAppId(CLIENT_ID)
+                    .setOAuthToken(accessToken)
+                    .addView(view)
+                    .setCallback(pickerCallback)
+                    .build();
+                picker.setVisible(true);
+            }
+        }
+
+        function pickerCallback(data) {
+            if (data.action == google.picker.Action.PICKED) {
+                const doc = data.docs[0];
+                document.getElementById('folderId').value = doc.id;
+                console.log("Carpeta seleccionada:", doc.name, doc.id);
+            }
+        }
+
+        // Human Control Mode State
+        let humanControlMode = false;
+        let orchestrationState = {};
+
+        function toggleHumanControl() {
+            humanControlMode = document.getElementById('humanControlToggle').checked;
+            const badge = document.getElementById('control-badge');
+            badge.style.display = humanControlMode ? 'inline-block' : 'none';
+        }
+
+        async function runFolderPipeline() {
+            const folderId = document.getElementById('folderId').value;
+            const productDesc = document.getElementById('productDescription').value;
+            const panel = document.getElementById('status-panel');
+            const statusCard = document.getElementById('statusCard');
+            const resultContainer = document.getElementById('result-container');
+
+            if (!folderId) {
+                alert("Por favor ingrese un ID de carpeta.");
+                return;
+            }
+
+            orchestrationState.product_description = productDesc; // Global store
+
+            try {
+                if (!accessToken) {
+                    await ensureAuth();
+                }
+            } catch (e) {
+                alert("Autenticación fallida. No se puede acceder a Drive.");
+                return;
+            }
+
+            statusCard.style.display = 'block';
+            panel.innerHTML = "";
+            resultContainer.innerHTML = '';
+
+            // Initial msg
+            panel.innerHTML = `<div class="log-entry"><div class="log-icon">!</div><div>Iniciando Protocolo NEXUS...</div></div>`;
+
+            if (humanControlMode) {
+                await runStepByStep(folderId, panel);
+            } else {
+                await runAutoPipeline(folderId, panel, resultContainer);
+            }
+        }
+
+        async function runStepByStep(folderId, panel) {
+            // STEP 1: HARVESTER
+            log(panel, "Ejecutando NEXUS-1 (Harvester)...", "loading");
+            const hRes = await callStep('/workflow/step/1_harvester', { folder_id: folderId, access_token: accessToken });
+
+            console.log("Harvester Step Response:", hRes);
+
+            // Safety check for legacy vs new structure
+            const docs = hRes.data && hRes.data.ids ? hRes.data.ids : [];
+            const filenames = hRes.data && hRes.data.filenames ? hRes.data.filenames : []; // Capture Names
+            const data_stats = hRes.data && hRes.data.data_stats ? hRes.data.data_stats : {}; // Capture Stats
+            const mode = hRes.data && hRes.data.mode ? hRes.data.mode : 'UNKNOWN';
+            const msg = hRes.data && hRes.data.message ? hRes.data.message : 'Error desconocido';
+
+            if (mode === 'ERROR') {
+                log(panel, `Error Crítico: ${msg}`, "error");
+                return;
+            }
+
+            if (docs.length === 0) {
+                log(panel, "Error: No se encontraron archivos en la carpeta. Verifique el ID.", "error");
+                return;
+            }
+            orchestrationState.valid_ids = docs;
+            orchestrationState.filenames = filenames; // Store for later steps
+            orchestrationState.data_stats = data_stats; // Store stats
+
+            let modeBadge = mode === 'REAL_DRIVE'
+                ? '<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; border:1px solid #86efac;">REAL DATA</span>'
+                : '<span style="background:#fef9c3; color:#854d0e; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; border:1px solid #fde047;">DEMO MOCK</span>';
+
+            log(panel, `Harvester Finalizado. ${docs.length} archivos. ${modeBadge}`, "success");
+
+            // SHOW FILENAMES PROOF
+            if (filenames.length > 0) {
+                let fileListHtml = '<ul style="margin:5px 0 5px 20px; font-size:0.8rem; color:#4b5563;">';
+                filenames.forEach(f => {
+                    fileListHtml += `<li>📄 ${f}</li>`;
+                });
+                fileListHtml += '</ul>';
+                panel.innerHTML += fileListHtml;
+            } else if (mode === 'DEMO_MOCK') {
+                panel.innerHTML += '<div style="margin:5px 0 5px 20px; font-size:0.8rem; color:#d97706;">⚠️ Usando datos simulados (BaristaAI) porque no se pudo leer la carpeta real.</div>';
+            }
+
+            await requireUserApproval(panel, "Proceder a VALIDACIÓN FORENSE (Agente Guardian)", "NEXUS-8 escaneará la integridad de los datos para asegurar que no existan inconsistencias o riesgos en la información ingerida.");
+
+            // STEP 2: GUARDIAN
+            log(panel, "Ejecutando NEXUS-8 (Guardian)...", "loading");
+            const gRes = await callStep('/workflow/step/2_guardian', { data: { ids: orchestrationState.valid_ids } });
+            log(panel, `Guardian: ${gRes.data.length} documentos validados.`, "success");
+
+            await requireUserApproval(panel, "Proceder a INTELIGENCIA DE MERCADO (Agente Scout)", "NEXUS-2 cruzará los datos con Reddit, TikTok y Amazon para construir el benchmarking de los 10 competidores líderes.");
+
+            // STEP 3: SCOUT
+            log(panel, "Ejecutando NEXUS-2 (Scout) - Análisis de Mercado...", "loading");
+            const sRes = await callStep('/workflow/step/3_scout', {
+                filenames: orchestrationState.filenames,
+                data_stats: orchestrationState.data_stats,
+                product_description: orchestrationState.product_description
+            });
+            orchestrationState.scout_data = sRes.data;
+            log(panel, `Scout: Inteligencia de Mercado obtenida.`, "success");
+
+            // SHOW SCOUT HIGHLIGHTS
+            if (sRes.data.top_10_products) {
+                let scoutHtml = '<div style="margin:5px 0 10px 20px; font-size:0.85rem; background:#f0f9ff; border:1px solid #bae6fd; padding:10px; border-radius:6px;">';
+                scoutHtml += `<strong>Competición Detectada:</strong> ${sRes.data.top_10_products.length} jugadores clave.<br>`;
+                scoutHtml += `<strong>Tendencia:</strong> ${sRes.data.trends[0]}<br>`;
+                scoutHtml += '</div>';
+                panel.innerHTML += scoutHtml;
+            }
+
+            await requireUserApproval(panel, "Proceder a CONSOLIDACIÓN DE DATOS (Agente Integrator)", "NEXUS-3 fusionará la inteligencia de mercado con tus archivos para crear la Fuente Única de Verdad (SSOT).");
+
+            // STEP 4: INTEGRATOR
+            log(panel, "Ejecutando NEXUS-3 (Integrator)...", "loading");
+            const iRes = await callStep('/workflow/step/4_integrator', {
+                harvester_ids: orchestrationState.valid_ids,
+                filenames: orchestrationState.filenames,
+                data_stats: orchestrationState.data_stats,
+                scout_id: sRes.data.id
+            });
+            orchestrationState.ssot = iRes.data;
+            log(panel, `Integrator: SSOT construida.`, "success");
+
+            await requireUserApproval(panel, "Proceder a DIAGNÓSTICO ESTRATÉGICO (Agente Strategist)", "NEXUS-4 detectará brechas en el mercado y definirá el Plan Maestro 2026 para tu producto.");
+
+            // STEP 5: STRATEGIST
+            log(panel, "Ejecutando NEXUS-4 (Strategist)...", "loading");
+            const stRes = await callStep('/workflow/step/5_strategist', { ssot_data: orchestrationState.ssot });
+            orchestrationState.strategy = stRes.data;
+            log(panel, `Strategist: ${stRes.data.strategic_gaps.length} gaps detectados.`, "success");
+
+            await requireUserApproval(panel, "Proceder a MODELADO FINANCIERO (Agente Mathematician)", "NEXUS-5 calculará los 3 escenarios de rentabilidad (ROI) basándose en los costos y precios tácticos.");
+
+            // STEP 6: MATHEMATICIAN
+            log(panel, "Ejecutando NEXUS-5 (Mathematician)...", "loading");
+            const mRes = await callStep('/workflow/step/6_mathematician', { strategy_data: orchestrationState.strategy });
+            orchestrationState.models = mRes.data;
+            log(panel, `Mathematician: Modelado ROI completado.`, "success");
+
+            // STEP 7: SENIOR PARTNER
+            log(panel, "Ejecutando NEXUS-6 (Senior Partner)...", "loading");
+            const pRes = await callStep('/workflow/step/7_senior_partner', { models_data: orchestrationState.models, strategy_data: orchestrationState.strategy });
+            orchestrationState.summary = pRes.data;
+            log(panel, `Partner: Resumen Ejecutivo listo.`, "success");
+
+            await requireUserApproval(panel, "Proceder a GENERACIÓN DE DOSSIER (Agente Architect)", "NEXUS-7 diseñará el reporte final premium listo para presentación ejecutiva.");
+
+
+            // STEP 8: ARCHITECT
+            log(panel, "Ejecutando NEXUS-7 (Architect)...", "loading");
+            const full_data = {
+                "harvester": { "source": "Drive Step-by-Step", "files": orchestrationState.valid_ids.length },
+                "scout": orchestrationState.scout_data,
+                "integrator": orchestrationState.ssot,
+                "strategist": orchestrationState.strategy,
+                "mathematician": orchestrationState.models,
+                "senior_partner": orchestrationState.summary
+            };
+            const aRes = await callStep('/workflow/step/8_architect', { full_data: full_data });
+            log(panel, `Arquitecto: Reporte generado.`, "success");
+
+            document.getElementById('result-container').innerHTML = `<a href="${aRes.data.pdf_url}" target="_blank" class="artifact-link">VER REPORTE FINAL</a>`;
+        }
+
+        async function callStep(endpoint, body) {
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            return await res.json();
+        }
+
+        function log(panel, msg, type) {
+            let color = type === 'error' ? 'red' : (type === 'success' ? 'green' : 'black');
+            let icon = type === 'success' ? '✓' : (type === 'error' ? 'X' : '>');
+            panel.innerHTML += `<div class="log-entry" style="color:${color}"><div class="log-icon">${icon}</div><div>${msg}</div></div>`;
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        function requireUserApproval(panel, btnText, description) {
+            return new Promise(resolve => {
+                const btnId = 'btn-' + Math.random().toString(36).substr(2, 9);
+                panel.innerHTML += `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:12px; margin:15px 0; animation:fadeIn 0.5s;">
+                        <div style="font-size:0.85rem; color:#64748b; margin-bottom:10px;"><strong>PRÓXIMO PASO:</strong> ${description || 'El sistema requiere validación para continuar.'}</div>
+                        <div style="text-align:center;">
+                            <button id="${btnId}" style="background:#2563eb; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat', sans-serif; transition: all 0.2s;">
+                                ${btnText} ↓
+                            </button>
+                        </div>
+                    </div>
+                `;
+                panel.scrollTop = panel.scrollHeight;
+                document.getElementById(btnId).onclick = function () {
+                    this.parentElement.parentElement.innerHTML = `<div style="text-align:center; font-size:0.85rem; color:#10b981; margin:10px; font-weight:600;">Autorizado por Socio Humano ✓</div>`;
+                    resolve();
+                };
+            });
+        }
+
+        async function runAutoPipeline(folderId, panel, resultContainer) {
+            // Existing Logic (Legacy Wrapper)
+            try {
+                const response = await fetch('/workflow/folder_ingestion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        folder_id: folderId,
+                        access_token: accessToken,
+                        product_description: orchestrationState.product_description
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update steps with links to individual artifacts
+                    let modeBadge = data.ingestion_mode === 'REAL_DRIVE'
+                        ? '<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; border:1px solid #86efac;">REAL DATA</span>'
+                        : '<span style="background:#fef9c3; color:#854d0e; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; border:1px solid #fde047;">DEMO MOCK</span>';
+
+                    const steps = [
+                        { name: 'NEXUS-1 (Harvester)', msg: `Procesados ${data.files_processed} archivos. ${modeBadge}`, link: data.artifacts?.harvester },
+                        { name: 'NEXUS-8 (The Guardian)', msg: 'Validación de integridad completada.', link: data.artifacts?.guardian },
+                        { name: 'NEXUS-2 (Scout)', msg: 'Enriquecimiento OSINT por lote finalizado.', link: data.artifacts?.scout },
+                        { name: 'NEXUS-3 (Integrator)', msg: 'Consolidación SSOT.', link: data.artifacts?.integrator },
+                        { name: 'NEXUS-4 (Strategist)', msg: 'Análisis de brechas estratégicas.', link: data.artifacts?.strategist },
+                        { name: 'NEXUS-6 (Senior Partner)', msg: 'Síntesis ejecutiva generada.', link: data.artifacts?.senior_partner },
+                        { name: 'NEXUS-7 (Architect)', msg: 'Paquete final generado.', link: data.final_report_url }
+                    ];
+
+                    panel.innerHTML = ""; // Clear initial loading msg
+
+                    steps.forEach((step, index) => {
+                        setTimeout(() => {
+                            let actionLink = step.link ? `<a href="${step.link}" target="_blank" style="margin-left:auto; font-size:0.75rem; color:#2563eb; text-decoration:none; border:1px solid #bfdbfe; padding:2px 8px; border-radius:12px;">Ver Reporte Agente ↗</a>` : '';
+
+                            panel.innerHTML += `
+                                <div class="log-entry success">
+                                    <div class="log-icon">✓</div>
+                                    <div>
+                                        <strong>${step.name}</strong><br>
+                                        <span style="font-size:0.8rem; color:var(--gray-text)">${step.msg}</span>
+                                    </div>
+                                    ${actionLink}
+                                </div>
+                            `;
+                            panel.scrollTop = panel.scrollHeight;
+                        }, index * 800);
+                    });
+
+                    setTimeout(() => {
+                        resultContainer.innerHTML = `<a href="${data.final_report_url}" target="_blank" class="artifact-link">VER REPORTE INTEGRADO FINAL</a>`;
+                    }, steps.length * 800 + 400);
+
+                } else {
+                    panel.innerHTML += `<div class="log-entry" style="background:#fee2e2; border-left:4px solid #ef4444;"><div class="log-icon" style="background:#ef4444">X</div><div><strong>ERROR DE CARPETA</strong><br>${data.detail || data.message}</div></div>`;
+
+                    // Force Re-Auth if it looks like a permission/token issue
+                    if (data.mode === 'ERROR' || (data.message && data.message.includes('Autenticación'))) {
+                        console.warn("Token invalido o permisios insuficientes. Reseteando token.");
+                        accessToken = null;
+                        document.getElementById('pickerNotice').style.display = 'none'; // Hide notice
+                    }
+                }
+            } catch (e) {
+                panel.innerHTML += `<div class="log-entry" style="background:#fee2e2; border-left:4px solid #ef4444;"><div class="log-icon" style="background:#ef4444">X</div><div><strong>FALLA DE CONEXIÓN</strong><br>${e.message}</div></div>`;
+                accessToken = null; // Reset token on network error too just in case
+            }
+        }
+
+        async function runPipeline() {
+            const source = document.getElementById('sourceName').value;
+            const content = document.getElementById('contentText').value;
+            const panel = document.getElementById('status-panel');
+            const statusCard = document.getElementById('statusCard');
+            const resultContainer = document.getElementById('result-container');
+
+            statusCard.style.display = 'block';
+            panel.innerHTML = `<div class="log-entry"><div class="log-icon">!</div><div>Iniciando orquestación... NEXUS-8 (The Guardian) está en espera.</div></div>`;
+            resultContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/workflow/full_cycle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source_name: source, content_text: content })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const steps = [
+                        { name: 'NEXUS-1 (Harvester)', msg: 'Datos ingeridos y guardados en firebase/raw_inputs.' },
+                        { name: 'NEXUS-8 (The Guardian)', msg: 'Validación de integridad completada. Sin amenazas detectadas.' },
+                        { name: 'NEXUS-2 (Scout)', msg: 'Análisis OSINT y tendencias de búsqueda integradas.' },
+                        { name: 'NEXUS-3 (Integrator)', msg: 'Single Source of Truth (SSOT) creado con éxito.' },
+                        { name: 'NEXUS-4 (Strategist)', msg: 'Gaps de mercado detectados y oportunidades de marketing identificadas.' },
+                        { name: 'NEXUS-5 (Mathematician)', msg: 'Modelado financiero de 3 niveles completado. ROI verificado.' },
+                        { name: 'NEXUS-6 (Senior Partner)', msg: 'Síntesis ejecutiva finalizada con tono Calidez Latina.' },
+                        { name: 'NEXUS-7 (Architect)', msg: 'Reporte PDF y Dashboard HTML generados.' }
+                    ];
+
+                    steps.forEach((step, index) => {
+                        setTimeout(() => {
+                            panel.innerHTML += `
+                                <div class="log-entry success">
+                                    <div class="log-icon">✓</div>
+                                    <div>
+                                        <strong>${step.name}</strong><br>
+                                        <span style="font-size:0.8rem; color:var(--gray-text)">${step.msg}</span>
+                                    </div>
+                                </div>
+                            `;
+                            panel.scrollTop = panel.scrollHeight;
+                        }, index * 800);
+                    });
+
+                    setTimeout(() => {
+                        resultContainer.innerHTML = `<a href="${data.final_report_url}" target="_blank" class="artifact-link">PRODUCCIÓN FINALIZADA: VER REPORTE</a>`;
+                    }, steps.length * 800 + 400);
+
+                } else {
+                    panel.innerHTML += `<div class="log-entry" style="background:#fee2e2; border-left:4px solid #ef4444;"><div class="log-icon" style="background:#ef4444">X</div><div><strong>ERROR DE SISTEMA</strong><br>${data.detail}</div></div>`;
+                }
+            } catch (e) {
+                panel.innerHTML += `<div class="log-entry" style="background:#fee2e2; border-left:4px solid #ef4444;"><div class="log-icon" style="background:#ef4444">X</div><div><strong>FALLA DE CONEXIÓN</strong><br>${e.message}</div></div>`;
+            }
+        }
+    </script>
+</body>
+
+</html>

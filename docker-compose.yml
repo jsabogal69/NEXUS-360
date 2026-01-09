@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # NEXUS-360 Backend Agent Swarm
+  nexus-backend:
+    build: .
+    container_name: nexus-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./agents:/app/agents
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/serviceAccountKey.json
+      - FIRESTORE_PROJECT_ID=nexus-360-prototype
+    # Mount credentials if they exist locally
+    # volumes:
+    #   - ./serviceAccountKey.json:/app/serviceAccountKey.json
+
+  # Placeholder for Dashboard (When Node.js is ready)
+  # nexus-dashboard:
+  #   build: ./dashboard
+  #   ports:
+  #     - "3000:3000"
