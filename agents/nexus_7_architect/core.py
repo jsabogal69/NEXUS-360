@@ -290,7 +290,11 @@ class Nexus7Architect:
 
             math_table_rows += f"""
             <tr>
-                <td style="font-weight:700;">{scn.get('name')}<br>{breakdown_html}</td>
+                <td style="font-weight:700;">
+                    {scn.get('name')}<br>
+                    <span style="font-size:0.75rem; color:#64748b; font-weight:400; display:block; margin-top:4px;">📦 {scn.get('composition', 'Hardware Base')}</span>
+                    {breakdown_html}
+                </td>
                 <td style="font-size:1.1rem; font-weight:700;">${scn.get('price')}</td>
                 <td>${scn.get('landed')}</td>
                 <td><strong style="color:var(--accent); font-size:1.1rem;">{scn.get('margin_pct')}%</strong></td>

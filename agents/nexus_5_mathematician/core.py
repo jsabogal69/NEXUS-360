@@ -82,6 +82,7 @@ class Nexus5Mathematician:
         scenarios = {
             "individual_amz": {
                 "name": f"Amazon Strategy: Unidad Base ({label})",
+                "composition": f"1x {label} (Core Hardware) + Manual de Usuario Digital.",
                 "price": base_price,
                 "landed": landed_cost,
                 "opex": amazon_economics["total_amz_opex"],
@@ -98,6 +99,7 @@ class Nexus5Mathematician:
             },
             "multipack_amz": {
                 "name": f"Optimization Strategy: Multi-Pack (X2 Units)",
+                "composition": f"2x {label} + Empaque 'Value-Pack' Optimizado para FBA.",
                 "price": round(base_price * 1.85, 2),
                 "landed": landed_cost * 2,
                 "opex": round((base_price * 1.85 * 0.15) + amz_fba_fee + 2.00 + (base_price * 0.20), 2),
@@ -114,6 +116,7 @@ class Nexus5Mathematician:
             },
             "kit_premium": {
                 "name": f"NEXUS Masterpiece: Digital Kit / Ecosistema",
+                "composition": f"1x {label} Premium + 1x Accesorio VIP + Acceso Lifetime App/Masterclass + Garantía Extendida + Cable Reforzado.",
                 "price": kit_price,
                 "landed": kit_cost,
                 "opex": amazon_economics["total_amz_opex"] + 5.00,
@@ -130,6 +133,7 @@ class Nexus5Mathematician:
             },
             "dtc_exclusive": {
                 "name": "DTC Strategy: Venta Directa (Web Propia)",
+                "composition": f"Kit {label} Platinum + Unboxing Experience Premium + Cupón de Fidelidad + Soporte VIP Personalizado.",
                 "price": kit_price,
                 "landed": kit_cost,
                 "opex": round((kit_price * 0.03) + 12.00 + (kit_price * 0.25), 2), # Gateway + Shipping + Branding Ads
@@ -146,6 +150,7 @@ class Nexus5Mathematician:
             },
             "b2b_bulk": {
                 "name": "B2B Strategy: Canal Corporativo / Mayorista",
+                "composition": f"Case Pack (12-24 Units) {label} + White Labeling Opcional + Logística Palletizada.",
                 "price": round(base_price * 1.4, 2), # Bundled in volume cases
                 "landed": landed_cost,
                 "opex": round(base_price * 0.10, 2), # Logistics only, no PPC
