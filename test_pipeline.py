@@ -62,7 +62,7 @@ async def run_full_validation():
         print(f"📊 Reporte Generado en: {report['pdf_url']}")
         print("---")
         print(f"Veredicto: {strategy['dynamic_verdict']['title']}")
-        print(f"Propuesta: {models['scenarios']['kit']['name']}")
+        print(f"Propuesta: {models['scenarios']['kit_premium']['name']}")
         
     except Exception as e:
         print(f"\n❌ ERROR EN LA CADENA: {str(e)}")

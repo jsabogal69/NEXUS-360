@@ -382,7 +382,6 @@ class Nexus7Architect:
                 </div>
             </div>
         </div>"""
-        """
 
         verdict = st_data.get("dynamic_verdict", {})
         roadmap_data = st_data.get("dynamic_roadmap", [])
