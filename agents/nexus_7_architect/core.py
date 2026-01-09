@@ -310,7 +310,7 @@ class Nexus7Architect:
         nexus_target = fba_sense.get("nexus_target", {})
         
         bench_html = ""
-        for p in comps[:6]: # Show top 6 for layout
+        for p in comps[:10]: # Show all 10 leaders for full market visibility
             fba_b = p.get('fba_breakdown', {})
             bench_html += f"""
             <div class="data-card" style="background:#ffffff; border:1px solid #e2e8f0; padding:15px; border-left:4px solid {p.get('tier_color')};">
