@@ -410,10 +410,11 @@ class Nexus7Architect:
         
         amz_context_html = f"""
         <div style="background:#fff7ed; border:1px solid #fdba74; padding:30px; border-radius:16px; margin-bottom:30px;">
-             <h4 style="margin-top:0; color:#9a3412; font-family:var(--serif); display:flex; align-items:center; gap:10px;">⚖️ Análisis de Sensibilidad FBA & Tiers de Eficiencia</h4>
+             <h4 style="margin-top:0; color:#9a3412; font-family:var(--serif); display:flex; align-items:center; gap:10px;">⚖️ Análisis Multivariable de Costos FBA & Benchmarking Relacional (TOP 10)</h4>
              <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
                 {nexus_fba_card}
                 {bench_html}
+                {multivariate_panel}
              </div>
         </div>
 

@@ -204,6 +204,7 @@ Es momento de dejar de ser un vendedor para convertirnos en el **dueño de la ca
         strategy_output = {
             "id": generate_id(),
             "parent_ssot_id": ssot_data.get("id"),
+            "scout_data": ssot_data.get("scout_data", {}), # CRITICAL: Pass through for Mathematician/Architect
             "strategic_gaps": gaps,
             "timestamp": timestamp_now(),
             "scout_anchor": anchor,
