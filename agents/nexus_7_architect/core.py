@@ -348,6 +348,17 @@ class Nexus7Architect:
             <p style="margin-top:15px; font-size:0.8rem; color:#0369a1; font-style:italic; line-height:1.5;">* Al posicionarnos en el segmento Premium, reducimos la erosión de FBA sobre el ingreso bruto. Mientras la competencia gasta el 18-24% de su ingreso en logística, NEXUS mantiene una eficiencia operativa líder del {nexus_target.get('fba_impact_pct')}%.</p>
         </div>"""
 
+        # Amazon Unit Economics Panel Metrics
+        msrp = amz_base.get('msrp', 0)
+        cogs = amz_base.get('cogs_landed', 0)
+        opex = amz_base.get('total_amz_opex', 0)
+        net_profit = round(msrp - (cogs + opex), 2)
+        net_margin_pct = round((net_profit / msrp) * 100, 1) if msrp > 0 else 0
+        
+        sku_props = gen_ctx.get("sku_proposals", {})
+
+        verdict = st_data.get("dynamic_verdict", {})
+        
         amz_context_html = f"""
         <div style="background:#fff7ed; border:1px solid #fdba74; padding:30px; border-radius:16px; margin-bottom:30px;">
              <h4 style="margin-top:0; color:#9a3412; font-family:var(--serif); display:flex; align-items:center; gap:10px;">⚖️ Análisis de Sensibilidad FBA & Tiers de Eficiencia</h4>
