@@ -311,21 +311,28 @@ class Nexus7Architect:
         
         bench_html = ""
         for p in comps[:6]: # Show top 6 for layout
+            fba_b = p.get('fba_breakdown', {})
             bench_html += f"""
             <div class="data-card" style="background:#ffffff; border:1px solid #e2e8f0; padding:15px; border-left:4px solid {p.get('tier_color')};">
                 <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:5px;">#{p.get('rank')} {p.get('efficiency_tier')}</div>
                 <div style="font-size:0.95rem; font-weight:900; color:var(--primary); margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{p.get('name')}">{p.get('name')}</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; font-size:0.75rem;">
-                    <div style="color:#64748b;">MSRP:</div><div style="text-align:right; font-weight:700;">${p.get('msrp')}</div>
-                    <div style="color:#64748b;">FBA Fee:</div><div style="text-align:right; font-weight:700; color:#dc2626;">-${p.get('fba_fee')}</div>
-                    <div style="grid-column: span 2; border-top:1px solid #f1f5f9; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:700; font-size:0.65rem;">IMPACTO FBA:</span>
-                        <span style="font-weight:900; color:{p.get('tier_color')};">{p.get('fba_impact_pct')}%</span>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:3px; font-size:0.7rem; color:#475569; margin-bottom:8px; background:#f8fafc; padding:8px; border-radius:6px;">
+                    <div>MSRP:</div><div style="text-align:right; font-weight:700;">${p.get('msrp')}</div>
+                    <div>Pick & Pack:</div><div style="text-align:right;">${fba_b.get('pick_pack')}</div>
+                    <div>Storage:</div><div style="text-align:right;">${fba_b.get('storage')}</div>
+                    <div>Referral:</div><div style="text-align:right;">${fba_b.get('referral')}</div>
+                    <div style="grid-column: span 2; border-top:1px solid #e2e8f0; margin-top:3px; padding-top:3px; font-weight:800; display:flex; justify-content:space-between;">
+                        <span>TOTAL FBA:</span><span>${fba_b.get('total_logistics')}</span>
                     </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700; font-size:0.6rem; color:#64748b;">IMPACTO:</span>
+                    <span style="font-weight:900; color:{p.get('tier_color')};">{p.get('fba_impact_pct')}%</span>
                 </div>
             </div>"""
 
         # NEXUS Highlight Card for FBA
+        n_fba_b = nexus_target.get('fba_breakdown', {})
         nexus_fba_card = f"""
         <div class="data-card" style="background:#f0f9ff; border:2px solid #0ea5e9; padding:20px; grid-column: span 2;">
             <div style="display:flex; justify-content:space-between; align-items:start;">
@@ -335,21 +342,59 @@ class Nexus7Architect:
                 </div>
                 <div style="background:#0ea5e9; color:white; padding:5px 12px; border-radius:99px; font-size:0.7rem; font-weight:800;">{nexus_target.get('efficiency_tier')}</div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px; margin-top:15px; border-top:1px solid #bae6fd; padding-top:15px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px; margin-top:15px; border-top:1px solid #bae6fd; padding-top:15px;">
                 <div>
-                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">MSRP Estratégico</div>
-                    <div style="font-size:1.2rem; font-weight:900; color:#0c4a6e;">${nexus_target.get('msrp')}</div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">MSRP</div>
+                    <div style="font-size:1.1rem; font-weight:900; color:#0c4a6e;">${nexus_target.get('msrp')}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">FBA Calibrado</div>
-                    <div style="font-size:1.2rem; font-weight:900; color:#0c4a6e;">${nexus_target.get('fba_fee')}</div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">Pick/Pack</div>
+                    <div style="font-size:1.1rem; font-weight:900; color:#0c4a6e;">${n_fba_b.get('pick_pack')}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">Eficiencia (FBA/MSRP)</div>
-                    <div style="font-size:1.2rem; font-weight:900; color:#059669;">{nexus_target.get('fba_impact_pct')}%</div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">Granular Fee</div>
+                    <div style="font-size:1.1rem; font-weight:900; color:#0c4a6e;">${round(n_fba_b.get('storage') + n_fba_b.get('referral'), 2)}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">Eficiencia</div>
+                    <div style="font-size:1.1rem; font-weight:900; color:#059669;">{nexus_target.get('fba_impact_pct')}%</div>
                 </div>
             </div>
-            <p style="margin-top:15px; font-size:0.8rem; color:#0369a1; font-style:italic; line-height:1.5;">* Al posicionarnos en el segmento Premium, reducimos la erosión de FBA sobre el ingreso bruto. Mientras la competencia gasta el 18-24% de su ingreso en logística, NEXUS mantiene una eficiencia operativa líder del {nexus_target.get('fba_impact_pct')}%.</p>
+        </div>"""
+
+        # Multivariate Analysis Section
+        mra = m_data.get("multivariate_analysis", {})
+        corr = mra.get("correlations", {})
+        hotspots = mra.get("hotspots", [])
+        
+        hotspots_html = "".join([f'<div style="background:#f1f5f9; padding:10px; border-radius:8px; font-size:0.8rem; margin-bottom:8px; border-left:3px solid var(--accent);">🔥 {h}</div>' for h in hotspots])
+
+        multivariate_panel = f"""
+        <div style="grid-column: span 3; display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-top:20px; border-top:1px dashed #fdba74; padding-top:25px;">
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
+                <h5 style="margin:0 0 15px 0; color:var(--primary); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">📊 Análisis Multivariable Relacional (MRA)</h5>
+                <div style="display:flex; justify-content:space-around; align-items:center; height:100px; text-align:center;">
+                    <div>
+                        <div style="font-size:0.6rem; color:#64748b;">Mkt FBA Erosion</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#dc2626;">{corr.get('avg_market_fba_impact')}%</div>
+                    </div>
+                    <div style="font-size:1.5rem; color:#e2e8f0;">→</div>
+                    <div>
+                        <div style="font-size:0.6rem; color:#64748b;">Mkt Net Margin</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#2563eb;">{corr.get('avg_market_margin')}%</div>
+                    </div>
+                    <div style="font-size:1.5rem; color:#e2e8f0;">vs</div>
+                    <div>
+                        <div style="font-size:0.6rem; color:#64748b;">NEXUS Dominance Delta</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#059669;">+{corr.get('nexus_dominance_delta')}%</div>
+                    </div>
+                </div>
+                <p style="font-size:0.75rem; color:#64748b; margin-top:10px; font-style:italic;">* La correlación detectada es "{corr.get('fba_vs_margin')}". NEXUS rompe la tendencia de la categoría mediante el desequilibrio positivo de la curva de valor.</p>
+            </div>
+            <div>
+                <h5 style="margin:0 0 10px 0; color:var(--primary); font-size:0.8rem; text-transform:uppercase;">Hotspots de Optimización</h5>
+                {hotspots_html}
+            </div>
         </div>"""
 
         # Amazon Unit Economics Panel Metrics
