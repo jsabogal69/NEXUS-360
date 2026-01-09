@@ -87,12 +87,14 @@ class Nexus5Mathematician:
                 "opex": amazon_economics["total_amz_opex"],
                 "margin_pct": round(((base_price - (landed_cost + amazon_economics["total_amz_opex"])) / base_price) * 100, 1),
                 "viability": "Risk High",
+                "break_even_qty": round(5000 / (base_price - (landed_cost + amazon_economics["total_amz_opex"]))), # Assuming 5k launch investment
+                "payback_months": 8,
                 "breakdown": {
                     "Amazon Fees (15% + FBA)": f"${amazon_economics['referral_fee'] + amz_fba_fee}",
                     "Ads/PPC Spend (25%)": f"${amazon_economics['ads_spend_cac']}",
                     "Net Margin": f"${round(base_price - (landed_cost + amazon_economics['total_amz_opex']), 2)}"
                 },
-                "notes": "Escenario de venta transaccional de alta fricción. El modelo confirma que el 40%+ del capital bruto es absorbido por el ecosistema de Amazon (Marketplace Fees + PPC), dejando un margen de seguridad estrecho ante fluctuaciones de CAC. Esta vía se recomienda exclusivamente como motor de visibilidad ('Loss Leader') para alimentar el algoritmo y capturar el ranking inicial en el nicho, actuando como puerta de entrada para el resto del ecosistema NEXUS."
+                "notes": "Escenario de venta transaccional de alta fricción. El modelo confirma que el 40%+ del capital bruto es absorbido por el ecosistema de Amazon (Marketplace Fees + PPC), dejando un margen de seguridad estrecho ante fluctuaciones de CAC. Esta vía se recomienda exclusivamente como motor de visibilidad ('Loss Leader') para alimentar el algoritmo y capturar el ranking inicial en el nicho, actuando como puerta de entrada para el resto del ecosistema NEXUS. Se requiere un control de inventario agresivo para evitar roturas de stock que penalicen el ranking orgánico ganado."
             },
             "multipack_amz": {
                 "name": f"Optimization Strategy: Multi-Pack (X2 Units)",
@@ -101,12 +103,14 @@ class Nexus5Mathematician:
                 "opex": round((base_price * 1.85 * 0.15) + amz_fba_fee + 2.00 + (base_price * 0.20), 2),
                 "margin_pct": round(((round(base_price * 1.85, 2) - ((landed_cost * 2) + round((base_price * 1.85 * 0.15) + amz_fba_fee + 2.00 + (base_price * 0.20), 2))) / round(base_price * 1.85, 2)) * 100, 1),
                 "viability": "Medium High",
+                "break_even_qty": round(7500 / (round(base_price * 1.85, 2) - ((landed_cost * 2) + round((base_price * 1.85 * 0.15) + amz_fba_fee + 2.00 + (base_price * 0.20), 2)))),
+                "payback_months": 5,
                 "breakdown": {
                     "FBA Savings (Shared)": f"${round(amz_fba_fee, 2)}",
                     "PPC Efficiency (+15%)": f"${round(base_price * 0.20, 2)}",
                     "Net Margin": f"${round(round(base_price * 1.85, 2) - ((landed_cost * 2) + round((base_price * 1.85 * 0.15) + amz_fba_fee + 2.00 + (base_price * 0.20), 2)), 2)}"
                 },
-                "notes": "Optimización de Unit Economics mediante la dilución radical de costos logísticos fijos. Al compartir el 'Last-Mile Delivery' y el 'FBA Fulfillment' entre múltiples unidades, el margen neto se expande significativamente. Estrategia de guerrilla ideal para capturar al segmento 'Pro-sumer', maximizando el Lifetime Value (LTV) desde el primer contacto y reduciendo la dependencia de la compra única."
+                "notes": "Optimización de Unit Economics mediante la dilución radical de costos logísticos fijos. Al compartir el 'Last-Mile Delivery' y el 'FBA Fulfillment' entre múltiples unidades, el margen neto se expande significativamente. Estrategia de guerrilla ideal para capturar al segmento 'Pro-sumer', maximizando el Lifetime Value (LTV) desde el primer contacto y reduciendo la dependencia de la compra única. El 'Average Order Value' (AOV) superior compensa la inversión inicial en PPC de manera más acelerada."
             },
             "kit_premium": {
                 "name": f"NEXUS Masterpiece: Digital Kit / Ecosistema",
@@ -115,12 +119,14 @@ class Nexus5Mathematician:
                 "opex": amazon_economics["total_amz_opex"] + 5.00,
                 "margin_pct": round(((kit_price - (kit_cost + amazon_economics["total_amz_opex"] + 5.00)) / kit_price) * 100, 1),
                 "viability": "Recommended",
+                "break_even_qty": round(15000 / (kit_price - (kit_cost + amazon_economics["total_amz_opex"] + 5.00))),
+                "payback_months": 4,
                 "breakdown": {
                     "Shared CAC (Efficiency)": f"${round(kit_price * 0.12, 2)}",
                     "High Ticket Buffer": f"${round(kit_price * 0.10, 2)}",
                     "Net Margin": f"${round(kit_price - (kit_cost + amazon_economics['total_amz_opex'] + 5.00), 2)}"
                 },
-                "notes": "La culminación de la propuesta de valor NEXUS. Al inyectar valor intangible (Capa de Software, Garantía VIP, Ecosistema Digital), desacoplamos el precio final del costo físico de los materiales (BOM). Este escenario crea un 'Foso Defensivo' inexpugnable contra la competencia de bajo costo, permitiendo un Premium del 40% sobre el MSRP promedio del mercado sin erosionar la tasa de conversión."
+                "notes": "La culminación de la propuesta de valor NEXUS. Al inyectar valor intangible (Capa de Software, Garantía VIP, Ecosistema Digital), desacoplamos el precio final del costo físico de los materiales (BOM). Este escenario crea un 'Foso Defensivo' inexpugnable contra la competencia de bajo costo, permitiendo un Premium del 40% sobre el MSRP promedio del mercado sin erosionar la tasa de conversión. El payback es el más rápido de todos los modelos debido a la alta contribución marginal por cada venta."
             },
             "dtc_exclusive": {
                 "name": "DTC Strategy: Venta Directa (Web Propia)",
@@ -129,12 +135,14 @@ class Nexus5Mathematician:
                 "opex": round((kit_price * 0.03) + 12.00 + (kit_price * 0.25), 2), # Gateway + Shipping + Branding Ads
                 "margin_pct": round(((kit_price - (kit_cost + round((kit_price * 0.03) + 12.00 + (kit_price * 0.25), 2))) / kit_price) * 100, 1),
                 "viability": "Visionary",
+                "break_even_qty": round(20000 / (kit_price - (kit_cost + round((kit_price * 0.03) + 12.00 + (kit_price * 0.25), 2)))),
+                "payback_months": 12,
                 "breakdown": {
                     "No Marketplace Fees": "0% Fees",
                     "Branding Investment": f"${round(kit_price * 0.25, 2)}",
                     "Net Margin": f"${round(kit_price - (kit_cost + round((kit_price * 0.03) + 12.00 + (kit_price * 0.25), 2)), 2)}"
                 },
-                "notes": "Escenario de soberanía de marca total e independencia de plataforma. Aunque la inversión inicial en adquisición de tráfico (Meta/TikTok Ads) es elevada, la eliminación de las comisiones de Amazon y la propiedad absoluta de los datos del cliente permiten una rentabilidad compuesta. Es la vía crítica para transformar un producto de impulso en una marca con 'Brand Equity' y valor de salida (Exit Value) real."
+                "notes": "Escenario de soberanía de marca total e independencia de plataforma. Aunque la inversión inicial en adquisición de tráfico (Meta/TikTok Ads) es elevada, la eliminación de las comisiones de Amazon y la propiedad absoluta de los datos del cliente permiten una rentabilidad compuesta. Es la vía crítica para transformar un producto de impulso en una marca con 'Brand Equity' y valor de salida (Exit Value) real. Se recomienda el uso de un funnel de suscripción ('Sub & Save') para maximizar la recurrencia."
             },
             "b2b_bulk": {
                 "name": "B2B Strategy: Canal Corporativo / Mayorista",
@@ -143,12 +151,14 @@ class Nexus5Mathematician:
                 "opex": round(base_price * 0.10, 2), # Logistics only, no PPC
                 "margin_pct": round(((round(base_price * 1.4, 2) - (landed_cost + round(base_price * 0.10, 2))) / round(base_price * 1.4, 2)) * 100, 1),
                 "viability": "Stable",
+                "break_even_qty": round(10000 / (round(base_price * 1.4, 2) - (landed_cost + round(base_price * 0.10, 2)))),
+                "payback_months": 6,
                 "breakdown": {
                     "Zero PPC Ads": "$0.00",
                     "Logística de Volumen": f"${round(base_price * 0.10, 2)}",
                     "Net Margin": f"${round(round(base_price * 1.4, 2) - (landed_cost + round(base_price * 0.10, 2)), 2)}"
                 },
-                "notes": "Canal de estabilización de flujo de caja y rentabilidad pura. Al eliminar el gasto variable en PPC y la volatilidad algorítmica, este modelo asegura márgenes netos de dos dígitos altos. Se recomienda para contratos de suministro corporativo o 'Hard-Bundling', actuando como el pulmón financiero que permite financiar las campañas de marca agresivas en los canales de retail."
+                "notes": "Canal de estabilización de flujo de caja y rentabilidad pura. Al eliminar el gasto variable en PPC y la volatilidad algorítmica, este modelo asegura márgenes netos de dos dígitos altos. Se recomienda para contratos de suministro corporativo o 'Hard-Bundling', actuando como el pulmón financiero que permite financiar las campañas de marca agresivas en los canales de retail. Ideal para rotación de stock estancado mediante acuerdos 'Close-out'."
             }
         }
         

@@ -294,6 +294,8 @@ class Nexus7Architect:
                 <td style="font-size:1.1rem; font-weight:700;">${scn.get('price')}</td>
                 <td>${scn.get('landed')}</td>
                 <td><strong style="color:var(--accent); font-size:1.1rem;">{scn.get('margin_pct')}%</strong></td>
+                <td style="text-align:center;"><span style="font-weight:700; color:#1e293b;">{scn.get('break_even_qty', 'N/A')}</span> <span style="font-size:0.6rem; display:block; color:#94a3b8;">unidades</span></td>
+                <td style="text-align:center;"><span style="font-weight:700; color:#1e293b;">{scn.get('payback_months', 'N/A')}</span> <span style="font-size:0.6rem; display:block; color:#94a3b8;">meses</span></td>
                 <td><span class="tag {tag_class}">{viability}</span></td>
                 <td style="font-size:0.85rem; color:#475569;">{scn.get('notes', '')}</td>
             </tr>"""
@@ -522,7 +524,7 @@ class Nexus7Architect:
         <h2 class="section-title">VI. Modelado Financiero & Unit Economics <span class="agent-badge">Mathematician</span></h2>
         {amz_context_html}
         <table>
-            <thead><tr><th>Escenario</th><th>MSRP</th><th>Landed</th><th>Net %</th><th>Viabilidad</th><th>Observaciones</th></tr></thead>
+            <thead><tr><th>Escenario</th><th>MSRP</th><th>Landed</th><th>Net %</th><th>Break-even</th><th>Payback</th><th>Viabilidad</th><th>Observaciones</th></tr></thead>
             <tbody>{math_table_rows}</tbody>
         </table>
 
