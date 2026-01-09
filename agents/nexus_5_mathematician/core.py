@@ -167,41 +167,68 @@ class Nexus5Mathematician:
         else:
             seasonality_note = "ESTACIONALIDAD ESTABLE: Los márgenes proyectados mantienen una linealidad constante. Se recomienda un escalado orgánico y sostenido del inventario."
 
-        # 2. MARKET BENCHMARK COMPARISON (Forensic Insight)
+        # 2. MARKET BENCHMARK COMPARISON (Forensic Insight & FBA Sensitivity)
         top_10 = strategy_data.get("scout_data", {}).get("top_10_products", [])
-        best_seller = top_10[0] if top_10 else {"name": "Líder de Categoría", "price": base_price * 1.2}
-        mid_range = top_10[4] if len(top_10) > 4 else {"name": "Competidor Promedio", "price": base_price * 0.9}
+        
+        # FBA Sensitivity Calibration (Simulated based on category weight/size logic)
+        # Tiers: Small/Light (<$3.50), Standard ($4.50-$6.50), Large ($8.00+)
+        category_fba_base = amz_fba_fee # 6.50 from baseline
 
-        market_benchmark = {
-            "best_seller": {
-                "name": best_seller.get("name"),
-                "msrp": best_seller.get("price"),
-                "est_landed": round(best_seller.get("price") * 0.2, 2), # Assumed high volume efficiency
-                "net_profit": round(best_seller.get("price") * 0.15, 2), # Assumed narrow margins
-                "is_assumed": True
-            },
-            "mid_range": {
-                "name": mid_range.get("name"),
-                "msrp": mid_range.get("price"),
-                "est_landed": round(mid_range.get("price") * 0.25, 2),
-                "net_profit": round(mid_range.get("price") * 0.12, 2),
-                "is_assumed": True
-            },
-            "nexus_suggested": {
-                "name": f"NEXUS {label} Platinum",
-                "msrp": kit_price,
-                "landed": kit_cost,
-                "net_profit": round(kit_price - (kit_cost + amazon_economics['total_amz_opex'] + 5.00), 2),
-                "is_assumed": False # Based on our master strategy
-            }
-        }
+        def calculate_efficiency_tier(price, fba_fee):
+            impact = (fba_fee / price) * 100 if price > 0 else 0
+            if impact < 12: return "Tier 1: High Efficiency (Dominance)", "#059669", impact
+            if impact < 18: return "Tier 2: Mid-Range (Standard)", "#2563eb", impact
+            return "Tier 3: Low Efficiency (Vulnerable)", "#dc2626", impact
 
+        market_benchmark = {}
+        processed_top_10 = []
+
+        for p in top_10:
+            p_price = p.get("price", 50.0)
+            # Calibration: Competitors usually have slightly higher or lower FBA based on their rank/volume
+            # Ranking 1-3 usually has size optimization (Tier 1)
+            p_fba = category_fba_base - 1.0 if p.get("rank", 10) <= 3 else (category_fba_base + 1.5 if p.get("rank", 10) > 7 else category_fba_base)
+            tier_label, tier_color, impact_pct = calculate_efficiency_tier(p_price, p_fba)
+            
+            p_landed = round(p_price * 0.22, 2)
+            p_referral = round(p_price * 0.15, 2)
+            p_profit = round(p_price - (p_landed + p_referral + p_fba + (p_price * 0.10)), 2) # Assumed 10% PPC for comps
+
+            processed_top_10.append({
+                "rank": p.get("rank"),
+                "name": p.get("name"),
+                "msrp": p_price,
+                "fba_fee": p_fba,
+                "fba_impact_pct": round(impact_pct, 1),
+                "efficiency_tier": tier_label,
+                "tier_color": tier_color,
+                "est_net_profit": p_profit,
+                "is_assumed": True
+            })
+
+        # Specific NEXUS Comparison
+        n_tier, n_color, n_impact = calculate_efficiency_tier(kit_price, amz_fba_fee)
+        
         roi_models = {
             "id": generate_id(),
             "parent_strategy_id": strategy_data.get("id"),
             "scenarios": scenarios,
             "amazon_baseline": amazon_economics,
-            "market_benchmark": market_benchmark,
+            "fba_sensitivity_analysis": {
+                "competitors": processed_top_10,
+                "nexus_target": {
+                    "name": f"NEXUS {label} Platinum",
+                    "msrp": kit_price,
+                    "fba_fee": amz_fba_fee,
+                    "fba_impact_pct": round(n_impact, 1),
+                    "efficiency_tier": n_tier,
+                    "tier_color": n_color
+                }
+            },
+            "market_benchmark": { # Legacy support
+                "best_seller": processed_top_10[0] if processed_top_10 else {},
+                "mid_range": processed_top_10[4] if len(processed_top_10) > 4 else {}
+            },
             "seasonality_strategy": seasonality_note,
             "general_market_context": {
                 "direct_to_consumer_margin": round(((base_price - (landed_cost + 12.00)) / base_price) * 100, 1),

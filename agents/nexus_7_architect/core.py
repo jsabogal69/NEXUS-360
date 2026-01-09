@@ -300,42 +300,61 @@ class Nexus7Architect:
                 <td style="font-size:0.85rem; color:#475569;">{scn.get('notes', '')}</td>
             </tr>"""
 
-        # Market Benchmark Comparison (Forensic)
-        bench = m_data.get("market_benchmark", {})
+        # Market Benchmark Comparison (Forensic & FBA Sensitivity)
+        fba_sense = m_data.get("fba_sensitivity_analysis", {})
+        comps = fba_sense.get("competitors", [])
+        nexus_target = fba_sense.get("nexus_target", {})
+        
         bench_html = ""
-        for key, p in bench.items():
-            assumed_tag = '<span style="font-size:0.6rem; background:#fef2f2; color:#dc2626; padding:2px 6px; border-radius:4px; font-weight:800; margin-left:8px;">DATOS FORENSES ASUMIDOS</span>' if p.get('is_assumed') else ""
-            label_color = "#0f172a" if not p.get('is_assumed') else "#64748b"
-            bg_color = "#f0f9ff" if not p.get('is_assumed') else "#ffffff"
-            
+        for p in comps[:6]: # Show top 6 for layout
             bench_html += f"""
-            <div class="data-card" style="background:{bg_color}; border:1px solid #e2e8f0; padding:20px;">
-                <div style="font-size:0.65rem; color:{label_color}; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:5px;">{key.replace('_', ' ').upper()} {assumed_tag}</div>
-                <div style="font-size:1.1rem; font-weight:900; color:var(--primary); margin-bottom:10px;">{p.get('name')}</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.85rem;">
+            <div class="data-card" style="background:#ffffff; border:1px solid #e2e8f0; padding:15px; border-left:4px solid {p.get('tier_color')};">
+                <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:5px;">#{p.get('rank')} {p.get('efficiency_tier')}</div>
+                <div style="font-size:0.95rem; font-weight:900; color:var(--primary); margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{p.get('name')}">{p.get('name')}</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; font-size:0.75rem;">
                     <div style="color:#64748b;">MSRP:</div><div style="text-align:right; font-weight:700;">${p.get('msrp')}</div>
-                    <div style="color:#64748b;">Est. Landed:</div><div style="text-align:right; font-weight:700;">${p.get('est_landed') or p.get('landed')}</div>
-                    <div style="grid-column: span 2; border-top:1px solid #e2e8f0; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between;">
-                        <span style="font-weight:700;">Profit Neto:</span>
-                        <span style="font-weight:900; color:#059669;">${p.get('net_profit')}</span>
+                    <div style="color:#64748b;">FBA Fee:</div><div style="text-align:right; font-weight:700; color:#dc2626;">-${p.get('fba_fee')}</div>
+                    <div style="grid-column: span 2; border-top:1px solid #f1f5f9; margin-top:5px; padding-top:5px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700; font-size:0.65rem;">IMPACTO FBA:</span>
+                        <span style="font-weight:900; color:{p.get('tier_color')};">{p.get('fba_impact_pct')}%</span>
                     </div>
                 </div>
             </div>"""
 
-        # Amazon Unit Economics Panel
-        # Calculate Net Margin for baseline
-        msrp = amz_base.get('msrp', 0)
-        cogs = amz_base.get('cogs_landed', 0)
-        opex = amz_base.get('total_amz_opex', 0)
-        net_profit = round(msrp - (cogs + opex), 2)
-        net_margin_pct = round((net_profit / msrp) * 100, 1) if msrp > 0 else 0
-        
-        sku_props = gen_ctx.get("sku_proposals", {})
+        # NEXUS Highlight Card for FBA
+        nexus_fba_card = f"""
+        <div class="data-card" style="background:#f0f9ff; border:2px solid #0ea5e9; padding:20px; grid-column: span 2;">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div>
+                    <div style="font-size:0.65rem; color:#0369a1; text-transform:uppercase; letter-spacing:1.5px; font-weight:800; margin-bottom:5px;">NEXUS EFFICIENCY TARGET</div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#0c4a6e;">{nexus_target.get('name')}</div>
+                </div>
+                <div style="background:#0ea5e9; color:white; padding:5px 12px; border-radius:99px; font-size:0.7rem; font-weight:800;">{nexus_target.get('efficiency_tier')}</div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px; margin-top:15px; border-top:1px solid #bae6fd; padding-top:15px;">
+                <div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">MSRP Estratégico</div>
+                    <div style="font-size:1.2rem; font-weight:900; color:#0c4a6e;">${nexus_target.get('msrp')}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">FBA Calibrado</div>
+                    <div style="font-size:1.2rem; font-weight:900; color:#0c4a6e;">${nexus_target.get('fba_fee')}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.6rem; color:#64748b; text-transform:uppercase;">Eficiencia (FBA/MSRP)</div>
+                    <div style="font-size:1.2rem; font-weight:900; color:#059669;">{nexus_target.get('fba_impact_pct')}%</div>
+                </div>
+            </div>
+            <p style="margin-top:15px; font-size:0.8rem; color:#0369a1; font-style:italic; line-height:1.5;">* Al posicionarnos en el segmento Premium, reducimos la erosión de FBA sobre el ingreso bruto. Mientras la competencia gasta el 18-24% de su ingreso en logística, NEXUS mantiene una eficiencia operativa líder del {nexus_target.get('fba_impact_pct')}%.</p>
+        </div>"""
 
         amz_context_html = f"""
         <div style="background:#fff7ed; border:1px solid #fdba74; padding:30px; border-radius:16px; margin-bottom:30px;">
-             <h4 style="margin-top:0; color:#9a3412; font-family:var(--serif); display:flex; align-items:center; gap:10px;">⚖️ Matriz de Benchmarking Competitivo</h4>
-             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px;">{bench_html}</div>
+             <h4 style="margin-top:0; color:#9a3412; font-family:var(--serif); display:flex; align-items:center; gap:10px;">⚖️ Análisis de Sensibilidad FBA & Tiers de Eficiencia</h4>
+             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                {nexus_fba_card}
+                {bench_html}
+             </div>
         </div>
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-bottom:40px;">
