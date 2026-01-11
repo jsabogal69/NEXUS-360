@@ -243,9 +243,9 @@ class Nexus7Architect:
             math_table_rows += f"""
             <tr>
                 <td><strong>{s['name']}</strong><br><span style="font-size:0.75rem; color:#64748b;">{s.get('composition', '')}</span></td>
-                <td>${s['msrp']}</td>
-                <td>${s['landed_cost']}</td>
-                <td style="font-weight:bold; color:#059669;">{s['net_margin_pct']}%</td>
+                <td>${s['price']}</td>
+                <td>${s['landed']}</td>
+                <td style="font-weight:bold; color:#059669;">{s['margin_pct']}%</td>
                 <td>{s.get('break_even_qty', 'N/A')} u</td>
                 <td>{s.get('payback_months', 'N/A')} m</td>
                 <td><span class="tag tag-recommended">VIABLE</span></td>
