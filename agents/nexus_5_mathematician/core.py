@@ -240,11 +240,37 @@ class Nexus5Mathematician:
         n_total_fba = amz_fba_fee + 1.20 # Base + storage
         n_tier, n_color, n_impact = calculate_efficiency_tier(kit_price, n_total_fba)
         
+        # 3. PROTOCOLO DE STRESS TEST (Worst Case vs Baseline)
+        stress_ppc_increase = 0.40
+        stress_cogs_increase = 0.15
+        
+        base_net_profit = round(base_price - (landed_cost + amazon_economics['total_amz_opex']), 2)
+        base_net_margin = round((base_net_profit / base_price) * 100, 1) if base_price > 0 else 0
+        
+        stress_opex = round(amazon_economics['total_amz_opex'] + (amazon_economics['ads_spend_cac'] * stress_ppc_increase), 2)
+        stress_net_profit = round(base_price - (landed_cost * (1 + stress_cogs_increase) + stress_opex), 2)
+        stress_margin = round((stress_net_profit / base_price) * 100, 1) if base_price > 0 else 0
+        
+        stress_test = {
+            "parameters": {
+                "ppc_surge": "+40%",
+                "cogs_fluctuation": "+15%"
+            },
+            "impact": {
+                "base_net_margin": f"{base_net_margin}%",
+                "stress_net_margin": f"{stress_margin}%",
+                "profit_erosion": f"{round(base_net_margin - stress_margin, 1)}%",
+                "resilience_status": "Robust" if stress_margin > 12 else ("Stable" if stress_margin > 5 else ("Vulnerable" if stress_margin > 0 else "Critical"))
+            },
+            "verdict": "El modelo de negocio es resiliente incluso ante saturación de subasta PPC." if stress_margin > 5 else "Alerta: El margen se erosiona críticamente bajo estrés. Se requiere optimización de COGS o incremento de MSRP."
+        }
+
         roi_models = {
             "id": generate_id(),
             "parent_strategy_id": strategy_data.get("id"),
             "scenarios": scenarios,
             "amazon_baseline": amazon_economics,
+            "stress_test": stress_test,
             "fba_sensitivity_analysis": {
                 "competitors": processed_top_10,
                 "nexus_target": {

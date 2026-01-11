@@ -147,14 +147,19 @@ async def run_folder_workflow(request: FolderIngestRequest):
         summary = await partner.synthesize_executive_summary(models, strategy)
         senior_url = save_artifact("senior_partner", summary)
 
-        # 7. ARCHITECT
+        # 7. GUARDIAN COMPLIANCE AUDIT
+        guardian_audit = await guardian.perform_compliance_audit(strategy)
+        guardian_url = save_artifact("guardian_compliance", guardian_audit)
+
+        # 8. ARCHITECT
         full_data = {
             "harvester": {"source": f"Carpeta Drive: {request.folder_id}", "files": len(ingested_ids)},
             "scout": findings,
             "integrator": ssot,
             "strategist": strategy,
             "mathematician": models,
-            "senior_partner": summary
+            "senior_partner": summary,
+            "guardian": guardian_audit
         }
         
         architect = Nexus7Architect()
