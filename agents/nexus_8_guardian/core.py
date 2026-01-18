@@ -74,15 +74,43 @@ class Nexus8Guardian:
         anchor = strategy_data.get("scout_anchor", "Mercado")
         norm_anchor = anchor.upper()
         
-        # Category detection
-        is_electronics = any(x in norm_anchor for x in ["65W", "GAN", "CHARGER", "ADAPTADOR", "POWER", "USB", "BATTERY", "CABLE"])
-        is_lamp = any(x in norm_anchor for x in ["LAMP", "ILUMINACION", "LAMPARA", "LED", "LIGHTING", "LIGHT"])
-        is_baby = any(x in norm_anchor for x in ["BABY", "BEBE", "INFANT", "NURSERY", "SLEEP", "CRIB"])
-        is_beauty = any(x in norm_anchor for x in ["SHAMPOO", "CONDITIONER", "HAIR", "SKIN", "BEAUTY", "COSMETIC", "SERUM", "CREAM", "LOTION", "ONION", "BIOTIN", "KERATIN"])
-        is_food = any(x in norm_anchor for x in ["FOOD", "SUPPLEMENT", "VITAMIN", "ORGANIC", "EDIBLE", "DRINK"])
-        is_toys = any(x in norm_anchor for x in ["TOY", "GAME", "PLAY", "KIDS", "CHILDREN"])
-        is_fitness = any(x in norm_anchor for x in ["YOGA", "FITNESS", "GYM", "EXERCISE", "SPORT", "WORKOUT"])
-        is_pet = any(x in norm_anchor for x in ["PET", "DOG", "CAT", "ANIMAL"])
+        # Enhanced category detection with more keywords
+        is_electronics = any(x in norm_anchor for x in [
+            "65W", "GAN", "CHARGER", "ADAPTADOR", "POWER", "USB", "BATTERY", "CABLE",
+            "CARGADOR", "ENCHUFE", "OUTLET", "PLUG", "ELECTRIC", "VOLT", "WATT"
+        ])
+        is_lamp = any(x in norm_anchor for x in [
+            "LAMP", "ILUMINACION", "LAMPARA", "LED", "LIGHTING", "LIGHT", "FOCO", 
+            "BOMBILLA", "LUMINARIA", "SPOTLIGHT", "BULB"
+        ])
+        is_baby = any(x in norm_anchor for x in [
+            "BABY", "BEBE", "BEBÉ", "INFANT", "NURSERY", "SLEEP", "CRIB", "CUNA",
+            "RECIÉN NACIDO", "NOCHE", "DORMIR", "PROYECTOR", "ESTRELLAS", "RUIDO BLANCO",
+            "WHITE NOISE", "NEWBORN", "TODDLER", "PEDIATRIC"
+        ])
+        is_beauty = any(x in norm_anchor for x in [
+            "SHAMPOO", "CONDITIONER", "HAIR", "SKIN", "BEAUTY", "COSMETIC", "SERUM", 
+            "CREAM", "LOTION", "ONION", "BIOTIN", "KERATIN", "ANTICAIDA", "CABELLO",
+            "PELO", "ACEITE", "OIL", "MASCARILLA", "CAPILAR"
+        ])
+        is_food = any(x in norm_anchor for x in [
+            "FOOD", "SUPPLEMENT", "VITAMIN", "ORGANIC", "EDIBLE", "DRINK", "SUPLEMENTO"
+        ])
+        is_toys = any(x in norm_anchor for x in [
+            "TOY", "GAME", "PLAY", "KIDS", "CHILDREN", "JUGUETE", "NIÑO", "JUEGO"
+        ])
+        is_fitness = any(x in norm_anchor for x in [
+            "YOGA", "FITNESS", "GYM", "EXERCISE", "SPORT", "WORKOUT", "EJERCICIO",
+            "MAT", "COLCHONETA", "MANCUERNA", "PESA"
+        ])
+        is_pet = any(x in norm_anchor for x in [
+            "PET", "DOG", "CAT", "ANIMAL", "MASCOTA", "PERRO", "GATO"
+        ])
+        is_home_appliance = any(x in norm_anchor for x in [
+            "ASPIRADOR", "VACUUM", "ROBOT", "ROOMBA", "CLEANER", "LIMPIADOR",
+            "HUMIDIFICADOR", "HUMIDIFIER", "PURIFICADOR", "PURIFIER", "AIR", "AIRE",
+            "COCINA", "KITCHEN", "BLENDER", "LICUADORA", "FREIDORA", "FRYER"
+        ])
         
         audit_results = []
         risk_level = "MEDIUM"
@@ -223,20 +251,38 @@ class Nexus8Guardian:
             ]
         
         # ═══════════════════════════════════════════════════════════════
-        # GENERAL / OTHER CATEGORIES
+        # HOME APPLIANCES COMPLIANCE
+        # ═══════════════════════════════════════════════════════════════
+        elif is_home_appliance:
+            risk_level = "HIGH"
+            compliance_score = 85
+            audit_results = [
+                {"std": "UL/ETL Listing (NRTL)", "status": "MANDATORY", "desc": "Certificación de seguridad eléctrica por laboratorio reconocido nacionalmente. Obligatorio para retailers como Amazon, Home Depot, Walmart."},
+                {"std": "EPA Energy Star", "status": "RECOMMENDED", "desc": "Certificación de eficiencia energética. Reduce costos operativos y acceso a incentivos fiscales. Alto valor de marketing."},
+                {"std": "FCC Part 15 (EMC)", "status": "MANDATORY", "desc": "Límites de emisiones electromagnéticas para dispositivos electrónicos. Obligatorio para venta en EE.UU. con marcado FCC ID."},
+                {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": "Conformidad con directivas europeas LVD, EMC y RoHS. Obligatorio para venta en los 27 estados miembros de la UE."},
+                {"std": "RoHS 3 Compliance", "status": "MANDATORY", "desc": "Restricción de sustancias peligrosas en equipos eléctricos. 10 sustancias restringidas incluyendo plomo y mercurio."},
+                {"std": "WEEE Directive (EU)", "status": "MANDATORY", "desc": "Directiva de residuos de equipos eléctricos y electrónicos. Requiere registro de productor y símbolo de reciclaje."},
+                {"std": "Prop 65 California", "status": "MANDATORY", "desc": "Advertencias para productos que contienen químicos de la lista. Multas de $2,500/día por incumplimiento."},
+                {"std": "IEC 60335-1 (Safety)", "status": "MANDATORY", "desc": "Estándar internacional de seguridad para electrodomésticos. Pruebas de aislamiento, resistencia térmica y protección eléctrica."}
+            ]
+        
+        # ═══════════════════════════════════════════════════════════════
+        # GENERAL / OTHER CATEGORIES (Dynamic fallback)
         # ═══════════════════════════════════════════════════════════════
         else:
             risk_level = "LOW"
             compliance_score = 70
+            # More generic but still useful standards
             audit_results = [
-                {"std": "ISO 9001:2015 (Quality Management)", "status": "RECOMMENDED", "desc": "Sistema de gestión de calidad reconocido globalmente. Demuestra procesos consistentes de manufactura y mejora continua."},
-                {"std": "ISO 14001:2015 (Environmental)", "status": "OPTIONAL", "desc": "Sistema de gestión ambiental. Compromiso verificable con reducción de impacto ecológico y cumplimiento de regulaciones ambientales."},
-                {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": "Declaración de conformidad con directivas europeas aplicables. Obligatorio para venta en Espacio Económico Europeo."},
-                {"std": "FCC Declaration (Electronics)", "status": "CONDITIONAL", "desc": "Aplica si el producto contiene componentes electrónicos. Declaración de conformidad con límites de emisiones electromagnéticas."},
+                {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": f"Declaración de conformidad con directivas europeas aplicables para '{anchor}'. Obligatorio para venta en Espacio Económico Europeo."},
                 {"std": "REACH Compliance (EU)", "status": "MANDATORY", "desc": "Regulación de químicos en productos vendidos en UE. Declaración de ausencia de sustancias de muy alta preocupación (SVHC)."},
-                {"std": "California Prop 65", "status": "MANDATORY", "desc": "Advertencias para productos que contienen químicos de la lista de California. Aplica a prácticamente todas las categorías."},
-                {"std": "Amazon Product Compliance", "status": "MANDATORY", "desc": "Requisitos específicos de Amazon Seller Central. Incluye documentación de seguridad, certificaciones y claims verificables."},
-                {"std": "Country of Origin Labeling", "status": "MANDATORY", "desc": "Marcado obligatorio de 'Made in [Country]' en todos los productos importados. Regulado por CBP (Customs and Border Protection)."}
+                {"std": "California Prop 65", "status": "MANDATORY", "desc": f"Advertencias para productos de '{anchor}' que contienen químicos de la lista de California."},
+                {"std": "Amazon Product Compliance", "status": "MANDATORY", "desc": f"Requisitos específicos de Amazon Seller Central para la categoría '{anchor}'. Documentación de seguridad requerida."},
+                {"std": "Country of Origin Labeling", "status": "MANDATORY", "desc": "Marcado obligatorio de 'Made in [Country]' en todos los productos importados. Regulado por CBP."},
+                {"std": "ISO 9001:2015 (Quality)", "status": "RECOMMENDED", "desc": "Sistema de gestión de calidad reconocido globalmente. Demuestra procesos consistentes de manufactura."},
+                {"std": "Product Liability Insurance", "status": "RECOMMENDED", "desc": f"Seguro de responsabilidad del producto para '{anchor}'. Protección legal contra claims de consumidores."},
+                {"std": "FBA Compliance (Amazon)", "status": "MANDATORY", "desc": "Requisitos de empaque, etiquetado y códigos de barras para Fulfillment by Amazon. Pasos de prep específicos por categoría."}
             ]
 
         return {
