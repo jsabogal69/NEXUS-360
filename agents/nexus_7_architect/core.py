@@ -155,35 +155,148 @@ class Nexus7Architect:
                 <div style="font-size:0.9rem; color:#0c4a6e; font-style:italic; margin-top:5px;">"{item['finding']}"</div>
             </div>"""
 
+        # Build emotional analysis section
+        emotional = sl.get("emotional_analysis", {})
+        emotional_html = ""
+        if emotional:
+            emotions = [
+                ("😤 Frustración", emotional.get("frustration", "N/A"), "#dc2626", "#fef2f2"),
+                ("💭 Nostalgia", emotional.get("nostalgia", "N/A"), "#7c3aed", "#f5f3ff"),
+                ("😂 Humor", emotional.get("humor", "N/A"), "#0891b2", "#ecfeff"),
+                ("✨ Deseo", emotional.get("desire", "N/A"), "#059669", "#ecfdf5"),
+                ("🤨 Escepticismo", emotional.get("skepticism", "N/A"), "#d97706", "#fffbeb")
+            ]
+            for label, text, color, bg in emotions:
+                emotional_html += f'<div style="background:{bg}; padding:12px; border-radius:8px; margin-bottom:8px; border-left:3px solid {color};"><span style="font-weight:700; color:{color}; font-size:0.75rem;">{label}</span><p style="margin:5px 0 0 0; font-size:0.8rem; color:#374151; font-style:italic;">"{text}"</p></div>'
+        
+        # Build pain keywords table
+        pain_keywords = sl.get("pain_keywords", [])
+        pain_html = ""
+        for pk in pain_keywords[:5]:
+            if isinstance(pk, dict):
+                pain_html += f'<tr><td style="font-weight:600; color:#dc2626;">{pk.get("keyword", "")}</td><td style="font-size:0.75rem;">{pk.get("search_intent", "")}</td><td><span style="background:#fee2e2; color:#991b1b; padding:2px 6px; border-radius:3px; font-size:0.65rem; font-weight:700;">{pk.get("volume", "")}</span></td><td style="font-size:0.75rem; color:#475569;">{pk.get("opportunity", "")}</td></tr>'
+        
+        # Build competitor gaps
+        comp_gaps = sl.get("competitor_gaps", [])
+        comp_gaps_html = ""
+        for cg in comp_gaps[:3]:
+            if isinstance(cg, dict):
+                comp_gaps_html += f'<div style="background:#fff7ed; padding:15px; border-radius:8px; margin-bottom:10px; border-left:3px solid #ea580c;"><div style="font-weight:700; color:#c2410c; font-size:0.85rem;">{cg.get("competitor", "")}</div><div style="font-size:0.8rem; color:#78350f; margin-top:5px;"><strong>Ignoran:</strong> {cg.get("ignored_issue", "")}</div><div style="font-size:0.75rem; color:#9a3412; font-style:italic; margin-top:5px;">"{cg.get("user_frustration", "")}"</div></div>'
+        
+        # Build content opportunities (GaryVee + Patel)
+        content_opps = s_data.get("content_opportunities", {})
+        gv_ideas = content_opps.get("garyvee_style", [])
+        patel_ideas = content_opps.get("patel_style", [])
+        
+        gv_html = ""
+        for idea in gv_ideas[:3]:
+            if isinstance(idea, dict):
+                gv_html += f'<div style="background:#fdf4ff; padding:12px; border-radius:8px; margin-bottom:8px; border-left:3px solid #a855f7;"><div style="font-weight:700; color:#7e22ce; font-size:0.85rem;">🔥 {idea.get("idea", "")}</div><div style="font-size:0.75rem; color:#6b21a8; margin-top:5px;">Formato: {idea.get("format", "")} | Hook: "{idea.get("hook", "")}" | Emoción: {idea.get("emotional_trigger", "")}</div></div>'
+        
+        patel_html = ""
+        for idea in patel_ideas[:3]:
+            if isinstance(idea, dict):
+                patel_html += f'<div style="background:#f0fdf4; padding:12px; border-radius:8px; margin-bottom:8px; border-left:3px solid #22c55e;"><div style="font-weight:700; color:#15803d; font-size:0.85rem;">📊 {idea.get("idea", "")}</div><div style="font-size:0.75rem; color:#166534; margin-top:5px;">Keyword: {idea.get("target_keyword", "")} | Intent: {idea.get("search_intent", "")} | Gap: {idea.get("content_gap", "")}</div></div>'
+        
+        # Build attention formats section
+        attention = sl.get("attention_formats", {})
+        attention_html = ""
+        if attention:
+            attention_html = f'''
+            <div style="background:#eff6ff; padding:15px; border-radius:8px;">
+                <div style="font-size:0.7rem; color:#1e40af; font-weight:800; text-transform:uppercase; margin-bottom:8px;">🎯 FORMATOS QUE RETIENEN ATENCIÓN</div>
+                <div style="font-size:0.85rem; color:#1e3a8a; margin-bottom:8px;"><strong>Qué funciona:</strong> {attention.get("what_works", "N/A")}</div>
+                <div style="font-size:0.85rem; color:#1e3a8a; margin-bottom:8px;"><strong>Tono:</strong> {attention.get("tone", "N/A")}</div>
+                <div style="font-size:0.85rem; color:#1e3a8a;"><strong>Elementos virales:</strong> {attention.get("viral_elements", "N/A")}</div>
+            </div>'''
+        
+        # White space topics
+        white_space = sl.get("white_space_topics", [])
+        white_space_html = "".join([f'<span style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; margin:3px;">{t}</span>' for t in white_space[:5]])
+        
+        # Cultural vibe
+        cultural_vibe = sl.get("cultural_vibe", "Analizando el tono de la comunidad...")
+
         sl_html = f"""
-        <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:25px; margin-top:30px;">
-            <div style="display:flex; flex-direction:column; gap:25px;">
-                <div style="background:#ffffff; border:1px solid #e2e8f0; padding:25px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">📚 The Scholar Audit: Validación Científica</h4>
-                    {scholar_html or '<p style="font-size:0.8rem;">No se detectaron hallazgos académicos específicos.</p>'}
+        <div style="margin-top:30px;">
+            <!-- Row 1: Emotional Analysis + Competitor Gaps -->
+            <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:25px; margin-bottom:25px;">
+                <div style="background:#ffffff; border:1px solid #e2e8f0; padding:25px; border-radius:16px;">
+                    <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">🎭 Análisis Emocional del Mercado (GaryVee Method)</h4>
+                    {emotional_html or '<p style="font-size:0.8rem; color:#64748b;">No se detectó análisis emocional específico.</p>'}
                 </div>
-                <div style="background:#f8fafc; padding:30px; border-radius:16px; border:1px solid #e2e8f0;">
-                    <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">🔍 Review Audit: Fortalezas y Vulnerabilidades</h4>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
-                        <div>
-                            <div style="font-size:0.7rem; font-weight:900; color:#15803d; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px; background:#f0fdf4; padding:4px 10px; border-radius:4px; display:inline-block;">Market Validation (Pros)</div>
-                            <ul style="padding-left:0; list-style:none; font-size:0.85rem; line-height:1.6;">{pros_html or '<li>N/A</li>'}</ul>
-                        </div>
-                        <div>
-                            <div style="font-size:0.7rem; font-weight:900; color:#b91c1c; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px; background:#fef2f2; padding:4px 10px; border-radius:4px; display:inline-block;">Critical Pain Points (Cons)</div>
-                            <ul style="padding-left:0; list-style:none; font-size:0.85rem; line-height:1.6;">{cons_html or '<li>N/A</li>'}</ul>
+                <div style="background:#ffffff; border:1px solid #e2e8f0; padding:25px; border-radius:16px;">
+                    <h4 style="margin-top:0; color:#ea580c; font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #fed7aa; padding-bottom:15px;">🎯 Gaps de Competidores</h4>
+                    {comp_gaps_html or '<p style="font-size:0.8rem; color:#64748b;">No se detectaron gaps específicos.</p>'}
+                </div>
+            </div>
+            
+            <!-- Row 2: Pain Keywords Table -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; padding:25px; border-radius:16px; margin-bottom:25px;">
+                <h4 style="margin-top:0; color:#dc2626; font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #fecaca; padding-bottom:15px;">🔑 Keywords de Dolor (Neil Patel Method)</h4>
+                <table style="width:100%; margin-top:15px;"><thead><tr><th style="text-align:left; font-size:0.7rem; color:#991b1b;">KEYWORD</th><th style="text-align:left; font-size:0.7rem; color:#991b1b;">INTENT</th><th style="text-align:left; font-size:0.7rem; color:#991b1b;">VOLUMEN</th><th style="text-align:left; font-size:0.7rem; color:#991b1b;">OPORTUNIDAD</th></tr></thead><tbody>{pain_html or '<tr><td colspan="4" style="color:#64748b; font-size:0.8rem;">No se detectaron pain keywords.</td></tr>'}</tbody></table>
+            </div>
+            
+            <!-- Row 3: Content Opportunities -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px; margin-bottom:25px;">
+                <div style="background:#faf5ff; border:1px solid #e9d5ff; padding:25px; border-radius:16px;">
+                    <h4 style="margin-top:0; color:#7c3aed; font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #ddd6fe; padding-bottom:15px;">🔥 Contenido Estilo GaryVee (Alto Impacto)</h4>
+                    {gv_html or '<p style="font-size:0.8rem; color:#64748b;">No se detectaron oportunidades GaryVee.</p>'}
+                </div>
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:25px; border-radius:16px;">
+                    <h4 style="margin-top:0; color:#15803d; font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #86efac; padding-bottom:15px;">📊 Contenido Estilo Patel (SEO/Educativo)</h4>
+                    {patel_html or '<p style="font-size:0.8rem; color:#64748b;">No se detectaron oportunidades Patel.</p>'}
+                </div>
+            </div>
+            
+            <!-- Row 4: Cultural Vibe + White Space + Attention Formats -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:25px; margin-bottom:25px;">
+                <div style="background:#fef3c7; border:1px solid #fcd34d; padding:20px; border-radius:16px;">
+                    <h4 style="margin-top:0; color:#92400e; font-family:var(--serif); font-size:0.9rem;">🌡️ Cultural Vibe Check</h4>
+                    <p style="font-size:0.85rem; color:#78350f; margin:10px 0 0 0; font-style:italic;">"{cultural_vibe}"</p>
+                </div>
+                <div style="background:#fefce8; border:1px solid #fef08a; padding:20px; border-radius:16px;">
+                    <h4 style="margin-top:0; color:#854d0e; font-family:var(--serif); font-size:0.9rem;">⚪ White Space Topics</h4>
+                    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;">{white_space_html or '<span style="color:#64748b; font-size:0.8rem;">N/A</span>'}</div>
+                </div>
+                {attention_html}
+            </div>
+            
+            <!-- Row 5: Scholar Audit + Pros/Cons -->
+            <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:25px;">
+                <div style="display:flex; flex-direction:column; gap:25px;">
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; padding:25px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+                        <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">📚 The Scholar Audit: Validación Científica</h4>
+                        {scholar_html or '<p style="font-size:0.8rem;">No se detectaron hallazgos académicos específicos.</p>'}
+                    </div>
+                    <div style="background:#f8fafc; padding:30px; border-radius:16px; border:1px solid #e2e8f0;">
+                        <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">🔍 Review Audit: Fortalezas y Vulnerabilidades</h4>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
+                            <div>
+                                <div style="font-size:0.7rem; font-weight:900; color:#15803d; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px; background:#f0fdf4; padding:4px 10px; border-radius:4px; display:inline-block;">Market Validation (Pros)</div>
+                                <ul style="padding-left:0; list-style:none; font-size:0.85rem; line-height:1.6;">{pros_html or '<li>N/A</li>'}</ul>
+                            </div>
+                            <div>
+                                <div style="font-size:0.7rem; font-weight:900; color:#b91c1c; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px; background:#fef2f2; padding:4px 10px; border-radius:4px; display:inline-block;">Critical Pain Points (Cons)</div>
+                                <ul style="padding-left:0; list-style:none; font-size:0.85rem; line-height:1.6;">{cons_html or '<li>N/A</li>'}</ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:25px;">
-                <div style="background:#f0fdfa; padding:25px; border-radius:16px; border:1px solid #99f6e4;">
-                    <h4 style="margin-top:0; color:#0d9488; font-family:var(--serif);">📈 Google Search Intelligence</h4>
-                    <p style="font-size:0.9rem; color:#134e4a; line-height:1.6;">{sl.get('google_search_insights', 'Analizando tendencias de búsqueda...')}</p>
-                </div>
-                <div style="background:#fdf4ff; padding:25px; border-radius:16px; border:1px solid #f5d0fe;">
-                    <h4 style="margin-top:0; color:#86198f; font-family:var(--serif);">🤖 Reddit & TikTok Community Pulse</h4>
-                    <div style="font-size:0.85rem; color:#4a044e; line-height:1.5;">{sl.get('reddit_insights', 'N/A')}</div>
+                <div style="display:flex; flex-direction:column; gap:25px;">
+                    <div style="background:#f0fdfa; padding:25px; border-radius:16px; border:1px solid #99f6e4;">
+                        <h4 style="margin-top:0; color:#0d9488; font-family:var(--serif);">📈 Google Search Intelligence</h4>
+                        <p style="font-size:0.9rem; color:#134e4a; line-height:1.6;">{sl.get('google_search_insights', 'Analizando tendencias de búsqueda...')}</p>
+                        <div style="margin-top:15px; padding-top:15px; border-top:1px solid #99f6e4;">
+                            <div style="font-size:0.7rem; color:#0d9488; font-weight:800; margin-bottom:5px;">📺 YOUTUBE SEARCH GAPS</div>
+                            <p style="font-size:0.8rem; color:#134e4a; margin:0;">{sl.get('youtube_search_gaps', 'N/A')}</p>
+                        </div>
+                    </div>
+                    <div style="background:#fdf4ff; padding:25px; border-radius:16px; border:1px solid #f5d0fe;">
+                        <h4 style="margin-top:0; color:#86198f; font-family:var(--serif);">🤖 Reddit & TikTok Community Pulse</h4>
+                        <div style="font-size:0.85rem; color:#4a044e; line-height:1.5; margin-bottom:15px;"><strong>Reddit:</strong> {sl.get('reddit_insights', 'N/A')}</div>
+                        <div style="font-size:0.85rem; color:#4a044e; line-height:1.5;"><strong>TikTok:</strong> {sl.get('tiktok_trends', 'N/A')}</div>
+                    </div>
                 </div>
             </div>
         </div>"""

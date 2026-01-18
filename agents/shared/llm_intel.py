@@ -54,79 +54,155 @@ def generate_market_intel(product_description: str) -> dict:
     if not model:
         return generate_enhanced_mock(product_description)
     
-    prompt = f"""Eres un analista de inteligencia de mercado de Amazon experto. Analiza el siguiente producto y genera un análisis competitivo detallado:
+    prompt = f"""Eres un experto en Social Listening que combina el análisis de datos de Neil Patel con la estrategia de atención de GaryVee.
 
-PRODUCTO: "{product_description}"
+PRODUCTO A ANALIZAR: "{product_description}"
 
-Genera una respuesta JSON con la siguiente estructura EXACTA (todos los textos en español):
+═══════════════════════════════════════════════════════════════════════════════
+FASE 1: EXTRACCIÓN DE DATOS (ENFOQUE NEIL PATEL)
+═══════════════════════════════════════════════════════════════════════════════
+
+Actúa como analista de datos y especialista en SEO:
+
+1. KEYWORDS DE INTENTO DE DOLOR: Identifica las 10 keywords más buscadas relacionadas con:
+   - Términos de "comparación" (producto A vs B)
+   - Términos de "problemas" (cómo arreglar, falla en, error de)
+   - Términos de "alternativas" (alternativa a, reemplazo de)
+
+2. ANÁLISIS DE COMPETENCIA: Para los 3 competidores principales:
+   - ¿Qué están IGNORANDO en sus secciones de comentarios?
+   - ¿Qué preguntas quedan sin responder?
+
+3. SHARE OF SEARCH: ¿Qué preguntas se hacen en Google, TikTok y YouTube que NO tienen respuesta clara todavía?
+
+═══════════════════════════════════════════════════════════════════════════════
+FASE 2: INMERSIÓN CULTURAL (ENFOQUE GARYVEE)
+═══════════════════════════════════════════════════════════════════════════════
+
+Actúa como estratega de contenido que vive en las trincheras de redes sociales:
+
+1. ANÁLISIS DEL 'DIRT' (COMENTARIOS): Clasifica el sentimiento por EMOCIONES:
+   - Frustración: ¿Qué les molesta profundamente?
+   - Nostalgia: ¿Qué extrañan de productos anteriores?
+   - Humor: ¿Qué memes o bromas circulan?
+   - Deseo: ¿Qué producto "soñado" describen?
+   - Escepticismo: ¿Qué claims no les creen?
+
+2. REVERSE ENGINEERING DE ATENCIÓN: ¿Qué formatos retienen atención?
+   - ¿Es el tono crudo/auténtico?
+   - ¿Es la edición rápida?
+   - ¿Es el storytelling personal?
+
+3. WHITE SPACE: Temas que la gente discute en comentarios pero las marcas NO han convertido en contenido principal.
+
+═══════════════════════════════════════════════════════════════════════════════
+FORMATO DE RESPUESTA: JSON ESTRUCTURADO
+═══════════════════════════════════════════════════════════════════════════════
 
 {{
     "niche_name": "Nombre de la categoría de mercado",
     "top_10_products": [
         {{
             "rank": 1,
-            "name": "Nombre REAL del producto competidor en Amazon",
+            "name": "Nombre REAL del producto en Amazon",
             "price": 29.99,
             "reviews": 15000,
             "rating": 4.5,
-            "adv": "Ventaja competitiva principal del producto",
-            "vuln": "Debilidad o punto vulnerable",
-            "gap": "Brecha de mercado que no cubre"
+            "adv": "Ventaja competitiva principal - SÉ MUY ESPECÍFICO",
+            "vuln": "Debilidad real identificada en reviews - CITA PROBLEMAS REALES",
+            "gap": "Brecha de mercado específica que NO cubre"
         }}
     ],
     "social_listening": {{
-        "amazon_review_audit": "Resumen de análisis de reseñas de Amazon",
-        "pros": ["Lista de 5 puntos positivos del mercado"],
-        "cons": ["Lista de 5 puntos negativos del mercado"],
-        "tiktok_trends": "Tendencias relevantes en TikTok",
-        "reddit_insights": "Insights de comunidades de Reddit",
-        "google_search_insights": "Tendencias de búsqueda en Google",
-        "consumer_desire": "Lo que realmente desea el consumidor"
+        "amazon_review_audit": "Análisis forense de 1000+ reseñas. Incluye patrones de quejas y elogios.",
+        "pain_keywords": [
+            {{"keyword": "término de dolor", "search_intent": "problema/comparación/alternativa", "volume": "Alto/Medio/Bajo", "opportunity": "Por qué es oportunidad"}}
+        ],
+        "competitor_gaps": [
+            {{"competitor": "Nombre del competidor", "ignored_issue": "Qué ignoran en comentarios", "user_frustration": "Cita textual de frustración"}}
+        ],
+        "emotional_analysis": {{
+            "frustration": "Qué les frustra profundamente (con ejemplos textuales)",
+            "nostalgia": "Qué extrañan de versiones anteriores o competidores",
+            "humor": "Memes y bromas que circulan sobre el producto/nicho",
+            "desire": "El producto 'soñado' que describen los usuarios",
+            "skepticism": "Claims de marketing que NO les creen"
+        }},
+        "attention_formats": {{
+            "what_works": "Formatos de contenido que retienen atención",
+            "tone": "Tono que resuena (crudo, educativo, emocional)",
+            "viral_elements": "Elementos que hacen viral al contenido"
+        }},
+        "white_space_topics": ["Temas discutidos en comentarios que las marcas ignoran"],
+        "cultural_vibe": "Descripción del tono de la comunidad: ¿cínica, entusiasta, confundida, escéptica?",
+        "pros": ["5 puntos positivos del mercado detectados en social listening"],
+        "cons": ["5 puntos negativos/frustraciones detectadas"],
+        "tiktok_trends": "Hashtags virales, creadores clave, formatos dominantes con números de vistas",
+        "reddit_insights": "Subreddits relevantes, opiniones dominantes, quejas recurrentes con r/ específicos",
+        "youtube_search_gaps": "Preguntas en YouTube sin respuestas de calidad",
+        "google_search_insights": "Tendencias de búsqueda, preguntas PAA sin responder",
+        "consumer_desire": "Lo que REALMENTE desea el consumidor (no lo que las marcas creen)"
+    }},
+    "content_opportunities": {{
+        "garyvee_style": [
+            {{"idea": "Concepto de contenido", "format": "Formato específico", "hook": "Gancho de apertura", "emotional_trigger": "Emoción que activa"}}
+        ],
+        "patel_style": [
+            {{"idea": "Concepto educativo/SEO", "target_keyword": "Keyword objetivo", "search_intent": "Intención de búsqueda", "content_gap": "Por qué no existe buen contenido"}}
+        ]
     }},
     "trends": [
         {{
             "title": "Nombre de la tendencia",
-            "description": "Descripción detallada de la tendencia"
+            "description": "Descripción detallada con datos específicos"
         }}
     ],
     "keywords": [
         {{
             "term": "Término de búsqueda",
             "volume": "Alto/Medio/Bajo",
-            "trend": "Trending Up/Stable/Emerging"
+            "trend": "Trending Up/Stable/Emerging",
+            "intent": "Informacional/Transaccional/Comparativo",
+            "difficulty": "Alta/Media/Baja"
         }}
     ],
     "sales_intelligence": {{
         "market_share_by_brand": [
-            {{"brand": "Marca líder", "share": 30, "status": "Líder"}}
+            {{"brand": "Marca", "share": 30, "status": "Líder/Retador/Nicho", "weakness": "Debilidad explotable"}}
         ],
         "sub_category_distribution": {{
             "Subcategoría 1": 40,
             "Subcategoría 2": 30
         }},
         "seasonality": {{
-            "peaks": [{{"month": "Diciembre", "event": "Holiday", "impact": "High"}}],
-            "low_points": ["Febrero"],
-            "strategy_insight": "Insight estratégico de estacionalidad"
+            "peaks": [{{"month": "Mes", "event": "Evento", "impact": "High/Extreme", "strategy": "Qué hacer"}}],
+            "low_points": ["Meses bajos con razón"],
+            "strategy_insight": "Insight estratégico detallado de timing"
         }}
     }},
-    "sentiment_summary": "Resumen del sentimiento del mercado",
+    "sentiment_summary": "Resumen ejecutivo del sentimiento: ¿La comunidad es cínica, entusiasta o confundida? ¿Por qué?",
     "scholar_audit": [
         {{
-            "source": "Fuente académica o industrial",
-            "finding": "Hallazgo relevante",
-            "relevance": "Relevancia para el producto"
+            "source": "Fuente académica o de industria REAL",
+            "finding": "Hallazgo específico con datos",
+            "relevance": "Cómo aplica a este producto"
         }}
     ]
 }}
 
-IMPORTANTE:
+═══════════════════════════════════════════════════════════════════════════════
+REGLAS CRÍTICAS:
+═══════════════════════════════════════════════════════════════════════════════
+
 - Usa nombres de productos y marcas REALES que existen en Amazon
 - Incluye exactamente 10 productos en top_10_products
 - Incluye exactamente 4 tendencias
-- Incluye exactamente 10 keywords
-- Todos los precios en USD
-- Sé específico y detallado, no uses placeholders genéricos
+- Incluye exactamente 10 keywords con todos los campos
+- Incluye 3 ideas GaryVee style y 3 ideas Patel style en content_opportunities
+- Incluye 5 pain_keywords y 3 competitor_gaps
+- SÉ EXTREMADAMENTE ESPECÍFICO - evita generalidades
+- Usa citas textuales cuando describas frustraciones de usuarios
+- Todos los textos en ESPAÑOL
 - Responde SOLO con el JSON, sin texto adicional
 """
 
