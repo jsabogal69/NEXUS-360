@@ -348,12 +348,24 @@ class Nexus7Architect:
         <div style="margin-top:20px;">{roadmap_html}</div>
 
         <h2 class="section-title">IX. Compliance & Seguridad <span class="agent-badge">Guardian</span></h2>
-        <div style="display:grid; grid-template-columns: 2fr 1.2fr; gap:30px; margin-top:20px;">
-            <table><thead><tr><th>Estándar</th><th>Estatus</th><th>Descripción</th></tr></thead><tbody>{compliance_rows}</tbody></table>
-            <div style="background:var(--primary); color:white; padding:25px; border-radius:12px;">
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px; margin-top:20px;">
+            <div>
+                <div style="display:flex; gap:15px; margin-bottom:20px;">
+                    <div style="background:#fee2e2; color:#991b1b; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">NIVEL DE RIESGO: {g_data.get('risk_level', 'MEDIUM')}</div>
+                    <div style="background:#dbeafe; color:#1e40af; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">SCORE DE CUMPLIMIENTO: {g_data.get('compliance_score', 75)}%</div>
+                    <div style="background:#f0fdf4; color:#166534; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">{g_data.get('total_standards', len(audits))} ESTÁNDARES AUDITADOS</div>
+                </div>
+                <table><thead><tr><th>Estándar</th><th>Estatus</th><th>Descripción</th></tr></thead><tbody>{compliance_rows}</tbody></table>
+                <p style="margin-top:15px; font-size:0.8rem; color:#64748b; font-style:italic;">{g_data.get('audit_note', '')}</p>
+            </div>
+            <div style="background:var(--primary); color:white; padding:25px; border-radius:12px; height:fit-content;">
                 <div style="font-size:0.6rem; color:#60a5fa; letter-spacing:2px; margin-bottom:10px;">SECURITY PROTOCOL</div>
                 <h4 style="margin:0 0 10px 0;">{g_data.get('security_protocol')}</h4>
-                <p style="font-size:0.8rem; color:#94a3b8;">Cifrado de extremo a extremo activo. Auditoría de estándares internacionales aprobada.</p>
+                <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:15px;">Cifrado de extremo a extremo activo. Auditoría de estándares internacionales aprobada.</p>
+                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; margin-top:15px;">
+                    <div style="font-size:0.65rem; color:#60a5fa; margin-bottom:5px;">REQUISITOS OBLIGATORIOS</div>
+                    <div style="font-size:1.5rem; font-weight:bold;">{g_data.get('mandatory_count', 0)}</div>
+                </div>
             </div>
         </div>
 
