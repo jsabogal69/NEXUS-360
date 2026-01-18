@@ -301,29 +301,182 @@ class Nexus7Architect:
             </div>
         </div>"""
 
-        # Section IV: Sales & Seasonality
+        # Section IV: Sales & Seasonality with Charts
         sales_intel = s_data.get("sales_intelligence", {})
         mkt_share = sales_intel.get("market_share_by_brand", [])
-        mkt_share_html = "".join([f'<div style="margin-bottom:12px;"><div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;"><span>{b["brand"]}</span><span style="font-weight:bold;">{b["share"]}%</span></div><div style="width:100%; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;"><div style="width:{b["share"]}%; height:100%; background:var(--accent);"></div></div></div>' for b in mkt_share])
-
-        peaks = sales_intel.get("seasonality", {}).get("peaks", [])
-        peaks_html = "".join([f'<div style="background:#ffffff; padding:12px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;"><div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">{p["month"]}</div><div style="font-weight:700; color:var(--primary); font-size:0.9rem; margin:4px 0;">{p["event"]}</div><div style="font-size:0.7rem; color:var(--accent); font-weight:800;">IMPACT: {p["impact"]}</div></div>' for p in peaks])
+        
+        # Build pie chart data
+        pie_labels = [b.get("brand", "Unknown") for b in mkt_share]
+        pie_values = [b.get("share", 0) for b in mkt_share]
+        pie_colors = ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6366f1"]
+        
+        # Build seasonality data for line chart (12 months)
+        seasonality = sales_intel.get("seasonality", {})
+        peaks = seasonality.get("peaks", [])
+        low_points = seasonality.get("low_points", [])
+        
+        # Create month data with estimated demand values
+        months_data = {
+            "Enero": 60, "Febrero": 45, "Marzo": 55, "Abril": 50, "Mayo": 55, "Junio": 60,
+            "Julio": 75, "Agosto": 65, "Septiembre": 70, "Octubre": 80, "Noviembre": 95, "Diciembre": 100
+        }
+        
+        # Adjust based on peaks
+        for peak in peaks:
+            month = peak.get("month", "")
+            impact = peak.get("impact", "Medium")
+            if month in months_data:
+                if impact == "Extreme":
+                    months_data[month] = 100
+                elif impact == "High":
+                    months_data[month] = 90
+                elif impact == "Medium":
+                    months_data[month] = 75
+        
+        line_labels = list(months_data.keys())
+        line_values = list(months_data.values())
+        
+        # Build peak annotations for key dates
+        peak_annotations_js = ""
+        for i, peak in enumerate(peaks[:6]):
+            month = peak.get("month", "")
+            event = peak.get("event", "")
+            if month in line_labels:
+                month_idx = line_labels.index(month)
+                peak_annotations_js += f'''
+                    {{
+                        type: 'label',
+                        xValue: {month_idx},
+                        yValue: {months_data.get(month, 70)},
+                        backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                        borderRadius: 6,
+                        color: 'white',
+                        font: {{ size: 10, weight: 'bold' }},
+                        content: ['{event}'],
+                        padding: 6
+                    }},'''
 
         sales_section_html = f"""
-        <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:30px; margin-top:20px;">
-            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">Market Share Distribution</h4>
-                {mkt_share_html}
-            </div>
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:30px;">
-                <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">Calendario Estratégico de Ventas</h4>
-                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px;">{peaks_html}</div>
-                <div style="margin-top:20px; background:#eff6ff; padding:15px; border-radius:8px; border-left:4px solid var(--accent);">
-                    <div style="font-size:0.7rem; color:var(--accent); font-weight:800; text-transform:uppercase; margin-bottom:5px;">Seasonality Strategy</div>
-                    <div style="font-size:0.85rem; line-height:1.5; color:#1e40af;">{sales_intel.get('seasonality', {}).get('strategy_insight', 'N/A')}</div>
+        <div style="margin-top:20px;">
+            <!-- Charts Row -->
+            <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:30px; margin-bottom:30px;">
+                <!-- Pie Chart: Market Share -->
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">📊 Market Share por Marca</h4>
+                    <div style="position:relative; height:280px;">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Line Chart: Seasonality -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:30px;">
+                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">📈 Evolución de Demanda por Mes</h4>
+                    <div style="position:relative; height:280px;">
+                        <canvas id="lineChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>"""
+            
+            <!-- Key Dates Legend -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:25px;">
+                <h4 style="margin:0 0 15px 0; color:var(--primary); font-family:var(--serif);">🗓️ Fechas Clave del Año</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
+                    {''.join([f'''
+                    <div style="background:{'#fef2f2' if p.get('impact') == 'Extreme' else '#fff7ed' if p.get('impact') == 'High' else '#f0fdf4'}; padding:12px; border-radius:8px; border-left:4px solid {'#dc2626' if p.get('impact') == 'Extreme' else '#f97316' if p.get('impact') == 'High' else '#22c55e'};">
+                        <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">{p.get('month', '')}</div>
+                        <div style="font-weight:700; color:var(--primary); font-size:0.9rem; margin:4px 0;">{p.get('event', '')}</div>
+                        <div style="font-size:0.7rem; color:{'#dc2626' if p.get('impact') == 'Extreme' else '#f97316' if p.get('impact') == 'High' else '#22c55e'}; font-weight:800;">IMPACTO: {p.get('impact', 'Medium')}</div>
+                        <div style="font-size:0.7rem; color:#64748b; margin-top:4px;">{p.get('strategy', 'Optimizar inventario')}</div>
+                    </div>''' for p in peaks[:6]])}
+                </div>
+                <div style="margin-top:20px; background:#eff6ff; padding:15px; border-radius:8px; border-left:4px solid var(--accent);">
+                    <div style="font-size:0.7rem; color:var(--accent); font-weight:800; text-transform:uppercase; margin-bottom:5px;">📌 Seasonality Strategy</div>
+                    <div style="font-size:0.85rem; line-height:1.5; color:#1e40af;">{seasonality.get('strategy_insight', 'N/A')}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chart.js Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Pie Chart: Market Share
+            new Chart(document.getElementById('pieChart'), {{
+                type: 'doughnut',
+                data: {{
+                    labels: {pie_labels},
+                    datasets: [{{
+                        data: {pie_values},
+                        backgroundColor: {pie_colors[:len(pie_values)]},
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {{
+                        legend: {{
+                            position: 'right',
+                            labels: {{
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {{ size: 11 }}
+                            }}
+                        }}
+                    }}
+                }}
+            }});
+            
+            // Line Chart: Seasonality
+            new Chart(document.getElementById('lineChart'), {{
+                type: 'line',
+                data: {{
+                    labels: {line_labels},
+                    datasets: [{{
+                        label: 'Índice de Demanda',
+                        data: {line_values},
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointBackgroundColor: function(context) {{
+                            const value = context.raw;
+                            if (value >= 90) return '#dc2626';
+                            if (value >= 75) return '#f97316';
+                            return '#3b82f6';
+                        }},
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {{
+                        y: {{
+                            beginAtZero: false,
+                            min: 30,
+                            max: 110,
+                            title: {{
+                                display: true,
+                                text: 'Índice de Demanda (%)'
+                            }}
+                        }}
+                    }},
+                    plugins: {{
+                        legend: {{ display: false }},
+                        tooltip: {{
+                            callbacks: {{
+                                label: function(context) {{
+                                    return 'Demanda: ' + context.raw + '%';
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }});
+        </script>"""
 
         # Section V: Strategist Gaps
         gaps = st_data.get("strategic_gaps", [])
