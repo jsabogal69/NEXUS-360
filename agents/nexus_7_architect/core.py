@@ -341,35 +341,76 @@ class Nexus7Architect:
                 else:
                     months_data[month] = 55
         
-        # Line chart uses sorted peaks
-        line_labels = list(months_data.keys()) if months_data else ["Sin datos"]
-        line_values = list(months_data.values()) if months_data else [50]
+        # FULL 12-MONTH COMMERCIAL CALENDAR
+        # Base calendar with all commercial dates (always displayed)
+        full_year_calendar = {
+            "Enero": {"demand": 55, "commercial_date": "Año Nuevo / Rebajas", "opportunity": "Propósitos de año nuevo, productos de mejora personal", "icon": "🎯"},
+            "Febrero": {"demand": 65, "commercial_date": "San Valentín (14)", "opportunity": "Regalos, sets premium, productos para parejas", "icon": "💝"},
+            "Marzo": {"demand": 50, "commercial_date": "Primavera / Equinoccio", "opportunity": "Renovación, lanzamientos de temporada primavera", "icon": "🌸"},
+            "Abril": {"demand": 55, "commercial_date": "Semana Santa / Pascua", "opportunity": "Regalos familiares, productos estacionales", "icon": "✨"},
+            "Mayo": {"demand": 75, "commercial_date": "Día de la Madre (2do Dom)", "opportunity": "Sets regalo premium, productos de cuidado personal", "icon": "🌹"},
+            "Junio": {"demand": 70, "commercial_date": "Día del Padre (3er Dom)", "opportunity": "Productos masculinos, tecnología, herramientas", "icon": "👔"},
+            "Julio": {"demand": 85, "commercial_date": "Prime Day / Mid-Year Sales", "opportunity": "Deals agresivos, liquidaciones, ofertas flash", "icon": "⚡"},
+            "Agosto": {"demand": 70, "commercial_date": "Back to School", "opportunity": "Vuelta al cole, productos escolares, oficina", "icon": "📚"},
+            "Septiembre": {"demand": 65, "commercial_date": "Regreso / Labor Day", "opportunity": "Rutinas de otoño, productos de organización", "icon": "🎒"},
+            "Octubre": {"demand": 75, "commercial_date": "Halloween (31) / Pre-Q4", "opportunity": "Preparación para Q4, temáticos de temporada", "icon": "🎃"},
+            "Noviembre": {"demand": 100, "commercial_date": "Black Friday (4to Vie) / Cyber Monday", "opportunity": "MÁXIMO INVENTARIO - Deals más agresivos del año", "icon": "🔥"},
+            "Diciembre": {"demand": 95, "commercial_date": "Navidad / Holiday Season", "opportunity": "Regalos, bundles navideños, peak de ventas", "icon": "🎁"}
+        }
         
-        # Build dynamic calendar HTML ONLY from peaks (no hardcoded data)
+        # Merge LLM data into base calendar
+        for peak in peaks:
+            month = peak.get("month", "")
+            if month in full_year_calendar:
+                # LLM-detected event takes priority
+                full_year_calendar[month]["llm_event"] = peak.get("event", "")
+                full_year_calendar[month]["llm_strategy"] = peak.get("strategy", "")
+                full_year_calendar[month]["impact"] = peak.get("impact", "Medium")
+                # Adjust demand based on LLM impact
+                impact = peak.get("impact", "Medium")
+                if impact == "Extreme":
+                    full_year_calendar[month]["demand"] = 100
+                elif impact == "High":
+                    full_year_calendar[month]["demand"] = 85
+        
+        # Line chart data - all 12 months
+        line_labels = list(full_year_calendar.keys())
+        line_values = [full_year_calendar[m]["demand"] for m in line_labels]
+        
+        # Build FULL 12-month calendar HTML
         calendar_html = ""
-        if peaks:
-            for p in peaks:
-                month = p.get("month", "")
-                event = p.get("event", "")
-                impact = p.get("impact", "Medium")
-                strategy = p.get("strategy", "")
-                demand = months_data.get(month, 50)
-                
-                bg_color = "#fef2f2" if impact == "Extreme" else "#fff7ed" if impact == "High" else "#f0fdf4"
-                border_color = "#fecaca" if impact == "Extreme" else "#fed7aa" if impact == "High" else "#bbf7d0"
-                badge_color = "#dc2626" if impact == "Extreme" else "#f97316" if impact == "High" else "#22c55e"
-                
-                calendar_html += f'''
-                <div style="background:{bg_color}; padding:15px; border-radius:12px; border:1px solid {border_color};">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <span style="font-size:0.75rem; color:#64748b; font-weight:800; text-transform:uppercase;">{month}</span>
-                        <span style="background:{badge_color}; color:white; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:800;">{demand}%</span>
-                    </div>
-                    <div style="font-size:0.85rem; color:var(--primary); font-weight:700; margin-bottom:6px;">{event}</div>
-                    <div style="font-size:0.65rem; color:#475569; line-height:1.4;">{strategy if strategy else 'Estrategia en análisis'}</div>
-                </div>'''
-        else:
-            calendar_html = '<div style="padding:20px; text-align:center; color:#64748b;">No se detectaron eventos estacionales. Ejecutar análisis con producto específico.</div>'
+        for month, data in full_year_calendar.items():
+            demand = data["demand"]
+            is_peak = demand >= 85
+            is_high = demand >= 70
+            is_medium = demand >= 55
+            has_llm = "llm_event" in data
+            
+            # Colors based on demand level
+            if demand >= 95:
+                bg_color, border_color, badge_color = "#fef2f2", "#fecaca", "#dc2626"
+            elif demand >= 80:
+                bg_color, border_color, badge_color = "#fff7ed", "#fed7aa", "#f97316"
+            elif demand >= 65:
+                bg_color, border_color, badge_color = "#f0fdf4", "#bbf7d0", "#22c55e"
+            else:
+                bg_color, border_color, badge_color = "#f8fafc", "#e2e8f0", "#64748b"
+            
+            # Show LLM event if available, otherwise commercial date
+            event_name = data.get("llm_event", data["commercial_date"])
+            strategy = data.get("llm_strategy", data["opportunity"])
+            icon = data["icon"]
+            
+            calendar_html += f'''
+            <div style="background:{bg_color}; padding:12px; border-radius:10px; border:1px solid {border_color}; {'box-shadow: 0 4px 12px rgba(220,38,38,0.2);' if is_peak else ''}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">{icon} {month}</span>
+                    <span style="background:{badge_color}; color:white; padding:2px 6px; border-radius:8px; font-size:0.55rem; font-weight:800;">{demand}%</span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--primary); font-weight:700; margin-bottom:4px;">{event_name}</div>
+                <div style="font-size:0.6rem; color:#475569; line-height:1.3;">{strategy[:80]}{'...' if len(strategy) > 80 else ''}</div>
+                {'<div style="margin-top:6px; font-size:0.55rem; color:#dc2626; font-weight:700;">⭐ DETECTADO POR IA</div>' if has_llm else ''}
+            </div>'''
         
         # Build peak events detail HTML from LLM data
         peak_events_html = ""
@@ -446,10 +487,10 @@ class Nexus7Architect:
                 </div>
             </div>
             
-            <!-- Dynamic Calendar from LLM -->
+            <!-- FULL 12-MONTH CALENDAR -->
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:25px;">
-                <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">🗓️ Eventos Estacionales Detectados</h4>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-bottom:25px;">
+                <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">🗓️ Calendario Comercial Anual - 12 Meses</h4>
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:25px;">
                     {calendar_html}
                 </div>
                 
