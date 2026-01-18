@@ -129,6 +129,16 @@ Nuestra ventaja reside en el diseño de un 'Moat' inexpugnable. Al desvincular e
 ### III. Veredicto NEXUS
 Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un objeto; vendemos infraestructura de vida. La hoja de ruta está calibrada para ganar autoridad técnica antes de escalar. Es momento de dejar de ser un vendedor para convertirnos en el **dueño de la categoría**. El Dossier está listo para ejecución."""
 
+        # Build comprehensive verdict with concrete proposal
+        top_10_products = ssot_data.get("scout_data", {}).get("top_10_products", [])
+        avg_price = sum([p.get("price", 50) for p in top_10_products]) / len(top_10_products) if top_10_products else 49.99
+        suggested_msrp = round(avg_price * 1.15, 2)  # 15% above market average for premium positioning
+        estimated_cost = round(suggested_msrp * 0.30, 2)  # Assume 30% COGS for healthy margin
+        margin = round((1 - estimated_cost / suggested_msrp) * 100)
+        
+        # Extract differentiators from gaps
+        differentiators = [g.get("proposal", "Innovación clave")[:60] for g in gaps[:3]] if gaps else ["Calidad superior", "Precio competitivo", "Experiencia única"]
+        
         strategy_output = {
             "id": generate_id(),
             "parent_ssot_id": ssot_data.get("id"),
@@ -137,7 +147,30 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
             "timestamp": timestamp_now(),
             "scout_anchor": anchor,
             "analyzed_sources": input_names,
-            "dynamic_verdict": {"title": v_title, "text": v_text},
+            "dynamic_verdict": {
+                "title": v_title, 
+                "text": v_text,
+                # Propuesta concreta
+                "product_name": f"NEXUS {anchor.split()[0] if anchor else 'Premium'} Edition",
+                "product_concept": f"Producto premium diseñado para resolver las {len(gaps)} brechas críticas identificadas en el análisis del mercado de {anchor}.",
+                "positioning": "Premium / Best-in-Class",
+                # Diferenciadores
+                "differentiators": differentiators,
+                "moat": "Ecosistema exclusivo con materiales premium y servicios vinculados",
+                # Mercado objetivo
+                "target_segment": "Inversores de Estilo de Vida",
+                "target_description": "Consumidores que priorizan calidad y durabilidad sobre precio, buscando productos que reflejen su estatus.",
+                "target_age": "28-45",
+                "target_income": "Medio-Alto",
+                # Pricing
+                "price_msrp": str(suggested_msrp),
+                "price_cost": str(estimated_cost),
+                "margin": str(margin),
+                # Acciones inmediatas
+                "action_1": "Validar concepto con focus group del segmento objetivo",
+                "action_2": f"Desarrollar MVP que resuelva las {len(gaps)} brechas críticas",
+                "action_3": "Lanzar campaña de preventa exclusiva para early-adopters"
+            },
             "dynamic_roadmap": roadmap,
             "partner_summary": partner_summary
         }

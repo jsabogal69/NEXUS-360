@@ -749,11 +749,102 @@ class Nexus7Architect:
             <div style="background:#f1f5f9; padding:40px; border-radius:12px; margin-top:20px;">{formatted_summary}</div>
         </div>
 
-        <!-- VERDICT BANNER -->
-        <div class="verdict-banner keep-together">
-            <span style="letter-spacing:2px; font-weight:bold; font-size:0.8rem; color:#60a5fa;">VEREDICTO NEXUS</span>
-            <h2 style="font-family:var(--serif); margin:10px 0; font-size:2rem;">{verdict.get('title', '').upper()}</h2>
-            <p style="font-size:1.1rem; opacity:0.9;">{verdict.get('text', '')}</p>
+        <!-- VEREDICTO NEXUS: PROPUESTA CONCRETA -->
+        <div class="page-break" style="margin-top:40px;">
+            <!-- Main Verdict Banner -->
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3730a3 100%); color: white; padding: 50px; border-radius: 16px; position:relative; overflow:hidden;">
+                <div style="position:absolute; top:0; right:0; width:200px; height:200px; background:rgba(255,255,255,0.05); border-radius:50%; transform:translate(30%, -30%);"></div>
+                <div style="position:absolute; bottom:0; left:0; width:150px; height:150px; background:rgba(255,255,255,0.03); border-radius:50%; transform:translate(-30%, 30%);"></div>
+                
+                <span style="letter-spacing:3px; font-weight:bold; font-size:0.75rem; color:#60a5fa; text-transform:uppercase;">🎯 VEREDICTO NEXUS</span>
+                <h2 style="font-family:var(--serif); margin:15px 0; font-size:2.2rem; line-height:1.2;">{verdict.get('title', 'PROPUESTA ESTRATÉGICA').upper()}</h2>
+                <p style="font-size:1.1rem; opacity:0.9; max-width:800px; line-height:1.6;">{verdict.get('text', '')}</p>
+            </div>
+            
+            <!-- Propuesta Concreta Grid -->
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-top:25px;">
+                
+                <!-- Producto Propuesto -->
+                <div style="background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border:2px solid #22c55e; border-radius:16px; padding:25px;">
+                    <div style="font-size:0.7rem; color:#15803d; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">📦 PRODUCTO PROPUESTO</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:#166534; margin-bottom:15px;">{verdict.get('product_name', 'NEXUS Premium Edition')}</div>
+                    <div style="font-size:0.85rem; color:#166534; line-height:1.5;">{verdict.get('product_concept', 'Producto premium que resuelve las brechas identificadas en el análisis competitivo.')}</div>
+                    <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #22c55e;">
+                        <div style="font-size:0.7rem; color:#15803d; font-weight:700;">🏷️ POSICIONAMIENTO:</div>
+                        <div style="font-size:0.8rem; color:#166534; margin-top:5px;">{verdict.get('positioning', 'Premium / Best-in-Class')}</div>
+                    </div>
+                </div>
+                
+                <!-- Diferenciadores Clave -->
+                <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border:2px solid #3b82f6; border-radius:16px; padding:25px;">
+                    <div style="font-size:0.7rem; color:#1d4ed8; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">⚡ DIFERENCIADORES CLAVE</div>
+                    <ul style="margin:0; padding-left:18px; font-size:0.85rem; color:#1e40af; line-height:1.8;">
+                        <li>{verdict.get('differentiators', ['Calidad superior', 'Precio competitivo', 'Experiencia única'])[0] if isinstance(verdict.get('differentiators'), list) and len(verdict.get('differentiators', [])) > 0 else 'Calidad superior validada'}</li>
+                        <li>{verdict.get('differentiators', ['Calidad superior', 'Precio competitivo', 'Experiencia única'])[1] if isinstance(verdict.get('differentiators'), list) and len(verdict.get('differentiators', [])) > 1 else 'Precio competitivo'}</li>
+                        <li>{verdict.get('differentiators', ['Calidad superior', 'Precio competitivo', 'Experiencia única'])[2] if isinstance(verdict.get('differentiators'), list) and len(verdict.get('differentiators', [])) > 2 else 'Experiencia de usuario única'}</li>
+                    </ul>
+                    <div style="margin-top:15px; padding:12px; background:rgba(59,130,246,0.1); border-radius:8px;">
+                        <div style="font-size:0.7rem; color:#1d4ed8; font-weight:700;">🎯 MOAT DEFENSIVO:</div>
+                        <div style="font-size:0.8rem; color:#1e40af; margin-top:5px;">{verdict.get('moat', 'Barrera competitiva sostenible')}</div>
+                    </div>
+                </div>
+                
+                <!-- Mercado Objetivo -->
+                <div style="background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border:2px solid #f59e0b; border-radius:16px; padding:25px;">
+                    <div style="font-size:0.7rem; color:#b45309; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">👥 MERCADO OBJETIVO</div>
+                    <div style="font-size:1.1rem; font-weight:700; color:#92400e; margin-bottom:10px;">{verdict.get('target_segment', 'Premium Seekers')}</div>
+                    <div style="font-size:0.85rem; color:#92400e; line-height:1.5;">{verdict.get('target_description', 'Consumidores que priorizan calidad sobre precio, con disposición a pagar más por valor real.')}</div>
+                    <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div style="background:white; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:0.6rem; color:#b45309;">EDAD</div>
+                            <div style="font-size:0.9rem; font-weight:700; color:#92400e;">{verdict.get('target_age', '25-45')}</div>
+                        </div>
+                        <div style="background:white; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:0.6rem; color:#b45309;">PODER ADQUISITIVO</div>
+                            <div style="font-size:0.9rem; font-weight:700; color:#92400e;">{verdict.get('target_income', 'Medio-Alto')}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pricing & ROI -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
+                <div style="background:#0f172a; color:white; border-radius:16px; padding:30px;">
+                    <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">💰 PRICING STRATEGY</div>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; text-align:center;">
+                        <div>
+                            <div style="font-size:0.65rem; color:#94a3b8;">MSRP SUGERIDO</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">${verdict.get('price_msrp', '49.99')}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; color:#94a3b8;">COSTO EST.</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#f97316;">${verdict.get('price_cost', '15.00')}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; color:#94a3b8;">MARGEN BRUTO</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">{verdict.get('margin', '70')}%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background:linear-gradient(135deg, #fdf4ff 0%, #f5d0fe 100%); border:2px solid #d946ef; border-radius:16px; padding:30px;">
+                    <div style="font-size:0.7rem; color:#a21caf; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">🚀 ACCIONES INMEDIATAS</div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="background:#d946ef; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">1</span>
+                            <span style="font-size:0.85rem; color:#7e22ce;">{verdict.get('action_1', 'Validar concepto con muestra de mercado')}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="background:#d946ef; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">2</span>
+                            <span style="font-size:0.85rem; color:#7e22ce;">{verdict.get('action_2', 'Desarrollar MVP con diferenciadores clave')}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="background:#d946ef; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">3</span>
+                            <span style="font-size:0.85rem; color:#7e22ce;">{verdict.get('action_3', 'Lanzar campaña piloto en mercado objetivo')}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- SECTION VIII: Roadmap (PAGE BREAK) -->
