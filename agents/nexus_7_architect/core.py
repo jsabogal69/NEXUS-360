@@ -739,48 +739,89 @@ class Nexus7Architect:
         .source-card {{ background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; transition: transform 0.2s; }}
         .source-card:hover {{ transform: translateY(-3px); border-color: var(--lime); }}
         .verdict-banner {{ background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; padding: 40px; border-radius: 12px; margin-top: 40px; }}
-        @media print {{ @page {{ size: A4 portrait; margin: 15mm; }} .container {{ box-shadow: none; padding: 0; }} }}
+        @media print {{ 
+            @page {{ size: A4 portrait; margin: 15mm 12mm; }} 
+            * {{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }}
+            body {{ padding: 0; background: white; font-size: 10pt; }}
+            .container {{ box-shadow: none; padding: 0; max-width: 100%; }} 
+            .section-title {{ page-break-after: avoid; margin-top: 20px; padding: 10px; font-size: 12pt; }}
+            .page-break {{ page-break-before: always; }}
+            .keep-together {{ page-break-inside: avoid; }}
+            table {{ font-size: 8pt; }} th, td {{ padding: 8px; }}
+            canvas {{ max-height: 180px !important; }}
+            .print-btn {{ display: none; }}
+        }}
     </style>
 </head>
 <body>
+    <!-- Print/PDF Button -->
+    <button class="print-btn" onclick="window.print()" style="position:fixed; top:20px; right:20px; background:var(--accent); color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000;">📄 Guardar PDF</button>
+    
     <div class="container">
         <header style="border-bottom: 2px solid #f1f5f9; padding-bottom: 30px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div><span style="color:var(--accent); font-weight:bold; letter-spacing:2px;">NEXUS-360 // {report_id}</span><h1>{niche_title}</h1></div>
-            <div style="text-align:right;"><div style="color:#b91c1c; font-weight:bold;">SECRET // EYES ONLY</div><div style="font-size:0.8rem; color:#64748b;">GÉNESIS: {timestamp_now().strftime('%d %B, %Y')}</div></div>
+            <div style="text-align:right;"><div style="color:#b91c1c; font-weight:bold;">CONFIDENCIAL</div><div style="font-size:0.8rem; color:#64748b;">GÉNESIS: {timestamp_now().strftime('%d %B, %Y')}</div></div>
         </header>
 
-        <h2 class="section-title">I. Auditoría de Fuentes & Trazabilidad <span class="agent-badge">Harvester</span></h2>
-        <div class="source-grid">{source_cards_html}</div>
+        <!-- SECTION I: Sources -->
+        <div class="section-container">
+            <h2 class="section-title">I. Auditoría de Fuentes & Trazabilidad <span class="agent-badge">Harvester</span></h2>
+            <div class="source-grid">{source_cards_html}</div>
+        </div>
 
-        <h2 class="section-title">II. Matriz Competitiva (TOP 10) <span class="agent-badge">Scout</span></h2>
-        <table><thead><tr><th>Rank</th><th>Producto</th><th>Rating</th><th>Pros</th><th>Cons</th><th>Brecha</th></tr></thead><tbody>{top_10_rows}</tbody></table>
+        <!-- SECTION II: Competitive Matrix (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">II. Matriz Competitiva (TOP 10) <span class="agent-badge">Scout</span></h2>
+            <table><thead><tr><th>Rank</th><th>Producto</th><th>Rating</th><th>Pros</th><th>Cons</th><th>Brecha</th></tr></thead><tbody>{top_10_rows}</tbody></table>
+        </div>
 
-        <h2 class="section-title">III. Social & Academic Audit <span class="agent-badge">Scout</span></h2>
-        {sl_html}
+        <!-- SECTION III: Social & Academic (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">III. Social & Academic Audit <span class="agent-badge">Scout</span></h2>
+            {sl_html}
+        </div>
 
-        <h2 class="section-title">IV. Ventas & Estacionalidad <span class="agent-badge">Scout</span></h2>
-        {sales_section_html}
+        <!-- SECTION IV: Sales & Seasonality (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">IV. Ventas & Estacionalidad <span class="agent-badge">Scout</span></h2>
+            {sales_section_html}
+        </div>
 
-        <h2 class="section-title">V. Brechas & Propuestas <span class="agent-badge">Strategist</span></h2>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">{strategist_grid_html}</div>
+        <!-- SECTION V: Brechas (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">V. Brechas & Propuestas <span class="agent-badge">Strategist</span></h2>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">{strategist_grid_html}</div>
+        </div>
 
-        <h2 class="section-title">VI. Finanzas & Stress Test <span class="agent-badge">Mathematician</span></h2>
-        {amz_context_html}
-        <table><thead><tr><th>Escenario</th><th>MSRP</th><th>Landed</th><th>Net %</th><th>BEQ</th><th>Payback</th><th>Status</th><th>Notas</th></tr></thead><tbody>{math_table_rows}</tbody></table>
+        <!-- SECTION VI: Finanzas (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">VI. Finanzas & Stress Test <span class="agent-badge">Mathematician</span></h2>
+            {amz_context_html}
+            <table><thead><tr><th>Escenario</th><th>MSRP</th><th>Landed</th><th>Net %</th><th>BEQ</th><th>Payback</th><th>Status</th><th>Notas</th></tr></thead><tbody>{math_table_rows}</tbody></table>
+        </div>
 
-        <h2 class="section-title">VII. Informe del Senior Partner <span class="agent-badge">Consultancy</span></h2>
-        <div style="background:#f1f5f9; padding:40px; border-radius:12px; margin-top:20px;">{formatted_summary}</div>
+        <!-- SECTION VII: Senior Partner -->
+        <div class="section-container keep-together">
+            <h2 class="section-title">VII. Informe del Senior Partner <span class="agent-badge">Consultancy</span></h2>
+            <div style="background:#f1f5f9; padding:40px; border-radius:12px; margin-top:20px;">{formatted_summary}</div>
+        </div>
 
-        <div class="verdict-banner">
+        <!-- VERDICT BANNER -->
+        <div class="verdict-banner keep-together">
             <span style="letter-spacing:2px; font-weight:bold; font-size:0.8rem; color:#60a5fa;">VEREDICTO NEXUS</span>
             <h2 style="font-family:var(--serif); margin:10px 0; font-size:2rem;">{verdict.get('title', '').upper()}</h2>
             <p style="font-size:1.1rem; opacity:0.9;">{verdict.get('text', '')}</p>
         </div>
 
-        <h2 class="section-title">VIII. Plan Maestro de Ejecución <span class="agent-badge">Roadmap</span></h2>
-        <div style="margin-top:20px;">{roadmap_html}</div>
+        <!-- SECTION VIII: Roadmap (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">VIII. Plan Maestro de Ejecución <span class="agent-badge">Roadmap</span></h2>
+            <div style="margin-top:20px;">{roadmap_html}</div>
+        </div>
 
-        <h2 class="section-title">IX. Compliance & Seguridad <span class="agent-badge">Guardian</span></h2>
+        <!-- SECTION IX: Compliance (PAGE BREAK) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">IX. Compliance & Seguridad <span class="agent-badge">Guardian</span></h2>
         <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px; margin-top:20px;">
             <div>
                 <div style="display:flex; gap:15px; margin-bottom:20px;">
