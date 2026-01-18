@@ -14,6 +14,7 @@ from .nexus_5_mathematician.core import Nexus5Mathematician
 from .nexus_6_senior_partner.core import Nexus6SeniorPartner
 from .nexus_7_architect.core import Nexus7Architect
 from .nexus_8_guardian.core import Nexus8Guardian
+from .nexus_8_archivist.core import Nexus8Archivist
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -164,6 +165,18 @@ async def run_folder_workflow(request: FolderIngestRequest):
         
         architect = Nexus7Architect()
         report = await architect.generate_report_artifacts(full_data)
+        
+        # 9. ARCHIVIST - Archive case for longitudinal studies
+        archivist = Nexus8Archivist()
+        archive_result = archivist.archive_case(
+            case_id=report.get("pdf_url", "").split("/")[-1].replace(".html", ""),
+            product_query=request.product_description or f"Drive Folder: {request.folder_id}",
+            ssot=ssot,
+            report_html=report.get("html_content", ""),
+            verdict=strategy.get("dynamic_verdict", {}),
+            metadata={"ingestion_mode": ingestion_mode, "files_count": len(ingested_ids)}
+        )
+        logger.info(f"[ARCHIVIST] Case archived: {archive_result.get('case_id')}")
 
         return {
             "folder_id": request.folder_id,
@@ -171,6 +184,8 @@ async def run_folder_workflow(request: FolderIngestRequest):
             "ingestion_mode": ingestion_mode,
             "ingestion_msg": ingestion_msg,
             "final_report_url": report["pdf_url"],
+            "archive_status": archive_result.get("status", "unknown"),
+            "product_hash": archive_result.get("product_hash"),
             "artifacts": {
                 "harvester": harvester_url,
                 "guardian": guardian_url,
@@ -179,7 +194,7 @@ async def run_folder_workflow(request: FolderIngestRequest):
                 "strategist": strategist_url,
                 "senior_partner": senior_url
             },
-            "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect"]
+            "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect", "Archivist"]
         }
 
     except Exception as e:
