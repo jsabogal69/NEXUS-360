@@ -88,10 +88,31 @@ class Nexus8Guardian:
             "RECIÉN NACIDO", "NOCHE", "DORMIR", "PROYECTOR", "ESTRELLAS", "RUIDO BLANCO",
             "WHITE NOISE", "NEWBORN", "TODDLER", "PEDIATRIC"
         ])
-        is_beauty = any(x in norm_anchor for x in [
-            "SHAMPOO", "CONDITIONER", "HAIR", "SKIN", "BEAUTY", "COSMETIC", "SERUM", 
-            "CREAM", "LOTION", "ONION", "BIOTIN", "KERATIN", "ANTICAIDA", "CABELLO",
-            "PELO", "ACEITE", "OIL", "MASCARILLA", "CAPILAR"
+        is_beauty_personal_care = any(x in norm_anchor for x in [
+            # Cabello / Hair
+            "SHAMPOO", "CONDITIONER", "HAIR", "CABELLO", "PELO", "ANTICAIDA", "CAPILAR",
+            "BIOTIN", "KERATIN", "ONION", "CEBOLLA", "MINOXIDIL", "TINTE", "DYE",
+            # Piel / Skin
+            "SKIN", "SKINCARE", "SERUM", "CREAM", "CREMA", "LOTION", "LOCIÓN",
+            "MOISTURIZER", "HIDRATANTE", "PROTECTOR SOLAR", "SUNSCREEN", "SPF",
+            "ANTI-AGING", "ANTIARRUGAS", "RETINOL", "VITAMINA C", "ÁCIDO HIALURÓNICO",
+            # Cuidado Personal General
+            "CUIDADO PERSONAL", "PERSONAL CARE", "BEAUTY", "COSMETIC", "BELLEZA",
+            "HIGIENE", "HYGIENE", "CORPORAL", "BODY",
+            # Dental
+            "DENTAL", "TOOTHBRUSH", "CEPILLO DENTAL", "PASTA DENTAL", "TOOTHPASTE",
+            "ENJUAGUE BUCAL", "MOUTHWASH", "BLANQUEADOR", "WHITENING", "FLOSS", "HILO DENTAL",
+            # Afeitado / Razors
+            "RAZOR", "RASURADORA", "AFEITADORA", "SHAVING", "ESPUMA DE AFEITAR",
+            "BARBA", "BEARD", "TRIMMER", "RECORTADORA",
+            # Desodorantes / Body Care
+            "DEODORANT", "DESODORANTE", "ANTIPERSPIRANT", "ANTITRANSPIRANTE",
+            "JABÓN", "SOAP", "GEL DE BAÑO", "BODY WASH", "EXFOLIANTE", "SCRUB",
+            # Maquillaje
+            "MAKEUP", "MAQUILLAJE", "LIPSTICK", "MASCARA", "FOUNDATION", "BASE",
+            "EYESHADOW", "SOMBRA", "BLUSH", "RUBOR", "EYELINER", "DELINEADOR",
+            # Aceites y tratamientos
+            "ACEITE", "OIL", "MASCARILLA", "MASK", "TRATAMIENTO", "TREATMENT"
         ])
         is_food = any(x in norm_anchor for x in [
             "FOOD", "SUPPLEMENT", "VITAMIN", "ORGANIC", "EDIBLE", "DRINK", "SUPLEMENTO"
@@ -136,7 +157,7 @@ class Nexus8Guardian:
         # ═══════════════════════════════════════════════════════════════
         # BEAUTY / COSMETICS COMPLIANCE
         # ═══════════════════════════════════════════════════════════════
-        elif is_beauty:
+        elif is_beauty_personal_care:
             risk_level = "HIGH"
             compliance_score = 80
             audit_results = [
