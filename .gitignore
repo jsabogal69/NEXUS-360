@@ -10,3 +10,4 @@ agents/reports/*.log
 .agent/
 .vscode/
 .idea/
+.env

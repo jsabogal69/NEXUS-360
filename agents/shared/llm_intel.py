@@ -8,6 +8,13 @@ import logging
 import random
 from datetime import datetime
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not installed, will use system env vars
+
 logger = logging.getLogger("LLM-INTEL")
 
 # Try to import Gemini
@@ -28,7 +35,7 @@ def get_gemini_model():
     
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         return model
     except Exception as e:
         logger.error(f"Failed to initialize Gemini: {e}")
