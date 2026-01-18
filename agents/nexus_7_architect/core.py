@@ -305,57 +305,126 @@ class Nexus7Architect:
         sales_intel = s_data.get("sales_intelligence", {})
         mkt_share = sales_intel.get("market_share_by_brand", [])
         
-        # Build pie chart data
+        # Build pie chart data from LLM
         pie_labels = [b.get("brand", "Unknown") for b in mkt_share]
         pie_values = [b.get("share", 0) for b in mkt_share]
         pie_colors = ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6366f1"]
         
-        # Build seasonality data for line chart (12 months)
+        # Get seasonality data from LLM
         seasonality = sales_intel.get("seasonality", {})
         peaks = seasonality.get("peaks", [])
         low_points = seasonality.get("low_points", [])
+        strategy_insight = seasonality.get("strategy_insight", "Análisis en progreso...")
         
-        # Create month data with estimated demand values
-        months_data = {
-            "Enero": 60, "Febrero": 45, "Marzo": 55, "Abril": 50, "Mayo": 55, "Junio": 60,
-            "Julio": 75, "Agosto": 65, "Septiembre": 70, "Octubre": 80, "Noviembre": 95, "Diciembre": 100
-        }
+        # Build dynamic months data ONLY from LLM peaks
+        # Start with baseline, then adjust based on actual LLM data
+        months_data = {}
+        peak_events = {}
+        peak_strategies = {}
         
-        # Adjust based on peaks
+        # Process peaks from LLM
         for peak in peaks:
             month = peak.get("month", "")
+            event = peak.get("event", "")
             impact = peak.get("impact", "Medium")
-            if month in months_data:
+            strategy = peak.get("strategy", "Optimizar inventario")
+            
+            if month:
+                peak_events[month] = event
+                peak_strategies[month] = strategy
                 if impact == "Extreme":
                     months_data[month] = 100
                 elif impact == "High":
-                    months_data[month] = 90
+                    months_data[month] = 85
                 elif impact == "Medium":
-                    months_data[month] = 75
+                    months_data[month] = 70
+                else:
+                    months_data[month] = 55
         
-        line_labels = list(months_data.keys())
-        line_values = list(months_data.values())
+        # Line chart uses sorted peaks
+        line_labels = list(months_data.keys()) if months_data else ["Sin datos"]
+        line_values = list(months_data.values()) if months_data else [50]
         
-        # Build peak annotations for key dates
-        peak_annotations_js = ""
-        for i, peak in enumerate(peaks[:6]):
-            month = peak.get("month", "")
-            event = peak.get("event", "")
-            if month in line_labels:
-                month_idx = line_labels.index(month)
-                peak_annotations_js += f'''
-                    {{
-                        type: 'label',
-                        xValue: {month_idx},
-                        yValue: {months_data.get(month, 70)},
-                        backgroundColor: 'rgba(239, 68, 68, 0.9)',
-                        borderRadius: 6,
-                        color: 'white',
-                        font: {{ size: 10, weight: 'bold' }},
-                        content: ['{event}'],
-                        padding: 6
-                    }},'''
-
+        # Build dynamic calendar HTML ONLY from peaks (no hardcoded data)
+        calendar_html = ""
+        if peaks:
+            for p in peaks:
+                month = p.get("month", "")
+                event = p.get("event", "")
+                impact = p.get("impact", "Medium")
+                strategy = p.get("strategy", "")
+                demand = months_data.get(month, 50)
+                
+                bg_color = "#fef2f2" if impact == "Extreme" else "#fff7ed" if impact == "High" else "#f0fdf4"
+                border_color = "#fecaca" if impact == "Extreme" else "#fed7aa" if impact == "High" else "#bbf7d0"
+                badge_color = "#dc2626" if impact == "Extreme" else "#f97316" if impact == "High" else "#22c55e"
+                
+                calendar_html += f'''
+                <div style="background:{bg_color}; padding:15px; border-radius:12px; border:1px solid {border_color};">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:0.75rem; color:#64748b; font-weight:800; text-transform:uppercase;">{month}</span>
+                        <span style="background:{badge_color}; color:white; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:800;">{demand}%</span>
+                    </div>
+                    <div style="font-size:0.85rem; color:var(--primary); font-weight:700; margin-bottom:6px;">{event}</div>
+                    <div style="font-size:0.65rem; color:#475569; line-height:1.4;">{strategy if strategy else 'Estrategia en análisis'}</div>
+                </div>'''
+        else:
+            calendar_html = '<div style="padding:20px; text-align:center; color:#64748b;">No se detectaron eventos estacionales. Ejecutar análisis con producto específico.</div>'
+        
+        # Build peak events detail HTML from LLM data
+        peak_events_html = ""
+        if peaks:
+            for p in peaks:
+                impact = p.get("impact", "Medium")
+                month = p.get("month", "")
+                event = p.get("event", "")
+                strategy = p.get("strategy", "Optimizar presencia y stock")
+                
+                bg_gradient = "#fef2f2" if impact == "Extreme" else "#fff7ed" if impact == "High" else "#f0fdf4"
+                border_c = "#fecaca" if impact == "Extreme" else "#fed7aa" if impact == "High" else "#bbf7d0"
+                badge_c = "#dc2626" if impact == "Extreme" else "#f97316" if impact == "High" else "#22c55e"
+                
+                # Use strategy from LLM, with fallbacks based on impact
+                tactic = p.get("tactic", "Influencer UGC + Email blast" if impact == "Extreme" else "Social ads + Retargeting" if impact == "High" else "Contenido orgánico")
+                budget = p.get("budget", "40-50% del Q" if impact == "Extreme" else "25-35% del Q" if impact == "High" else "15-20% del Q")
+                inventory = p.get("inventory", "+200% vs promedio" if impact == "Extreme" else "+100% vs promedio" if impact == "High" else "+50% vs promedio")
+                promo = p.get("promo", "Bundle + 25% OFF" if impact == "Extreme" else "15% OFF + Free Ship" if impact == "High" else "10% cupón")
+                
+                peak_events_html += f'''
+                <div style="background:linear-gradient(135deg, {bg_gradient} 0%, white 100%); padding:20px; border-radius:12px; border:1px solid {border_c};">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div>
+                            <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">{month}</div>
+                            <div style="font-weight:700; color:var(--primary); font-size:1rem; margin:4px 0;">{event}</div>
+                        </div>
+                        <span style="background:{badge_c}; color:white; padding:4px 10px; border-radius:6px; font-size:0.65rem; font-weight:800;">{impact}</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+                        <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">📈 TÁCTICA MARKETING</div>
+                            <div style="font-size:0.75rem; color:var(--primary);">{tactic}</div>
+                        </div>
+                        <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">💰 BUDGET SUGERIDO</div>
+                            <div style="font-size:0.75rem; color:#f97316; font-weight:600;">{budget}</div>
+                        </div>
+                        <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">📦 INVENTARIO</div>
+                            <div style="font-size:0.75rem; color:var(--primary);">{inventory}</div>
+                        </div>
+                        <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">🏷️ PROMO SUGERIDA</div>
+                            <div style="font-size:0.75rem; color:var(--primary);">{promo}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px; padding-top:12px; border-top:1px dashed #e2e8f0;">
+                        <div style="font-size:0.65rem; color:#64748b;">💡 <strong>Insight:</strong> {strategy}</div>
+                    </div>
+                </div>'''
+        else:
+            peak_events_html = '<div style="padding:20px; text-align:center; color:#64748b;">No se detectaron eventos de alto impacto.</div>'
+        
+        # Build the sales section HTML with dynamic data
         sales_section_html = f"""
         <div style="margin-top:20px;">
             <!-- Charts Row -->
@@ -370,139 +439,30 @@ class Nexus7Architect:
                 
                 <!-- Line Chart: Seasonality -->
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:30px;">
-                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">📈 Evolución de Demanda por Mes</h4>
+                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">📈 Evolución de Demanda por Evento</h4>
                     <div style="position:relative; height:280px;">
                         <canvas id="lineChart"></canvas>
                     </div>
                 </div>
             </div>
             
-            <!-- Comprehensive 12-Month Calendar -->
+            <!-- Dynamic Calendar from LLM -->
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:25px;">
-                <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">🗓️ Calendario Estratégico Anual - 12 Meses</h4>
-                
-                <!-- Calendar Grid -->
-                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-bottom:25px;">
-                    {''.join([f'''
-                    <div style="background:{'#fef2f2' if months_data.get(m, 50) >= 90 else '#fff7ed' if months_data.get(m, 50) >= 75 else '#f0fdf4' if months_data.get(m, 50) >= 60 else '#f8fafc'}; padding:15px; border-radius:12px; border:1px solid {'#fecaca' if months_data.get(m, 50) >= 90 else '#fed7aa' if months_data.get(m, 50) >= 75 else '#bbf7d0' if months_data.get(m, 50) >= 60 else '#e2e8f0'}; position:relative;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-size:0.75rem; color:#64748b; font-weight:800; text-transform:uppercase;">{m}</span>
-                            <span style="background:{'#dc2626' if months_data.get(m, 50) >= 90 else '#f97316' if months_data.get(m, 50) >= 75 else '#22c55e' if months_data.get(m, 50) >= 60 else '#64748b'}; color:white; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:800;">{months_data.get(m, 50)}%</span>
-                        </div>
-                        <div style="font-size:0.75rem; color:var(--primary); font-weight:600; margin-bottom:6px;">{
-                            'Propósitos' if m == 'Enero' else
-                            'San Valentín' if m == 'Febrero' else
-                            'Primavera' if m == 'Marzo' else
-                            'Semana Santa' if m == 'Abril' else
-                            'Día Madres' if m == 'Mayo' else
-                            'Día Padres' if m == 'Junio' else
-                            'Prime Day' if m == 'Julio' else
-                            'Back to School' if m == 'Agosto' else
-                            'Regreso a Clases' if m == 'Septiembre' else
-                            'Pre-Halloween' if m == 'Octubre' else
-                            'Black Friday' if m == 'Noviembre' else
-                            'Holiday Season' if m == 'Diciembre' else 'General'
-                        }</div>
-                        <div style="font-size:0.65rem; color:#475569; line-height:1.4;">{
-                            '🎯 Campañas de nuevo año' if m == 'Enero' else
-                            '💝 Regalos y sets' if m == 'Febrero' else
-                            '🌸 Renovación capilar' if m == 'Marzo' else
-                            '✨ Cuidado personal' if m == 'Abril' else
-                            '🌹 Sets regalo premium' if m == 'Mayo' else
-                            '👔 Productos masculinos' if m == 'Junio' else
-                            '⚡ Deals agresivos' if m == 'Julio' else
-                            '📚 Rutinas de regreso' if m == 'Agosto' else
-                            '🎒 Estudiantes y familias' if m == 'Septiembre' else
-                            '🎃 Preparación Q4' if m == 'Octubre' else
-                            '🔥 Máximo inventario' if m == 'Noviembre' else
-                            '🎁 Peak season' if m == 'Diciembre' else 'Mantenimiento'
-                        }</div>
-                    </div>''' for m in line_labels])}
+                <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">🗓️ Eventos Estacionales Detectados</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-bottom:25px;">
+                    {calendar_html}
                 </div>
                 
                 <!-- Peak Events Detail -->
-                <h5 style="margin:0 0 15px 0; color:var(--accent); font-family:var(--serif); font-size:0.9rem;">📍 Eventos de Alto Impacto - Detalle Estratégico</h5>
+                <h5 style="margin:20px 0 15px 0; color:var(--accent); font-family:var(--serif); font-size:0.9rem;">📍 Eventos de Alto Impacto - Detalle Estratégico</h5>
                 <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px; margin-bottom:25px;">
-                    {''.join([f'''
-                    <div style="background:linear-gradient(135deg, {'#fef2f2' if p.get('impact') == 'Extreme' else '#fff7ed' if p.get('impact') == 'High' else '#f0fdf4'} 0%, white 100%); padding:20px; border-radius:12px; border:1px solid {'#fecaca' if p.get('impact') == 'Extreme' else '#fed7aa' if p.get('impact') == 'High' else '#bbf7d0'};">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                            <div>
-                                <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase;">{p.get('month', '')}</div>
-                                <div style="font-weight:700; color:var(--primary); font-size:1rem; margin:4px 0;">{p.get('event', '')}</div>
-                            </div>
-                            <span style="background:{'#dc2626' if p.get('impact') == 'Extreme' else '#f97316' if p.get('impact') == 'High' else '#22c55e'}; color:white; padding:4px 10px; border-radius:6px; font-size:0.65rem; font-weight:800;">{p.get('impact', 'Medium')}</span>
-                        </div>
-                        
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
-                            <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-                                <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">📈 TÁCTICA MARKETING</div>
-                                <div style="font-size:0.75rem; color:var(--primary);">{
-                                    'Influencer UGC + Email blast' if p.get('impact') == 'Extreme' else
-                                    'Social ads + Retargeting' if p.get('impact') == 'High' else
-                                    'Contenido orgánico'
-                                }</div>
-                            </div>
-                            <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-                                <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">💰 BUDGET SUGERIDO</div>
-                                <div style="font-size:0.75rem; color:{'#dc2626' if p.get('impact') == 'Extreme' else '#f97316'}; font-weight:600;">{
-                                    '40-50% del Q' if p.get('impact') == 'Extreme' else
-                                    '25-35% del Q' if p.get('impact') == 'High' else
-                                    '15-20% del Q'
-                                }</div>
-                            </div>
-                            <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-                                <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">📦 INVENTARIO</div>
-                                <div style="font-size:0.75rem; color:var(--primary);">{
-                                    '+200% vs promedio' if p.get('impact') == 'Extreme' else
-                                    '+100% vs promedio' if p.get('impact') == 'High' else
-                                    '+50% vs promedio'
-                                }</div>
-                            </div>
-                            <div style="background:white; padding:10px; border-radius:8px; border:1px solid #e2e8f0;">
-                                <div style="font-size:0.6rem; color:#64748b; font-weight:700; margin-bottom:4px;">🏷️ PROMO SUGERIDA</div>
-                                <div style="font-size:0.75rem; color:var(--primary);">{
-                                    'Bundle + 25% OFF' if p.get('impact') == 'Extreme' else
-                                    '15% OFF + Free Ship' if p.get('impact') == 'High' else
-                                    '10% cupón'
-                                }</div>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top:12px; padding-top:12px; border-top:1px dashed #e2e8f0;">
-                            <div style="font-size:0.65rem; color:#64748b;">💡 <strong>Insight:</strong> {p.get('strategy', 'Optimizar presencia y stock antes del pico de demanda.')}</div>
-                        </div>
-                    </div>''' for p in peaks[:6]])}
+                    {peak_events_html}
                 </div>
                 
-                <!-- Low Season Strategy -->
-                <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px;">
-                    <h5 style="margin:0 0 12px 0; color:#64748b; font-size:0.85rem;">📉 Estrategia para Temporadas Bajas</h5>
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
-                        <div style="background:white; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
-                            <div style="font-size:0.7rem; color:#64748b; font-weight:700; margin-bottom:6px;">🎯 FOCO</div>
-                            <div style="font-size:0.8rem; color:var(--primary);">Construcción de marca y contenido educativo</div>
-                        </div>
-                        <div style="background:white; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
-                            <div style="font-size:0.7rem; color:#64748b; font-weight:700; margin-bottom:6px;">💸 TÁCTICA</div>
-                            <div style="font-size:0.8rem; color:var(--primary);">Suscripciones y loyalty programs</div>
-                        </div>
-                        <div style="background:white; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
-                            <div style="font-size:0.7rem; color:#64748b; font-weight:700; margin-bottom:6px;">📊 KPI</div>
-                            <div style="font-size:0.8rem; color:var(--primary);">CAC bajo, LTV alto, reviews</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Overall Strategy -->
+                <!-- Overall Strategy from LLM -->
                 <div style="background:#eff6ff; padding:20px; border-radius:12px; border-left:4px solid var(--accent);">
-                    <div style="font-size:0.7rem; color:var(--accent); font-weight:800; text-transform:uppercase; margin-bottom:8px;">📌 ESTRATEGIA ANUAL DE SEASONALITY</div>
-                    <div style="font-size:0.9rem; line-height:1.6; color:#1e40af; margin-bottom:12px;">{seasonality.get('strategy_insight', 'N/A')}</div>
-                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                        <div style="font-size:0.75rem; color:#3b82f6;"><strong>Q1:</strong> Propósitos + San Valentín</div>
-                        <div style="font-size:0.75rem; color:#3b82f6;"><strong>Q2:</strong> Día Madres/Padres</div>
-                        <div style="font-size:0.75rem; color:#3b82f6;"><strong>Q3:</strong> Prime Day + Back to School</div>
-                        <div style="font-size:0.75rem; color:#3b82f6;"><strong>Q4:</strong> BLACK FRIDAY + HOLIDAY 🔥</div>
-                    </div>
+                    <div style="font-size:0.7rem; color:var(--accent); font-weight:800; text-transform:uppercase; margin-bottom:8px;">📌 ESTRATEGIA DE SEASONALITY</div>
+                    <div style="font-size:0.9rem; line-height:1.6; color:#1e40af;">{strategy_insight}</div>
                 </div>
             </div>
         </div>
@@ -540,25 +500,16 @@ class Nexus7Architect:
             
             // Line Chart: Seasonality
             new Chart(document.getElementById('lineChart'), {{
-                type: 'line',
+                type: 'bar',
                 data: {{
                     labels: {line_labels},
                     datasets: [{{
                         label: 'Índice de Demanda',
                         data: {line_values},
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
                         borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 6,
-                        pointBackgroundColor: function(context) {{
-                            const value = context.raw;
-                            if (value >= 90) return '#dc2626';
-                            if (value >= 75) return '#f97316';
-                            return '#3b82f6';
-                        }},
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2
+                        borderWidth: 1,
+                        borderRadius: 6
                     }}]
                 }},
                 options: {{
@@ -566,8 +517,7 @@ class Nexus7Architect:
                     maintainAspectRatio: false,
                     scales: {{
                         y: {{
-                            beginAtZero: false,
-                            min: 30,
+                            beginAtZero: true,
                             max: 110,
                             title: {{
                                 display: true,
@@ -576,14 +526,7 @@ class Nexus7Architect:
                         }}
                     }},
                     plugins: {{
-                        legend: {{ display: false }},
-                        tooltip: {{
-                            callbacks: {{
-                                label: function(context) {{
-                                    return 'Demanda: ' + context.raw + '%';
-                                }}
-                            }}
-                        }}
+                        legend: {{ display: false }}
                     }}
                 }}
             }});
