@@ -14,21 +14,52 @@ class Nexus8Guardian:
     @report_agent_activity
     async def validate_input(self, input_id: str, content: dict) -> bool:
         """
-        Validates raw input against safety and schema rules.
+        Validates raw input against safety, expert formatting, and schema rules.
         """
-        logger.info(f"[{self.role}] Validating Input: {input_id}")
+        logger.info(f"[{self.role}] Expertise Validation for: {input_id}")
+        
+        # Expert Fetch: If content is a placeholder, get real data from DB
+        real_content = content
+        if self.db and (not content or content.get("raw_content") == "batch_processing"):
+            doc = self.db.collection("raw_inputs").document(input_id).get()
+            if doc.exists:
+                real_content = doc.to_dict()
         
         is_valid = True
         rejection_reason = None
         
-        # 1. Schema Check (Basic existence of required keys)
-        if not content.get("raw_content"):
-            is_valid = False
-            rejection_reason = "Missing 'raw_content'"
+        raw_text = real_content.get("raw_content", "")
+        structured = real_content.get("structured_data")
 
-        # 2. Content Safety (Placeholder for more complex logic)
-        # e.g., check for banned keywords or malicious patterns
-        
+        # 1. EMPTY CONTENT CHECK
+        if not raw_text and not structured:
+            is_valid = False
+            rejection_reason = "NULL_DATA: No content or structured data found."
+
+        # 2. EXPERT NUMBER CHECK (Anomaly Detection)
+        if structured and isinstance(structured, list):
+            # Check if numbers look sane or if there was a normalization failure
+            # Heuristic: If a price column has values > 1,000,000 for a 65W charger, it's likely a separator error
+            for row in structured[:20]:
+                for k, v in row.items():
+                    if "price" in k or "cost" in k:
+                        if isinstance(v, (int, float)) and v > 500000:
+                            is_valid = False
+                            rejection_reason = f"FORMAT_ERROR: Suspiciously high value in {k} ({v}). Check thousands separator."
+                            break
+
+        # 3. CONTENT INTEGRITY (AI Hallucinated Text or Corrupted Data)
+        if "Error in expert extraction" in raw_text:
+            is_valid = False
+            rejection_reason = "CORRUPTION: Harvester failed to read file bytes correctly."
+
+        # 4. CROSS-FIELD VALIDATION
+        if structured and len(structured) > 0:
+            first_row_keys = set(structured[0].keys())
+            if len(first_row_keys) < 2:
+                is_valid = False
+                rejection_reason = "STRUCTURE_WARNING: Low column density. Check if CSV separator was detected incorrectly."
+
         status = ValidationStatus.VALIDATED.value if is_valid else ValidationStatus.REJECTED.value
         
         self._update_status(input_id, status, rejection_reason)

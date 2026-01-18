@@ -62,10 +62,12 @@ async def test_recursive_intelligence():
     new_strategy = await strategist.analyze_gaps(new_ssot)
     
     print("\n--- Verificando Continuidad Estratégica ---")
-    gaps_text = "".join(new_strategy["strategic_gaps"])
-    if "CONTINUIDAD ESTRATÉGICA NEXUS" in gaps_text:
+    gaps = new_strategy["strategic_gaps"]
+    gaps_text = " ".join([g.get('gap', '') for g in gaps])
+    
+    if "Continuidad Estratégica" in gaps_text:
         print("✔ [RECURSIVIDAD] El sistema reconoció el informe previo y activó la continuidad estratégica.")
-        print(f"   Insight detectado: {new_strategy['strategic_gaps'][0][:150]}...")
+        print(f"   Insight detectado: {gaps[0]['gap'][:150]}...")
     else:
         print("✖ [ERROR] El sistema no reconoció el informe previo como dato de entrada.")
         print(f"   Gaps encontrados: {new_strategy['strategic_gaps']}")

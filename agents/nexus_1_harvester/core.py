@@ -1,6 +1,7 @@
-import time
 from ..shared.utils import get_db, generate_id, timestamp_now, AgentRole, report_agent_activity
+from ..shared.data_expert import DataExpert
 import logging
+import io
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -80,49 +81,86 @@ class Nexus1Harvester:
             
             for f in files:
                 filenames.append(f['name'])
+                f_id = f['id']
+                mime = f['mimeType']
                 
-                name_up = f['name'].upper()
+                logger.info(f"[{self.role}] Expertise Processing: {f['name']} ({mime})")
                 
+                # --- EXPERT DOWNLOAD & EXTRACTION ---
+                extracted_content = ""
+                structured_data = None
+                
+                try:
+                    # Download content
+                    request = service.files().get_media(fileId=f_id)
+                    file_bytes = request.execute()
+                    
+                    if "csv" in mime:
+                        df = DataExpert.process_csv(file_bytes)
+                        extracted_content = df.head(50).to_string() # Summary for LLM
+                        structured_data = df.to_dict(orient='records')
+                    elif "spreadsheet" in mime or "excel" in mime:
+                        # For Google Sheets, we must export to PDF or CSV first if using get_media on non-binary
+                        # But for actual xlsx files uploaded to Drive, get_media works.
+                        # If it's a native GDoc, we handle it separately
+                        if "google-apps.spreadsheet" in mime:
+                            export_request = service.files().export_media(fileId=f_id, mimeType='text/csv')
+                            file_bytes = export_request.execute()
+                            df = DataExpert.process_csv(file_bytes)
+                            extracted_content = df.head(50).to_string()
+                            structured_data = df.to_dict(orient='records')
+                        else:
+                            df = DataExpert.process_excel(file_bytes)
+                            extracted_content = df.head(50).to_string()
+                            structured_data = df.to_dict(orient='records')
+                    elif "pdf" in mime:
+                        extracted_content = DataExpert.process_pdf(file_bytes)
+                    elif "word" in mime or "officedocument.wordprocessingml" in mime:
+                        extracted_content = DataExpert.process_docx(file_bytes)
+                    elif "image" in mime:
+                        extracted_content = f"[IMAGE ASSET] {f['name']} - Ready for Vision Analysis"
+                    else:
+                        extracted_content = file_bytes.decode('utf-8', errors='ignore')[:5000]
+                except Exception as ex:
+                    logger.warning(f"Failed expert extraction for {f['name']}: {ex}")
+                    extracted_content = f"Error in expert extraction. Raw metadata: {f['name']}"
+
                 # PATTERN RECOGNITION (Simulated Visual Detection)
+                name_up = f['name'].upper()
                 visual_context = []
-                if any(x in name_up for x in ["SALE", "VENTA", "CHART", "GRAPH"]):
-                    visual_context.append("Visual Detection: Trend Pattern Identified")
-                if any(x in name_up for x in ["SEASON", "ESTACIONALIDAD", "HEATMAP"]):
-                    visual_context.append("Visual Detection: Temporal Seasonality Pattern")
+                if "XRAY" in name_up or "SALE" in name_up:
+                    visual_context.append("Expert Alert: Financial/Sales Data Identified")
                 
+                # ... existing point logic ...
                 if "XRAY" in name_up:
                     extracted_points = ["Volumen de búsquedas Helium10, Ingresos estimados por ASIN, Benchmark de precios y BSR."]
                 elif "KEYWORD" in name_up or "SERP" in name_up:
                     extracted_points = ["Tendencias de búsqueda, Rankings orgánicos, Dificultad de Keyword (KD) y PPC Bids."]
-                elif "SEARCHTERMS" in name_up:
-                    extracted_points = ["Palabras clave de conversión, Cuota de mercado por término y Análisis de competencia SEO."]
-                elif "PRODUCTS" in name_up or "ASIN" in name_up or "SEARCHRESULTS" in name_up:
-                    extracted_points = ["Matriz técnica de competidores (Visual Match), Ratings promedio y Análisis de variantes (Top Sellers)."]
-                elif "NICHES" in name_up:
-                    extracted_points = ["Categorización de mercado, Segmentación de sub-nichos y Visibilidad de marca."]
-                elif any(x in name_up for x in [".PNG", ".JPG", "SCREENSHOT", "CAPTUR"]):
-                    extracted_points = ["Auditoría visual: Infografías de producto, Diseño de empaque y Calidad de Assets en Amazon."]
-                elif "ESTUDIO" in name_up or "OPORTUNIDAD" in name_up:
-                    extracted_points = ["Análisis de viabilidad, Roadmap de lanzamiento y Análisis de brechas de satisfacción."]
-                elif "HIQ" in name_up or "PROD" in name_up or "LAMPARA" in name_up:
-                    extracted_points = ["Especificaciones de ingeniería, Materiales (Grade), y Propuesta de Valor única."]
-                elif "REPORT_" in name_up or "DOSSIER" in name_up:
-                    extracted_points = ["Pre-Analytic Intelligence: Veredictos Históricos, Roadmaps Previos y Gaps de Consultoría NEXUS."]
                 else:
-                    extracted_points = ["Metadatos generales, Estructura de documentos y Resumen de contenido crudo."]
-                
-                # Combine points with visual context
+                    extracted_points = ["Expertly Extracted Content & Normalized Structures."]
+
                 final_points = extracted_points + visual_context
 
                 file_lineage[f['name']] = {
                     "id": f['id'],
-                    "type": f['mimeType'].split('/')[-1],
+                    "type": mime.split('/')[-1],
                     "size_kb": round(int(f.get('size', 0))/1024, 1),
-                    "accessed_data": final_points
+                    "accessed_data": final_points,
+                    "is_structured": structured_data is not None
                 }
                 
-                mock_content = f"Contenido REAL de {f['name']} resumido para análisis."
-                doc_id = self.ingest_mock_data(f['name'], mock_content)
+                data_packet = {
+                    "id": generate_id(),
+                    "file_id": f_id,
+                    "file_name": f['name'],
+                    "mime_type": mime,
+                    "raw_content": extracted_content,
+                    "structured_data": structured_data,
+                    "ingested_at": timestamp_now(),
+                    "validation_status": "pending",
+                    "ingested_by": self.role
+                }
+                doc_id = self._save_to_raw_inputs(data_packet)
                 if doc_id:
                     ingested_ids.append(doc_id)
             
@@ -130,11 +168,11 @@ class Nexus1Harvester:
                 "ids": ingested_ids,
                 "filenames": filenames,
                 "mode": "REAL_DRIVE",
-                "message": f"Ingesta exitosa de {len(files)} archivos.",
+                "message": f"Ingesta Experta de {len(files)} archivos completada.",
                 "data_stats": {
                     "total_files": len(files),
                     "folder_name": folder_name,
-                    "lineage": file_lineage # PASS TO STRATEGIST
+                    "lineage": file_lineage
                 }
             }
             

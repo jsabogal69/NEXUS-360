@@ -288,17 +288,24 @@ class Nexus7Architect:
     <title>NEXUS-360 DOSSIER</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {{ --primary: #0f172a; --accent: #2563eb; --serif: 'Merriweather', serif; --sans: 'Inter', sans-serif; }}
-        body {{ font-family: var(--sans); background: #f8fafc; color: #334155; padding: 40px; line-height: 1.6; }}
-        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 60px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }}
-        .section-title {{ font-family: var(--serif); font-size: 1.5rem; color: var(--primary); margin-top: 50px; background: #f1f5f9; padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; }}
-        .agent-badge {{ background: var(--primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; }}
+        :root {{ 
+            --primary: #16213a; 
+            --accent: #28529a; 
+            --lime: #84cc16;
+            --serif: 'Montserrat', sans-serif; 
+            --sans: 'Inter', system-ui, -apple-system, sans-serif; 
+        }}
+        body {{ font-family: var(--sans); background: #f9fafb; color: #333333; padding: 40px; line-height: 1.6; }}
+        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 60px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }}
+        .section-title {{ font-family: var(--serif); font-size: 1.4rem; color: var(--primary); margin-top: 50px; background: #f5f8fc; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--lime); }}
+        .agent-badge {{ background: var(--accent); color: white; padding: 3px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }}
         table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-        th {{ text-align: left; background: #f8fafc; padding: 15px; border-bottom: 2px solid #e2e8f0; font-size: 0.75rem; text-transform: uppercase; }}
+        th {{ text-align: left; background: #f8fafc; padding: 15px; border-bottom: 2px solid #e2e8f0; font-size: 0.75rem; text-transform: uppercase; color: var(--accent); }}
         td {{ padding: 15px; border-bottom: 1px solid #f1f5f9; }}
         .source-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }}
-        .source-card {{ background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; }}
-        .verdict-banner {{ background: var(--primary); color: white; padding: 40px; border-radius: 12px; margin-top: 40px; }}
+        .source-card {{ background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; transition: transform 0.2s; }}
+        .source-card:hover {{ transform: translateY(-3px); border-color: var(--lime); }}
+        .verdict-banner {{ background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; padding: 40px; border-radius: 12px; margin-top: 40px; }}
         @media print {{ @page {{ size: A4 portrait; margin: 15mm; }} .container {{ box-shadow: none; padding: 0; }} }}
     </style>
 </head>
@@ -367,6 +374,7 @@ class Nexus7Architect:
             "id": report_id,
             "type": "nexus_final_report",
             "metadata": { "title": niche_title, "report_url": f"/dashboard/reports/{filename}" },
+            "intel_summary": { "verdict": verdict }, # Added for recursive intelligence
             "timestamp": timestamp_now()
         }
         self._save_report(report_record)
