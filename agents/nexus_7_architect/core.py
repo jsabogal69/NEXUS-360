@@ -75,14 +75,70 @@ class Nexus7Architect:
         top_10_rows = ""
         top_10_list = s_data.get("top_10_products", [])
         for p in top_10_list:
+            rating = p.get('rating', 0)
+            reviews = p.get('reviews', 0)
+            price = p.get('price', 0)
+            
+            # Format reviews count
+            if reviews >= 1000:
+                reviews_display = f"{reviews/1000:.1f}K"
+            else:
+                reviews_display = str(reviews)
+            
+            # Rating color based on value
+            if rating >= 4.5:
+                rating_color = "#166534"
+                rating_bg = "#dcfce7"
+                rating_badge = "EXCELENTE"
+            elif rating >= 4.0:
+                rating_color = "#854d0e"
+                rating_bg = "#fef9c3"
+                rating_badge = "MUY BUENO"
+            elif rating >= 3.5:
+                rating_color = "#c2410c"
+                rating_bg = "#ffedd5"
+                rating_badge = "BUENO"
+            else:
+                rating_color = "#991b1b"
+                rating_bg = "#fee2e2"
+                rating_badge = "REGULAR"
+            
+            # Price tier indicator
+            if price >= 50:
+                price_tier = "💎 Premium"
+                price_color = "#7c3aed"
+            elif price >= 25:
+                price_tier = "⭐ Mid-Range"
+                price_color = "#0369a1"
+            else:
+                price_tier = "💰 Value"
+                price_color = "#166534"
+            
             top_10_rows += f"""
             <tr>
-                <td style="text-align:center; font-weight:bold; color:var(--accent);">#{p['rank']}</td>
-                <td><strong>{p['name']}</strong><br><span style="color:#64748b; font-size:0.75rem;">MSRP: ${p.get('price', 'N/A')}</span></td>
-                <td><span style="color:#f59e0b">{'★' * int(min(5, p.get('rating', 0)))}{'☆' * (5-int(min(5, p.get('rating', 0))))}</span></td>
-                <td style="font-size:0.8rem; color:#166534; background: #f0fdf4;">{p.get('adv', 'N/A')}</td>
-                <td style="font-size:0.8rem; color:#991b1b; background: #fef2f2;">{p.get('vuln', 'N/A')}</td>
-                <td style="font-size:0.8rem; color:#1e40af; background: #eff6ff; font-weight:600;">{p.get('gap', 'N/A')}</td>
+                <td style="text-align:center; font-weight:bold; color:var(--accent); font-size:1.2rem;">#{p['rank']}</td>
+                <td style="min-width:180px;">
+                    <strong style="color:var(--primary); font-size:0.95rem;">{p['name']}</strong>
+                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                        <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px; font-size:0.7rem; font-weight:600;">${price:.2f}</span>
+                        <span style="color:{price_color}; font-size:0.65rem; font-weight:700;">{price_tier}</span>
+                    </div>
+                </td>
+                <td style="min-width:140px;">
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="color:#f59e0b; font-size:1.1rem;">{'★' * int(min(5, rating))}{'☆' * (5-int(min(5, rating)))}</span>
+                            <span style="font-weight:800; color:{rating_color}; font-size:0.95rem;">{rating:.1f}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:0.7rem; color:#64748b;">📊 {reviews_display} reseñas</span>
+                        </div>
+                        <span style="background:{rating_bg}; color:{rating_color}; padding:2px 6px; border-radius:3px; font-size:0.55rem; font-weight:800; width:fit-content;">{rating_badge}</span>
+                    </div>
+                </td>
+                <td style="font-size:0.8rem; color:#166534; background: #f0fdf4; max-width:200px;">{p.get('adv', 'N/A')}</td>
+                <td style="font-size:0.8rem; color:#991b1b; background: #fef2f2; max-width:200px;">{p.get('vuln', 'N/A')}</td>
+                <td style="font-size:0.8rem; color:#1e40af; background: #eff6ff; font-weight:600; max-width:180px;">{p.get('gap', 'N/A')}</td>
             </tr>"""
 
         # Section III: Social & Scholar
