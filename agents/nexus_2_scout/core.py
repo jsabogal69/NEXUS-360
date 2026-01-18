@@ -2,6 +2,7 @@ import logging
 import re
 import random
 from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
+from ..shared.llm_intel import generate_market_intel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-2")
@@ -452,41 +453,20 @@ class Nexus2Scout:
                 }
             ]
 
-        # --- DYNAMIC REACTIVE NICHE (Any Other) ---
+        # --- DYNAMIC AI-POWERED NICHE (Any Other Category) ---
         else:
-            tokens = re.findall(r'[A-Z]{3,}', ctx)
-            ignore = ["PDF", "XLSX", "DOCX", "GOOGLE", "DRIVE", "FILE", "ANALYSIS", "BATCH", "FOLDER"]
-            clean_tokens = [t for t in tokens if t not in ignore]
+            # Use LLM or enhanced mock for dynamic intelligence generation
+            logger.info(f"[{self.role}] Using dynamic intelligence generator for: {context_str}")
+            llm_data = generate_market_intel(context_str)
             
-            if len(context_str.split()) > 4:
-                niche_name = " ".join(context_str.split()[:5]) + "..."
-            else:
-                niche_name = f"Categoría {clean_tokens[0].capitalize()}" if clean_tokens else "Nicho Especializado"
-            
-            top_10 = []
-            adjectives = ["Global", "Core", "Prime", "Elite", "Pro", "Direct", "Plus", "Vanguard", "Summit", "Nexus"]
-            for i in range(1, 11):
-                brand = adjectives[i-1] + " " + niche_name.split()[0]
-                top_10.append({
-                    "rank": i, "name": f"{brand} {i}", "price": random.randint(45, 250), "reviews": random.randint(1000, 30000), "rating": 4.3 + (random.random()*0.5),
-                    "adv": f"Liderazgo en {adjectives[i-1]} Market Fit.", "vuln": "UX compleja.", "gap": f"Ausencia de personalización {adjectives[(i)%10]}."
-                })
-            social = { "amazon_review_audit": "Durabilidad vs Precio.", "tiktok_trends": "Estilo de vida.", "reddit_insights": "Transparencia.", "consumer_desire": "Personalización." }
-            trends = ["Personalización Masiva", "Circular Economy", "AI-Integration"]
-            keywords = [{"term": f"{niche_name} Best Seller", "volume": "Alto", "trend": "Subiendo"}]
-            sales_intelligence = {
-                "market_share_by_brand": [{"brand": "Competidor A", "share": 40}, {"brand": "NEXUS", "share": 10}],
-                "sub_category_distribution": {"Main Category": 100},
-                "seasonality": {"peaks": [{"month": "Diciembre", "event": "Q4 Peak", "impact": "High"}], "strategy_insight": "Consolidación de nicho detectada."}
-            }
-            sentiment_summary = f"Análisis táctico profundo iniciado para {niche_name} cruzando Amazon y Reddit."
-            scholar_audit = [
-                {
-                    "source": "Market Analysis Review",
-                    "finding": "La diferenciación por diseño emocional es el factor #1 de retención en categorías comoditizadas.",
-                    "relevance": "Competitive Advantage"
-                }
-            ]
+            niche_name = llm_data.get("niche_name", context_str[:50])
+            top_10 = llm_data.get("top_10_products", [])
+            social = llm_data.get("social_listening", {})
+            trends = llm_data.get("trends", [])
+            keywords = llm_data.get("keywords", [])
+            sales_intelligence = llm_data.get("sales_intelligence", {})
+            sentiment_summary = llm_data.get("sentiment_summary", "Análisis en progreso.")
+            scholar_audit = llm_data.get("scholar_audit", [])
 
         findings = {
             "id": generate_id(),
