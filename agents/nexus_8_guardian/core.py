@@ -1,4 +1,4 @@
-from ..shared.utils import get_db, ValidationStatus, timestamp_now, report_agent_activity
+from ..shared.utils import get_db, ValidationStatus, timestamp_now, report_agent_activity, generate_id
 import logging
 
 # Configure Logging
