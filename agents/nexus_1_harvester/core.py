@@ -2,16 +2,23 @@ from ..shared.utils import get_db, generate_id, timestamp_now, AgentRole, report
 from ..shared.data_expert import DataExpert
 import logging
 import io
+import re
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-1")
 
+# POE Guide Detection Keywords
+POE_GUIDE_KEYWORDS = ["GUIA CONTENIDO POE", "GUIA_CONTENIDO_POE", "POE_GUIDE", "CONTENT_GUIDE", "INDICE_POE"]
+
 class Nexus1Harvester:
-    task_description = "Ingest files from a Google Drive folder (or mock data)"
+    task_description = "Ingest files from a Google Drive folder using POE Content Guide as master index"
+    
     def __init__(self):
         self.db = get_db()
         self.role = AgentRole.HARVESTER.value
+        self.poe_guide = None  # Will hold parsed guide if found
+        self.file_instructions = {}  # Per-file instructions from guide
 
     def ingest_mock_data(self, source_name: str, content_text: str):
         """
@@ -33,11 +40,111 @@ class Nexus1Harvester:
         doc_id = self._save_to_raw_inputs(data_packet)
         return doc_id
 
+    def _detect_poe_guide(self, files: list) -> dict:
+        """
+        Detect if a GUIA CONTENIDO POE exists in the folder.
+        Returns the file metadata if found, None otherwise.
+        """
+        for f in files:
+            name_upper = f['name'].upper()
+            for keyword in POE_GUIDE_KEYWORDS:
+                if keyword in name_upper:
+                    logger.info(f"[{self.role}] 📋 POE GUIDE DETECTED: {f['name']}")
+                    return f
+        return None
+
+    def _parse_poe_guide(self, guide_content: str, structured_data: list = None) -> dict:
+        """
+        Parse the POE Content Guide to extract file instructions.
+        
+        Expected columns:
+        - Nombre del Archivo (File Name)
+        - Fuente de Datos (Data Source)
+        - Tipo de Archivo (File Type)
+        - Definición Funcional (Functional Definition)
+        - Columnas / Datos Clave (Key Columns)
+        - Instrucción para el Agente (Agent Instruction)
+        """
+        file_instructions = {}
+        
+        # If we have structured data (from CSV/Excel), use it directly
+        if structured_data:
+            for row in structured_data:
+                # Normalize column names (handle variations)
+                file_name = row.get("Nombre del Archivo", row.get("nombre_del_archivo", row.get("file_name", "")))
+                if not file_name:
+                    # Try to find any column that looks like a filename
+                    for key, val in row.items():
+                        if isinstance(val, str) and ("." in val or "_" in key.lower()):
+                            file_name = val
+                            break
+                
+                if file_name:
+                    instruction = {
+                        "source": row.get("Fuente de Datos", row.get("fuente", row.get("source", "Unknown"))),
+                        "file_type": row.get("Tipo de Archivo", row.get("tipo", row.get("type", "Unknown"))),
+                        "definition": row.get("Definición Funcional", row.get("definicion", row.get("definition", ""))),
+                        "key_columns": row.get("Columnas / Datos Clave a Leer", row.get("columnas", row.get("columns", ""))),
+                        "agent_instruction": row.get("Instrucción para el Agente", row.get("instruccion", row.get("instruction", "")))
+                    }
+                    # Match by partial filename (handle date variations)
+                    file_instructions[file_name] = instruction
+                    logger.info(f"[{self.role}] 📝 Guide entry: {file_name} -> {instruction.get('definition', 'N/A')[:50]}")
+        
+        # Also try to parse from text content (fallback)
+        elif guide_content:
+            lines = guide_content.strip().split('\n')
+            for line in lines:
+                # Try to detect table-like structure
+                parts = [p.strip() for p in re.split(r'\t|,', line) if p.strip()]
+                if len(parts) >= 3:
+                    file_name = parts[0]
+                    if "." in file_name or "_" in file_name:
+                        file_instructions[file_name] = {
+                            "source": parts[1] if len(parts) > 1 else "Unknown",
+                            "file_type": parts[2] if len(parts) > 2 else "Unknown",
+                            "definition": parts[3] if len(parts) > 3 else "",
+                            "key_columns": parts[4] if len(parts) > 4 else "",
+                            "agent_instruction": parts[5] if len(parts) > 5 else ""
+                        }
+        
+        return file_instructions
+
+    def _match_file_to_guide(self, filename: str) -> dict:
+        """
+        Match a filename to the POE guide entries (handles partial matches and date variations).
+        """
+        if not self.file_instructions:
+            return None
+        
+        filename_upper = filename.upper()
+        
+        # Exact match first
+        if filename in self.file_instructions:
+            return self.file_instructions[filename]
+        
+        # Partial match (remove date patterns)
+        for guide_name, instruction in self.file_instructions.items():
+            guide_base = re.sub(r'_?\d{1,2}_\d{1,2}_\d{4}', '', guide_name.upper())
+            file_base = re.sub(r'_?\d{1,2}_\d{1,2}_\d{4}', '', filename_upper)
+            
+            if guide_base and file_base and (guide_base in file_base or file_base in guide_base):
+                return instruction
+            
+            # Also try without extension
+            guide_no_ext = guide_base.rsplit('.', 1)[0] if '.' in guide_base else guide_base
+            file_no_ext = file_base.rsplit('.', 1)[0] if '.' in file_base else file_base
+            
+            if guide_no_ext and file_no_ext and (guide_no_ext in file_no_ext or file_no_ext in guide_no_ext):
+                return instruction
+        
+        return None
+
     @report_agent_activity
     async def ingest_from_folder(self, folder_id: str, access_token: str = None):
         """
-        Connects to Google Drive, lists all files in a folder, and ingests them.
-        Extracts specific data points (Lineage) per file.
+        Connects to Google Drive, first looks for POE Content Guide,
+        then ingests all files with context from the guide.
         """
         from ..shared.utils import get_drive_service
         from google.oauth2.credentials import Credentials
@@ -75,16 +182,84 @@ class Nexus1Harvester:
             if not files:
                 return {"ids": [], "mode": "ERROR", "message": f"Carpeta '{folder_name}' está vacía."}
 
+            # ═══════════════════════════════════════════════════════════════
+            # STEP 1: DETECT AND PARSE POE CONTENT GUIDE
+            # ═══════════════════════════════════════════════════════════════
+            poe_guide_file = self._detect_poe_guide(files)
+            poe_guide_summary = None
+            
+            if poe_guide_file:
+                try:
+                    f_id = poe_guide_file['id']
+                    mime = poe_guide_file['mimeType']
+                    
+                    # Download and parse the guide
+                    if "google-apps.spreadsheet" in mime:
+                        export_request = service.files().export_media(fileId=f_id, mimeType='text/csv')
+                        file_bytes = export_request.execute()
+                        df = DataExpert.process_csv(file_bytes)
+                        guide_content = df.to_string()
+                        structured_guide = df.to_dict(orient='records')
+                    elif "csv" in mime:
+                        request = service.files().get_media(fileId=f_id)
+                        file_bytes = request.execute()
+                        df = DataExpert.process_csv(file_bytes)
+                        guide_content = df.to_string()
+                        structured_guide = df.to_dict(orient='records')
+                    elif "spreadsheet" in mime or "excel" in mime:
+                        request = service.files().get_media(fileId=f_id)
+                        file_bytes = request.execute()
+                        df = DataExpert.process_excel(file_bytes)
+                        guide_content = df.to_string()
+                        structured_guide = df.to_dict(orient='records')
+                    else:
+                        request = service.files().get_media(fileId=f_id)
+                        file_bytes = request.execute()
+                        guide_content = file_bytes.decode('utf-8', errors='ignore')
+                        structured_guide = None
+                    
+                    # Parse the guide
+                    self.file_instructions = self._parse_poe_guide(guide_content, structured_guide)
+                    
+                    poe_guide_summary = {
+                        "detected": True,
+                        "file_name": poe_guide_file['name'],
+                        "entries_count": len(self.file_instructions),
+                        "files_indexed": list(self.file_instructions.keys())
+                    }
+                    
+                    logger.info(f"[{self.role}] ✅ POE GUIDE PARSED: {len(self.file_instructions)} file instructions loaded")
+                    
+                except Exception as ex:
+                    logger.warning(f"[{self.role}] ⚠️ Failed to parse POE Guide: {ex}")
+                    poe_guide_summary = {"detected": True, "error": str(ex)}
+            else:
+                logger.info(f"[{self.role}] ℹ️ No POE Content Guide found. Using default extraction.")
+                poe_guide_summary = {"detected": False}
+
+            # ═══════════════════════════════════════════════════════════════
+            # STEP 2: INGEST ALL FILES WITH GUIDE CONTEXT
+            # ═══════════════════════════════════════════════════════════════
             ingested_ids = []
             filenames = []
-            file_lineage = {} # Track WHAT we access in each file
+            file_lineage = {}
             
             for f in files:
+                # Skip the guide file itself (we already processed it)
+                if poe_guide_file and f['id'] == poe_guide_file['id']:
+                    continue
+                    
                 filenames.append(f['name'])
                 f_id = f['id']
                 mime = f['mimeType']
                 
-                logger.info(f"[{self.role}] Expertise Processing: {f['name']} ({mime})")
+                # Get instructions from POE Guide if available
+                guide_instruction = self._match_file_to_guide(f['name'])
+                
+                if guide_instruction:
+                    logger.info(f"[{self.role}] 📖 {f['name']} -> [{guide_instruction.get('definition', 'N/A')[:30]}]")
+                else:
+                    logger.info(f"[{self.role}] Processing: {f['name']} (no guide entry)")
                 
                 # --- EXPERT DOWNLOAD & EXTRACTION ---
                 extracted_content = ""
@@ -92,61 +267,49 @@ class Nexus1Harvester:
                 
                 try:
                     # Download content
-                    request = service.files().get_media(fileId=f_id)
-                    file_bytes = request.execute()
-                    
-                    if "csv" in mime:
+                    if "google-apps.spreadsheet" in mime:
+                        export_request = service.files().export_media(fileId=f_id, mimeType='text/csv')
+                        file_bytes = export_request.execute()
                         df = DataExpert.process_csv(file_bytes)
-                        extracted_content = df.head(50).to_string() # Summary for LLM
+                        extracted_content = df.head(50).to_string()
                         structured_data = df.to_dict(orient='records')
-                    elif "spreadsheet" in mime or "excel" in mime:
-                        # For Google Sheets, we must export to PDF or CSV first if using get_media on non-binary
-                        # But for actual xlsx files uploaded to Drive, get_media works.
-                        # If it's a native GDoc, we handle it separately
-                        if "google-apps.spreadsheet" in mime:
-                            export_request = service.files().export_media(fileId=f_id, mimeType='text/csv')
-                            file_bytes = export_request.execute()
+                    else:
+                        request = service.files().get_media(fileId=f_id)
+                        file_bytes = request.execute()
+                        
+                        if "csv" in mime:
                             df = DataExpert.process_csv(file_bytes)
                             extracted_content = df.head(50).to_string()
                             structured_data = df.to_dict(orient='records')
-                        else:
+                        elif "spreadsheet" in mime or "excel" in mime:
                             df = DataExpert.process_excel(file_bytes)
                             extracted_content = df.head(50).to_string()
                             structured_data = df.to_dict(orient='records')
-                    elif "pdf" in mime:
-                        extracted_content = DataExpert.process_pdf(file_bytes)
-                    elif "word" in mime or "officedocument.wordprocessingml" in mime:
-                        extracted_content = DataExpert.process_docx(file_bytes)
-                    elif "image" in mime:
-                        extracted_content = f"[IMAGE ASSET] {f['name']} - Ready for Vision Analysis"
-                    else:
-                        extracted_content = file_bytes.decode('utf-8', errors='ignore')[:5000]
+                        elif "pdf" in mime:
+                            extracted_content = DataExpert.process_pdf(file_bytes)
+                        elif "word" in mime or "officedocument.wordprocessingml" in mime:
+                            extracted_content = DataExpert.process_docx(file_bytes)
+                        elif "image" in mime:
+                            extracted_content = f"[IMAGE ASSET] {f['name']} - Ready for Vision Analysis"
+                        elif "presentation" in mime or "powerpoint" in mime:
+                            extracted_content = f"[PRESENTATION] {f['name']} - Visual reference for competitor analysis"
+                        else:
+                            extracted_content = file_bytes.decode('utf-8', errors='ignore')[:5000]
                 except Exception as ex:
                     logger.warning(f"Failed expert extraction for {f['name']}: {ex}")
                     extracted_content = f"Error in expert extraction. Raw metadata: {f['name']}"
 
-                # PATTERN RECOGNITION (Simulated Visual Detection)
-                name_up = f['name'].upper()
-                visual_context = []
-                if "XRAY" in name_up or "SALE" in name_up:
-                    visual_context.append("Expert Alert: Financial/Sales Data Identified")
-                
-                # ... existing point logic ...
-                if "XRAY" in name_up:
-                    extracted_points = ["Volumen de búsquedas Helium10, Ingresos estimados por ASIN, Benchmark de precios y BSR."]
-                elif "KEYWORD" in name_up or "SERP" in name_up:
-                    extracted_points = ["Tendencias de búsqueda, Rankings orgánicos, Dificultad de Keyword (KD) y PPC Bids."]
-                else:
-                    extracted_points = ["Expertly Extracted Content & Normalized Structures."]
-
-                final_points = extracted_points + visual_context
-
+                # Build lineage with guide context
                 file_lineage[f['name']] = {
                     "id": f['id'],
                     "type": mime.split('/')[-1],
                     "size_kb": round(int(f.get('size', 0))/1024, 1),
-                    "accessed_data": final_points,
-                    "is_structured": structured_data is not None
+                    "is_structured": structured_data is not None,
+                    # POE Guide context
+                    "poe_source": guide_instruction.get("source") if guide_instruction else None,
+                    "poe_definition": guide_instruction.get("definition") if guide_instruction else None,
+                    "poe_key_columns": guide_instruction.get("key_columns") if guide_instruction else None,
+                    "poe_agent_instruction": guide_instruction.get("agent_instruction") if guide_instruction else None
                 }
                 
                 data_packet = {
@@ -158,7 +321,9 @@ class Nexus1Harvester:
                     "structured_data": structured_data,
                     "ingested_at": timestamp_now(),
                     "validation_status": "pending",
-                    "ingested_by": self.role
+                    "ingested_by": self.role,
+                    # Include POE context for downstream agents
+                    "poe_context": guide_instruction if guide_instruction else None
                 }
                 doc_id = self._save_to_raw_inputs(data_packet)
                 if doc_id:
@@ -169,10 +334,12 @@ class Nexus1Harvester:
                 "filenames": filenames,
                 "mode": "REAL_DRIVE",
                 "message": f"Ingesta Experta de {len(files)} archivos completada.",
+                "poe_guide": poe_guide_summary,
                 "data_stats": {
                     "total_files": len(files),
                     "folder_name": folder_name,
-                    "lineage": file_lineage
+                    "lineage": file_lineage,
+                    "files_with_poe_context": sum(1 for v in file_lineage.values() if v.get("poe_source"))
                 }
             }
             
@@ -186,3 +353,4 @@ class Nexus1Harvester:
             self.db.collection("raw_inputs").document(data["id"]).set(data)
             return data["id"]
         except: return None
+
