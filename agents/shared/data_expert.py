@@ -149,3 +149,146 @@ class DataExpert:
         import docx
         doc = docx.Document(io.BytesIO(content_bytes))
         return "\n".join([p.text for p in doc.paragraphs])
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # X-RAY / HELIUM10 PRICE EXTRACTION (POE DATA)
+    # ═══════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def is_xray_file(filename: str, df: pd.DataFrame = None) -> bool:
+        """
+        Detects if a file is a Helium10 X-Ray export based on filename or columns.
+        """
+        xray_keywords = ["xray", "x-ray", "helium", "h10", "cerebro", "magnet"]
+        
+        # Check filename
+        if any(kw in filename.lower() for kw in xray_keywords):
+            return True
+        
+        # Check columns if DataFrame provided
+        if df is not None:
+            xray_columns = ["price", "sales", "revenue", "bsr", "title", "asin", "reviews"]
+            col_names = [c.lower() for c in df.columns]
+            matches = sum(1 for c in xray_columns if any(c in col for col in col_names))
+            return matches >= 3  # At least 3 X-Ray columns present
+        
+        return False
+
+    @staticmethod
+    def extract_xray_pricing(df: pd.DataFrame, filename: str = "") -> dict:
+        """
+        Extracts pricing data from Helium10 X-Ray CSV/Excel exports.
+        
+        Returns:
+            {
+                "has_real_data": True/False,
+                "products": [{asin, title, price, sales, revenue, bsr}, ...],
+                "avg_price": float,
+                "price_range": {"min": float, "max": float},
+                "total_products": int,
+                "source_file": str
+            }
+        """
+        result = {
+            "has_real_data": False,
+            "products": [],
+            "avg_price": 0,
+            "price_range": {"min": 0, "max": 0},
+            "total_products": 0,
+            "source_file": filename
+        }
+        
+        if df is None or df.empty:
+            return result
+        
+        # Normalize column names for matching
+        col_map = {}
+        for col in df.columns:
+            col_lower = col.lower().strip()
+            
+            # Price column detection
+            if "price" in col_lower and "drop" not in col_lower:
+                col_map["price"] = col
+            # Sales column detection
+            elif "sales" in col_lower or "units" in col_lower:
+                col_map["sales"] = col
+            # Revenue column detection
+            elif "revenue" in col_lower:
+                col_map["revenue"] = col
+            # BSR/Rank column detection
+            elif "bsr" in col_lower or "rank" in col_lower:
+                col_map["bsr"] = col
+            # ASIN column detection
+            elif "asin" in col_lower:
+                col_map["asin"] = col
+            # Title/Product name detection
+            elif "title" in col_lower or "product" in col_lower or "name" in col_lower:
+                col_map["title"] = col
+            # Reviews detection
+            elif "review" in col_lower and "rating" not in col_lower:
+                col_map["reviews"] = col
+        
+        logger.info(f"[DATA-EXPERT] X-Ray column mapping: {col_map}")
+        
+        # Must have at least price column
+        if "price" not in col_map:
+            logger.warning(f"[DATA-EXPERT] No price column found in {filename}")
+            return result
+        
+        # Extract products
+        products = []
+        prices = []
+        
+        for idx, row in df.iterrows():
+            try:
+                price_val = DataExpert.normalize_number(row.get(col_map.get("price", ""), 0))
+                
+                if price_val > 0:  # Only include products with valid prices
+                    product = {
+                        "asin": str(row.get(col_map.get("asin", ""), f"ASIN-{idx}"))[:12],
+                        "title": str(row.get(col_map.get("title", ""), f"Product {idx}"))[:100],
+                        "price": round(price_val, 2),
+                        "sales": int(DataExpert.normalize_number(row.get(col_map.get("sales", ""), 0))),
+                        "revenue": round(DataExpert.normalize_number(row.get(col_map.get("revenue", ""), 0)), 2),
+                        "bsr": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))),
+                        "reviews": int(DataExpert.normalize_number(row.get(col_map.get("reviews", ""), 0)))
+                    }
+                    products.append(product)
+                    prices.append(price_val)
+                    
+            except Exception as e:
+                logger.debug(f"[DATA-EXPERT] Row {idx} skip: {e}")
+                continue
+        
+        if products:
+            result["has_real_data"] = True
+            result["products"] = products[:20]  # Top 20 products
+            result["avg_price"] = round(sum(prices) / len(prices), 2)
+            result["price_range"] = {"min": round(min(prices), 2), "max": round(max(prices), 2)}
+            result["total_products"] = len(products)
+            
+            logger.info(f"[DATA-EXPERT] ✅ Extracted {len(products)} products from {filename}. AVG: ${result['avg_price']}")
+        
+        return result
+
+    @staticmethod
+    def extract_pricing_from_bytes(content_bytes: bytes, filename: str) -> dict:
+        """
+        Convenience method: Detects file type, processes, and extracts X-Ray pricing.
+        """
+        try:
+            if filename.lower().endswith(('.csv', '.txt')):
+                df = DataExpert.process_csv(content_bytes)
+            elif filename.lower().endswith(('.xlsx', '.xls')):
+                df = DataExpert.process_excel(content_bytes)
+            else:
+                return {"has_real_data": False, "error": "Unsupported file type"}
+            
+            if DataExpert.is_xray_file(filename, df):
+                return DataExpert.extract_xray_pricing(df, filename)
+            else:
+                return {"has_real_data": False, "reason": "Not identified as X-Ray file"}
+                
+        except Exception as e:
+            logger.error(f"[DATA-EXPERT] Error extracting pricing: {e}")
+            return {"has_real_data": False, "error": str(e)}

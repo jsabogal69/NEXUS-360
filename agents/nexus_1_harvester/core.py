@@ -299,12 +299,29 @@ class Nexus1Harvester:
                     logger.warning(f"Failed expert extraction for {f['name']}: {ex}")
                     extracted_content = f"Error in expert extraction. Raw metadata: {f['name']}"
 
+                # ═══════════════════════════════════════════════════════════════
+                # X-RAY / HELIUM10 PRICE EXTRACTION (POE REAL DATA)
+                # ═══════════════════════════════════════════════════════════════
+                xray_pricing = None
+                try:
+                    if structured_data and DataExpert.is_xray_file(f['name']):
+                        # Convert structured_data back to DataFrame for extraction
+                        import pandas as pd
+                        df_temp = pd.DataFrame(structured_data)
+                        xray_pricing = DataExpert.extract_xray_pricing(df_temp, f['name'])
+                        
+                        if xray_pricing.get("has_real_data"):
+                            logger.info(f"[{self.role}] 💰 X-RAY PRICING EXTRACTED: {xray_pricing['total_products']} products, AVG ${xray_pricing['avg_price']}")
+                except Exception as ex:
+                    logger.warning(f"[{self.role}] X-Ray extraction error: {ex}")
+
                 # Build lineage with guide context
                 file_lineage[f['name']] = {
                     "id": f['id'],
                     "type": mime.split('/')[-1],
                     "size_kb": round(int(f.get('size', 0))/1024, 1),
                     "is_structured": structured_data is not None,
+                    "is_xray": xray_pricing.get("has_real_data", False) if xray_pricing else False,
                     # POE Guide context
                     "poe_source": guide_instruction.get("source") if guide_instruction else None,
                     "poe_definition": guide_instruction.get("definition") if guide_instruction else None,
@@ -323,11 +340,20 @@ class Nexus1Harvester:
                     "validation_status": "pending",
                     "ingested_by": self.role,
                     # Include POE context for downstream agents
-                    "poe_context": guide_instruction if guide_instruction else None
+                    "poe_context": guide_instruction if guide_instruction else None,
+                    # X-Ray pricing data (POE REAL DATA)
+                    "xray_pricing": xray_pricing if xray_pricing and xray_pricing.get("has_real_data") else None
                 }
                 doc_id = self._save_to_raw_inputs(data_packet)
                 if doc_id:
                     ingested_ids.append(doc_id)
+            
+            # Aggregate X-Ray data from all files
+            aggregated_xray = {"has_real_data": False, "products": [], "source_files": []}
+            for f_name, lineage in file_lineage.items():
+                if lineage.get("is_xray"):
+                    aggregated_xray["has_real_data"] = True
+                    aggregated_xray["source_files"].append(f_name)
             
             return {
                 "ids": ingested_ids,
@@ -335,11 +361,13 @@ class Nexus1Harvester:
                 "mode": "REAL_DRIVE",
                 "message": f"Ingesta Experta de {len(files)} archivos completada.",
                 "poe_guide": poe_guide_summary,
+                "xray_data": aggregated_xray,  # New: X-Ray pricing sources
                 "data_stats": {
                     "total_files": len(files),
                     "folder_name": folder_name,
                     "lineage": file_lineage,
-                    "files_with_poe_context": sum(1 for v in file_lineage.values() if v.get("poe_source"))
+                    "files_with_poe_context": sum(1 for v in file_lineage.values() if v.get("poe_source")),
+                    "files_with_xray_pricing": sum(1 for v in file_lineage.values() if v.get("is_xray"))
                 }
             }
             

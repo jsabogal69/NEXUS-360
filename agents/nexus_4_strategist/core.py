@@ -135,19 +135,36 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
         # POE data from uploaded files = REAL DATA (consistent)
         # ═══════════════════════════════════════════════════════════════════════
         
-        top_10_products = ssot_data.get("scout_data", {}).get("top_10_products", [])
-        poe_data = ssot_data.get("poe_data", {})  # Real POE file data
+        # Check for X-Ray pricing data from Harvester (POE real data)
+        harvester_data = ssot_data.get("harvester_data", {})
+        xray_data = harvester_data.get("xray_data", {})
+        poe_products = []
         
-        # Check if we have POE file data with actual prices
-        has_poe_pricing = False  # TODO: Implement when Harvester extracts prices from POE files
+        # Try to find X-Ray pricing in individual file packets
+        if not xray_data.get("has_real_data"):
+            # Check if any file in data_stats has X-Ray data
+            data_stats = harvester_data.get("data_stats", {})
+            lineage = data_stats.get("lineage", {})
+            for file_name, file_info in lineage.items():
+                if file_info.get("is_xray"):
+                    xray_data["has_real_data"] = True
+                    break
+        
+        # Extract POE pricing from raw inputs if available
+        has_poe_pricing = xray_data.get("has_real_data", False)
+        
+        if has_poe_pricing:
+            # Look for xray_pricing in raw input files
+            logger.info(f"[{self.role}] 💰 POE X-Ray data detected! Using real pricing...")
+            poe_source_files = xray_data.get("source_files", [])
+            pricing_source = f"📁 DATOS POE ({len(poe_source_files)} archivos X-Ray)"
+        
+        top_10_products = ssot_data.get("scout_data", {}).get("top_10_products", [])
         
         # Scout data EXISTS but is LLM-GENERATED (estimates)
         has_scout_estimates = len(top_10_products) > 0 and any(p.get("price", 0) > 0 for p in top_10_products)
         
         if has_poe_pricing:
-            # REAL DATA from POE files - This is the gold standard
-            # TODO: Extract actual prices from Harvester poe_data
-            pricing_source = "📁 DATOS POE (archivos verificados)"
             data_reliability = "high"
         elif has_scout_estimates:
             # LLM-GENERATED estimates - May vary between scans
