@@ -243,14 +243,64 @@ class DataExpert:
         logger.info(f"[DATA-EXPERT] Processing {filename} with {len(df)} rows, columns: {list(df.columns)[:10]}")
         
         # Flexible column mapping - supports multiple names per field
+        # INCLUDES: User's specific POE Guide column names (Helium10, Amazon Niche)
         column_aliases = {
-            "price": ["price", "precio", "cost", "costo", "unit price", "precio unitario", "msrp", "buy box"],
-            "sales": ["sales", "ventas", "units", "unidades", "monthly sales", "ventas mensuales", "units sold"],
-            "revenue": ["revenue", "ingresos", "monthly revenue", "gross", "total sales"],
-            "bsr": ["bsr", "rank", "ranking", "best seller", "posicion"],
-            "asin": ["asin", "product id", "sku", "id producto"],
-            "title": ["title", "titulo", "product", "producto", "name", "nombre", "description"],
-            "reviews": ["reviews", "reseñas", "review count", "numero de reseñas", "ratings"]
+            "price": [
+                # Standard
+                "price", "precio", "cost", "costo", "unit price", "precio unitario", "msrp", "buy box",
+                # Amazon Niche specific
+                "average selling price", "asp", "selling price", "avg price",
+                # Helium10 specific
+                "fba price", "fbm price"
+            ],
+            "sales": [
+                # Standard
+                "sales", "ventas", "units", "unidades", "units sold",
+                # Helium10 specific
+                "monthly sales", "sales (monthly)", "est. sales", "estimated sales",
+                # Amazon Niche specific
+                "niche click count", "click count"
+            ],
+            "revenue": [
+                # Standard
+                "revenue", "ingresos", "gross", "total sales",
+                # Helium10 specific
+                "monthly revenue", "est. revenue", "estimated revenue"
+            ],
+            "bsr": [
+                # Standard
+                "bsr", "rank", "ranking", "best seller", "posicion",
+                # Helium10 specific
+                "best sellers rank", "sales rank"
+            ],
+            "asin": [
+                "asin", "product id", "sku", "id producto", "parent asin", "child asin"
+            ],
+            "title": [
+                "title", "titulo", "product", "producto", "name", "nombre", "description", "product name"
+            ],
+            "reviews": [
+                # Standard
+                "reviews", "reseñas", "review count", "numero de reseñas",
+                # Amazon Niche specific
+                "total ratings", "ratings", "rating count"
+            ],
+            # Additional useful columns from POE Guide
+            "click_share": [
+                "click share", "cuota de clic", "market share"
+            ],
+            "launch_date": [
+                "launch date", "fecha de lanzamiento", "date first available"
+            ],
+            "fba_fees": [
+                "fba fees", "fba fee", "fulfillment fee", "tarifas fba"
+            ],
+            "dimensions": [
+                "dimensions", "dimensiones", "package dimensions", "item dimensions"
+            ],
+            "active_sellers": [
+                "active sellers", "sellers", "vendedores activos", "number of sellers"
+            ]
         }
         
         col_map = {}
