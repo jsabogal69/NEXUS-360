@@ -130,51 +130,59 @@ Nuestra ventaja reside en el diseño de un 'Moat' inexpugnable. Al desvincular e
 Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un objeto; vendemos infraestructura de vida. La hoja de ruta está calibrada para ganar autoridad técnica antes de escalar. Es momento de dejar de ser un vendedor para convertirnos en el **dueño de la categoría**. El Dossier está listo para ejecución."""
 
         # ═══════════════════════════════════════════════════════════════════════
-        # CRITICAL: NO HALLUCINATION - All values MUST come from real data
-        # If data is not available, we show "PENDIENTE" instead of fake numbers
+        # CRITICAL: Distinguish between POE DATA vs LLM ESTIMATES
+        # Scout data comes from Gemini LLM = ESTIMATES (may vary per scan)
+        # POE data from uploaded files = REAL DATA (consistent)
         # ═══════════════════════════════════════════════════════════════════════
         
         top_10_products = ssot_data.get("scout_data", {}).get("top_10_products", [])
+        poe_data = ssot_data.get("poe_data", {})  # Real POE file data
         
-        # Check if we have REAL data from Scout
-        has_real_pricing_data = len(top_10_products) > 0 and any(p.get("price", 0) > 0 for p in top_10_products)
+        # Check if we have POE file data with actual prices
+        has_poe_pricing = False  # TODO: Implement when Harvester extracts prices from POE files
         
-        if has_real_pricing_data:
-            # Calculate from REAL Scout data
+        # Scout data EXISTS but is LLM-GENERATED (estimates)
+        has_scout_estimates = len(top_10_products) > 0 and any(p.get("price", 0) > 0 for p in top_10_products)
+        
+        if has_poe_pricing:
+            # REAL DATA from POE files - This is the gold standard
+            # TODO: Extract actual prices from Harvester poe_data
+            pricing_source = "📁 DATOS POE (archivos verificados)"
+            data_reliability = "high"
+        elif has_scout_estimates:
+            # LLM-GENERATED estimates - May vary between scans
             prices = [p.get("price", 0) for p in top_10_products if p.get("price", 0) > 0]
             avg_price = sum(prices) / len(prices) if prices else 0
             suggested_msrp = round(avg_price * 1.15, 2)  # 15% above market average
             estimated_cost = round(suggested_msrp * 0.30, 2)  # Industry standard 30% COGS
             margin = round((1 - estimated_cost / suggested_msrp) * 100) if suggested_msrp > 0 else 0
             
-            # Track data source for transparency
-            pricing_source = f"Scout TOP10 ({len(prices)} productos con precio)"
-            pricing_formula = f"ASP ${round(avg_price, 2)} × 1.15 = ${suggested_msrp}"
+            # CLEARLY LABEL AS LLM ESTIMATE
+            pricing_source = f"⚡ ESTIMADO IA ({len(prices)} productos analizados)"
+            pricing_formula = f"ASP estimado ${round(avg_price, 2)} × 1.15 = ${suggested_msrp}"
+            data_reliability = "medium"
             
-            # Calculate TAM from real data (monthly sales × 12 × category multiplier)
-            monthly_sales = ssot_data.get("scout_data", {}).get("monthly_sales_estimate", 0)
-            if monthly_sales > 0:
-                tam_value = round(monthly_sales * 12 * avg_price / 1000000, 1)  # In millions
-                sam_value = round(tam_value * 0.30, 1)  # 30% premium segment
-                som_value = round(sam_value * 0.05, 1)  # 5% year 1 target
-                tam_source = "Scout: ventas mensuales × 12 × ASP"
-            else:
-                # Estimate TAM from top 10 if no monthly sales data
-                tam_value = round(len(top_10_products) * avg_price * 5000 * 12 / 1000000, 1)  # Rough estimate
-                sam_value = round(tam_value * 0.30, 1)
-                som_value = round(sam_value * 0.05, 1)
-                tam_source = "Estimado: TOP10 × ASP × volumen promedio"
+            # TAM is also estimated
+            tam_value = round(len(top_10_products) * avg_price * 5000 * 12 / 1000000, 1)  # Rough estimate
+            sam_value = round(tam_value * 0.30, 1)
+            som_value = round(sam_value * 0.05, 1)
+            tam_source = "⚡ ESTIMADO IA (requiere validación con POE)"
         else:
-            # NO REAL DATA - Show pending instead of hallucinating
+            # NO DATA - Show pending
             suggested_msrp = "PENDIENTE"
             estimated_cost = "PENDIENTE"
             margin = "PENDIENTE"
-            pricing_source = "⚠️ No hay datos de Scout para calcular"
-            pricing_formula = "Requiere escaneo con datos de precio"
+            pricing_source = "⚠️ Sin datos - ejecutar escaneo"
+            pricing_formula = "Requiere Scout o archivos POE"
             tam_value = "PENDIENTE"
             sam_value = "PENDIENTE"
             som_value = "PENDIENTE"
-            tam_source = "⚠️ Ejecutar Scout con datos POE"
+            tam_source = "⚠️ Datos pendientes"
+            data_reliability = "none"
+        
+        # Flag to indicate this is estimate data, not verified
+        has_real_pricing_data = has_poe_pricing  # Only TRUE if from POE files
+        has_estimate_data = has_scout_estimates
         
         # Extract differentiators from gaps (these come from LLM analysis, not hallucinated)
         differentiators = [g.get("proposal", "Innovación clave")[:60] for g in gaps[:3]] if gaps else ["Análisis en progreso...", "Ejecutar escaneo completo", "Datos pendientes"]

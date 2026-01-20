@@ -944,10 +944,11 @@ class Nexus7Architect:
         market_source = market.get("source", "⚠️ Datos pendientes") if isinstance(market, dict) else "⚠️ Datos pendientes"
         has_market_data = market.get("has_real_data", False) if isinstance(market, dict) else False
         
-        # Extract pricing sources
+        # Extract pricing sources - distinguish between POE (real) and LLM (estimate)
         pricing_source = verdict.get("pricing_source", "⚠️ Datos pendientes")
         pricing_formula = verdict.get("pricing_formula", "Requiere escaneo con datos")
-        has_real_pricing = verdict.get("has_real_pricing", False)
+        has_real_pricing = verdict.get("has_real_pricing", False)  # From POE files
+        has_estimate_data = verdict.get("has_estimate_data", True)  # From LLM
         
         html_report = f"""<!DOCTYPE html>
 <html lang="es">
@@ -1172,7 +1173,7 @@ class Nexus7Architect:
                 <div style="background:linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-radius:16px; padding:25px; color:white;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                         <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">📊 DIMENSIONAMIENTO DE MERCADO</div>
-                        <span style="background:{'#22c55e' if has_market_data else '#ef4444'}; color:white; padding:2px 8px; border-radius:8px; font-size:0.5rem;">{'✓ DATOS REALES' if has_market_data else '⚠️ PENDIENTE'}</span>
+                        <span style="background:{'#22c55e' if has_market_data else '#f59e0b' if has_estimate_data else '#ef4444'}; color:white; padding:2px 8px; border-radius:8px; font-size:0.5rem;">{'📁 DATOS POE' if has_market_data else '⚡ ESTIMADO IA' if has_estimate_data else '⚠️ PENDIENTE'}</span>
                     </div>
                     
                     <!-- TAM with source -->
@@ -1221,20 +1222,20 @@ class Nexus7Architect:
                 <div style="background:#0f172a; color:white; border-radius:16px; padding:30px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                         <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">💰 PRICING STRATEGY</div>
-                        <span style="background:{'#22c55e' if has_real_pricing else '#ef4444'}; color:white; padding:2px 8px; border-radius:8px; font-size:0.5rem;">{'✓ DATOS REALES' if has_real_pricing else '⚠️ PENDIENTE'}</span>
+                        <span style="background:{'#22c55e' if has_real_pricing else '#f59e0b' if has_estimate_data else '#ef4444'}; color:white; padding:2px 8px; border-radius:8px; font-size:0.5rem;">{'📁 DATOS POE' if has_real_pricing else '⚡ ESTIMADO IA' if has_estimate_data else '⚠️ PENDIENTE'}</span>
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; text-align:center;">
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">MSRP SUGERIDO</div>
-                            <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">{f"${verdict.get('price_msrp', 'N/A')}" if has_real_pricing else "⏳"}</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">{f"${verdict.get('price_msrp', 'N/A')}" if has_estimate_data or has_real_pricing else "⏳"}</div>
                         </div>
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">COSTO EST.</div>
-                            <div style="font-size:1.5rem; font-weight:900; color:#f97316;">{f"${verdict.get('price_cost', 'N/A')}" if has_real_pricing else "⏳"}</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#f97316;">{f"${verdict.get('price_cost', 'N/A')}" if has_estimate_data or has_real_pricing else "⏳"}</div>
                         </div>
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">MARGEN BRUTO</div>
-                            <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">{f"{verdict.get('margin', 'N/A')}%" if has_real_pricing else "⏳"}</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">{f"{verdict.get('margin', 'N/A')}%" if has_estimate_data or has_real_pricing else "⏳"}</div>
                         </div>
                     </div>
                     <!-- Pricing Methodology -->
