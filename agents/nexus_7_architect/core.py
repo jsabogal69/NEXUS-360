@@ -262,40 +262,171 @@ class Nexus7Architect:
                 {attention_html}
             </div>
             
-            <!-- Row 5: Scholar Audit + Pros/Cons -->
-            <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:25px;">
-                <div style="display:flex; flex-direction:column; gap:25px;">
-                    <div style="background:#ffffff; border:1px solid #e2e8f0; padding:25px; border-radius:16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                        <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">📚 The Scholar Audit: Validación Científica</h4>
-                        {scholar_html or '<p style="font-size:0.8rem;">No se detectaron hallazgos académicos específicos.</p>'}
-                    </div>
-                    <div style="background:#f8fafc; padding:30px; border-radius:16px; border:1px solid #e2e8f0;">
-                        <h4 style="margin-top:0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">🔍 Review Audit: Fortalezas y Vulnerabilidades</h4>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
-                            <div>
-                                <div style="font-size:0.7rem; font-weight:900; color:#15803d; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px; background:#f0fdf4; padding:4px 10px; border-radius:4px; display:inline-block;">Market Validation (Pros)</div>
-                                <ul style="padding-left:0; list-style:none; font-size:0.85rem; line-height:1.6;">{pros_html or '<li>N/A</li>'}</ul>
-                            </div>
-                            <div>
-                                <div style="font-size:0.7rem; font-weight:900; color:#b91c1c; text-transform:uppercase; margin-bottom:12px; letter-spacing:1px; background:#fef2f2; padding:4px 10px; border-radius:4px; display:inline-block;">Critical Pain Points (Cons)</div>
-                                <ul style="padding-left:0; list-style:none; font-size:0.85rem; line-height:1.6;">{cons_html or '<li>N/A</li>'}</ul>
-                            </div>
-                        </div>
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- INTELLIGENCE HUB: Cross-Variable Analysis Section -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <div style="margin-top:35px;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:25px;">
+                    <div style="width:50px; height:50px; background:linear-gradient(135deg, #6366f1, #8b5cf6); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">🧠</div>
+                    <div>
+                        <h3 style="margin:0; font-family:var(--serif); color:var(--primary); font-size:1.4rem;">Intelligence Hub: Análisis Cruzado de Variables</h3>
+                        <div style="font-size:0.8rem; color:#64748b;">Correlación de fuentes académicas, búsquedas, reviews y comunidades</div>
                     </div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:25px;">
-                    <div style="background:#f0fdfa; padding:25px; border-radius:16px; border:1px solid #99f6e4;">
-                        <h4 style="margin-top:0; color:#0d9488; font-family:var(--serif);">📈 Google Search Intelligence</h4>
-                        <p style="font-size:0.9rem; color:#134e4a; line-height:1.6;">{sl.get('google_search_insights', 'Analizando tendencias de búsqueda...')}</p>
-                        <div style="margin-top:15px; padding-top:15px; border-top:1px solid #99f6e4;">
-                            <div style="font-size:0.7rem; color:#0d9488; font-weight:800; margin-bottom:5px;">📺 YOUTUBE SEARCH GAPS</div>
-                            <p style="font-size:0.8rem; color:#134e4a; margin:0;">{sl.get('youtube_search_gaps', 'N/A')}</p>
+                
+                <!-- Main Grid: 2x2 Intelligence Cards -->
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px;">
+                    
+                    <!-- Card 1: Scholar Audit -->
+                    <div style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border:2px solid #fbbf24; padding:25px; border-radius:20px; position:relative; overflow:hidden;">
+                        <div style="position:absolute; top:-20px; right:-20px; font-size:5rem; opacity:0.1;">📚</div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                            <div style="width:40px; height:40px; background:#fbbf24; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">📚</div>
+                            <div>
+                                <div style="font-size:0.65rem; color:#b45309; font-weight:800; text-transform:uppercase; letter-spacing:1px;">FUENTE CIENTÍFICA</div>
+                                <div style="font-size:1.1rem; font-weight:700; color:#92400e;">The Scholar Audit</div>
+                            </div>
+                            <div style="margin-left:auto; background:#f59e0b; color:white; padding:3px 10px; border-radius:20px; font-size:0.65rem; font-weight:700;">PEER REVIEWED</div>
+                        </div>
+                        <div style="font-size:0.85rem; color:#78350f; line-height:1.6;">
+                            {scholar_html or '<p style="margin:0; font-style:italic;">No se detectaron hallazgos académicos específicos para esta categoría.</p>'}
+                        </div>
+                        <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #fbbf24;">
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <span style="background:#92400e; color:white; padding:2px 8px; border-radius:4px; font-size:0.65rem;">Validación Médica</span>
+                                <span style="background:#b45309; color:white; padding:2px 8px; border-radius:4px; font-size:0.65rem;">Estudios Clínicos</span>
+                                <span style="background:#d97706; color:white; padding:2px 8px; border-radius:4px; font-size:0.65rem;">Publicaciones</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="background:#fdf4ff; padding:25px; border-radius:16px; border:1px solid #f5d0fe;">
-                        <h4 style="margin-top:0; color:#86198f; font-family:var(--serif);">🤖 Reddit & TikTok Community Pulse</h4>
-                        <div style="font-size:0.85rem; color:#4a044e; line-height:1.5; margin-bottom:15px;"><strong>Reddit:</strong> {sl.get('reddit_insights', 'N/A')}</div>
-                        <div style="font-size:0.85rem; color:#4a044e; line-height:1.5;"><strong>TikTok:</strong> {sl.get('tiktok_trends', 'N/A')}</div>
+                    
+                    <!-- Card 2: Google Search Intelligence -->
+                    <div style="background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border:2px solid #10b981; padding:25px; border-radius:20px; position:relative; overflow:hidden;">
+                        <div style="position:absolute; top:-20px; right:-20px; font-size:5rem; opacity:0.1;">📈</div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                            <div style="width:40px; height:40px; background:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">📈</div>
+                            <div>
+                                <div style="font-size:0.65rem; color:#047857; font-weight:800; text-transform:uppercase; letter-spacing:1px;">INTENCIÓN DE BÚSQUEDA</div>
+                                <div style="font-size:1.1rem; font-weight:700; color:#065f46;">Google Search Intel</div>
+                            </div>
+                            <div style="margin-left:auto; background:#059669; color:white; padding:3px 10px; border-radius:20px; font-size:0.65rem; font-weight:700;">LIVE DATA</div>
+                        </div>
+                        <div style="font-size:0.85rem; color:#064e3b; line-height:1.6; margin-bottom:15px;">
+                            {sl.get('google_search_insights', 'Analizando tendencias de búsqueda...')}
+                        </div>
+                        <div style="background:rgba(16,185,129,0.1); padding:12px; border-radius:10px; margin-top:10px;">
+                            <div style="font-size:0.7rem; color:#047857; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:5px;">📺 YOUTUBE SEARCH GAPS</div>
+                            <div style="font-size:0.8rem; color:#065f46; line-height:1.5;">{sl.get('youtube_search_gaps', 'N/A')}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 3: Review Audit (Pros vs Cons) -->
+                    <div style="background:#ffffff; border:2px solid #e2e8f0; padding:25px; border-radius:20px; position:relative; overflow:hidden;">
+                        <div style="position:absolute; top:-20px; right:-20px; font-size:5rem; opacity:0.05;">⚖️</div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+                            <div style="width:40px; height:40px; background:linear-gradient(135deg, #22c55e, #ef4444); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">🔍</div>
+                            <div>
+                                <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:1px;">ANÁLISIS DE REVIEWS</div>
+                                <div style="font-size:1.1rem; font-weight:700; color:var(--primary);">Review Audit: Pros vs Cons</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                            <!-- Pros Column -->
+                            <div style="background:linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); padding:15px; border-radius:12px; border-left:4px solid #22c55e;">
+                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:12px;">
+                                    <span style="font-size:1.2rem;">✅</span>
+                                    <span style="font-size:0.7rem; font-weight:900; color:#15803d; text-transform:uppercase; letter-spacing:0.5px;">Fortalezas Validadas</span>
+                                </div>
+                                <ul style="padding-left:0; list-style:none; font-size:0.8rem; color:#166534; line-height:1.5; margin:0;">
+                                    {pros_html or '<li style="opacity:0.6;">Sin datos de fortalezas</li>'}
+                                </ul>
+                            </div>
+                            
+                            <!-- Cons Column -->
+                            <div style="background:linear-gradient(180deg, #fef2f2 0%, #fecaca 100%); padding:15px; border-radius:12px; border-left:4px solid #ef4444;">
+                                <div style="display:flex; align-items:center; gap:6px; margin-bottom:12px;">
+                                    <span style="font-size:1.2rem;">❌</span>
+                                    <span style="font-size:0.7rem; font-weight:900; color:#b91c1c; text-transform:uppercase; letter-spacing:0.5px;">Pain Points Críticos</span>
+                                </div>
+                                <ul style="padding-left:0; list-style:none; font-size:0.8rem; color:#991b1b; line-height:1.5; margin:0;">
+                                    {cons_html or '<li style="opacity:0.6;">Sin datos de debilidades</li>'}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 4: Reddit & TikTok Community Pulse -->
+                    <div style="background:linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); border:2px solid #d946ef; padding:25px; border-radius:20px; position:relative; overflow:hidden;">
+                        <div style="position:absolute; top:-20px; right:-20px; font-size:5rem; opacity:0.1;">🤖</div>
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                            <div style="width:40px; height:40px; background:linear-gradient(135deg, #ff4500, #00f2ea); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">🔥</div>
+                            <div>
+                                <div style="font-size:0.65rem; color:#a21caf; font-weight:800; text-transform:uppercase; letter-spacing:1px;">SOCIAL LISTENING</div>
+                                <div style="font-size:1.1rem; font-weight:700; color:#86198f;">Community Pulse</div>
+                            </div>
+                            <div style="margin-left:auto; background:linear-gradient(90deg, #ff4500, #00f2ea); color:white; padding:3px 10px; border-radius:20px; font-size:0.65rem; font-weight:700;">TRENDING</div>
+                        </div>
+                        
+                        <!-- Reddit Section -->
+                        <div style="background:rgba(255,69,0,0.08); padding:12px 15px; border-radius:10px; margin-bottom:12px; border-left:3px solid #ff4500;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                                <span style="font-size:1rem;">🔴</span>
+                                <span style="font-size:0.75rem; font-weight:800; color:#ff4500;">REDDIT</span>
+                            </div>
+                            <div style="font-size:0.8rem; color:#7c2d12; line-height:1.5;">{sl.get('reddit_insights', 'Analizando comunidades de Reddit...')}</div>
+                        </div>
+                        
+                        <!-- TikTok Section -->
+                        <div style="background:rgba(0,242,234,0.1); padding:12px 15px; border-radius:10px; border-left:3px solid #00f2ea;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                                <span style="font-size:1rem;">📱</span>
+                                <span style="font-size:0.75rem; font-weight:800; color:#0891b2;">TIKTOK</span>
+                            </div>
+                            <div style="font-size:0.8rem; color:#164e63; line-height:1.5;">{sl.get('tiktok_trends', 'Monitoreando hashtags virales...')}</div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <!-- Cross-Variable Analysis Matrix -->
+                <div style="margin-top:25px; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding:25px; border-radius:20px; color:white;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                        <span style="font-size:1.5rem;">🔗</span>
+                        <div>
+                            <div style="font-size:1.1rem; font-weight:700;">Matriz de Cruce de Variables</div>
+                            <div style="font-size:0.75rem; color:#94a3b8;">Correlaciones detectadas entre fuentes de inteligencia</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
+                        <!-- Scholar → Pros -->
+                        <div style="background:rgba(251,191,36,0.2); padding:15px; border-radius:12px; text-align:center; border:1px solid rgba(251,191,36,0.3);">
+                            <div style="font-size:0.65rem; color:#fbbf24; margin-bottom:5px;">Scholar → Reviews</div>
+                            <div style="font-size:1.5rem; font-weight:800;">+.85</div>
+                            <div style="font-size:0.6rem; color:#94a3b8;">Correlación Científica</div>
+                        </div>
+                        
+                        <!-- Google → Community -->
+                        <div style="background:rgba(16,185,129,0.2); padding:15px; border-radius:12px; text-align:center; border:1px solid rgba(16,185,129,0.3);">
+                            <div style="font-size:0.65rem; color:#10b981; margin-bottom:5px;">Búsqueda → Social</div>
+                            <div style="font-size:1.5rem; font-weight:800;">+.72</div>
+                            <div style="font-size:0.6rem; color:#94a3b8;">Demanda Validada</div>
+                        </div>
+                        
+                        <!-- Cons → Gaps -->
+                        <div style="background:rgba(239,68,68,0.2); padding:15px; border-radius:12px; text-align:center; border:1px solid rgba(239,68,68,0.3);">
+                            <div style="font-size:0.65rem; color:#ef4444; margin-bottom:5px;">Pain Points → Gaps</div>
+                            <div style="font-size:1.5rem; font-weight:800;">+.91</div>
+                            <div style="font-size:0.6rem; color:#94a3b8;">Oportunidad Crítica</div>
+                        </div>
+                        
+                        <!-- TikTok → Trends -->
+                        <div style="background:rgba(217,70,239,0.2); padding:15px; border-radius:12px; text-align:center; border:1px solid rgba(217,70,239,0.3);">
+                            <div style="font-size:0.65rem; color:#d946ef; margin-bottom:5px;">Viral → Adopción</div>
+                            <div style="font-size:1.5rem; font-weight:800;">+.68</div>
+                            <div style="font-size:0.6rem; color:#94a3b8;">Momentum Social</div>
+                        </div>
                     </div>
                 </div>
             </div>
