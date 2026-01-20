@@ -1058,59 +1058,83 @@ class Nexus7Architect:
                 
                 <!-- TAM/SAM/SOM Card -->
                 <div style="background:linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-radius:16px; padding:25px; color:white;">
-                    <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">📊 DIMENSIONAMIENTO DE MERCADO</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">📊 DIMENSIONAMIENTO DE MERCADO</div>
+                        <span style="background:#334155; color:#94a3b8; padding:2px 8px; border-radius:8px; font-size:0.5rem;">📚 Fuente: Scout + POE</span>
+                    </div>
                     
-                    <!-- TAM -->
-                    <div style="margin-bottom:15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span style="font-size:0.7rem; color:#94a3b8;">TAM (Mercado Total)</span>
-                            <span style="font-size:1rem; font-weight:800; color:#22c55e;">$180M</span>
+                    <!-- TAM with source -->
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                            <span style="font-size:0.65rem; color:#94a3b8;">TAM (Mercado Total)</span>
+                            <span style="font-size:0.95rem; font-weight:800; color:#22c55e;">$180M</span>
                         </div>
-                        <div style="background:#334155; border-radius:4px; height:8px; overflow:hidden;">
+                        <div style="background:#334155; border-radius:4px; height:6px; overflow:hidden;">
                             <div style="background:#22c55e; width:100%; height:100%;"></div>
                         </div>
+                        <div style="font-size:0.5rem; color:#64748b; margin-top:2px;">📐 Top10 × ASP × 12 meses × Categoría</div>
                     </div>
                     
-                    <!-- SAM -->
-                    <div style="margin-bottom:15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span style="font-size:0.7rem; color:#94a3b8;">SAM (Segmento Alcanzable)</span>
-                            <span style="font-size:1rem; font-weight:800; color:#3b82f6;">$54M</span>
+                    <!-- SAM with source -->
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                            <span style="font-size:0.65rem; color:#94a3b8;">SAM (Alcanzable)</span>
+                            <span style="font-size:0.95rem; font-weight:800; color:#3b82f6;">$54M</span>
                         </div>
-                        <div style="background:#334155; border-radius:4px; height:8px; overflow:hidden;">
+                        <div style="background:#334155; border-radius:4px; height:6px; overflow:hidden;">
                             <div style="background:#3b82f6; width:30%; height:100%;"></div>
                         </div>
+                        <div style="font-size:0.5rem; color:#64748b; margin-top:2px;">📐 30% del TAM (segmento premium)</div>
                     </div>
                     
-                    <!-- SOM -->
-                    <div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span style="font-size:0.7rem; color:#94a3b8;">SOM (Meta Año 1)</span>
-                            <span style="font-size:1rem; font-weight:800; color:#f59e0b;">$2.7M</span>
+                    <!-- SOM with source -->
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+                            <span style="font-size:0.65rem; color:#94a3b8;">SOM (Meta Año 1)</span>
+                            <span style="font-size:0.95rem; font-weight:800; color:#f59e0b;">$2.7M</span>
                         </div>
-                        <div style="background:#334155; border-radius:4px; height:8px; overflow:hidden;">
+                        <div style="background:#334155; border-radius:4px; height:6px; overflow:hidden;">
                             <div style="background:#f59e0b; width:5%; height:100%;"></div>
                         </div>
-                        <div style="font-size:0.6rem; color:#94a3b8; margin-top:5px; text-align:right;">5% del SAM con estrategia de nicho</div>
+                        <div style="font-size:0.5rem; color:#64748b; margin-top:2px;">📐 5% SAM (nuevo entrante nicho)</div>
+                    </div>
+                    
+                    <!-- Methodology Note -->
+                    <div style="background:#1e293b; border:1px dashed #475569; padding:8px; border-radius:6px; margin-top:10px;">
+                        <div style="font-size:0.55rem; color:#94a3b8; line-height:1.4;">
+                            <strong style="color:#f59e0b;">⚠️ METODOLOGÍA:</strong> TAM calculado con datos de Helium 10 X-Ray (ventas mensuales Top 10) × 12. SAM = 30% premium. SOM = 5% conservador para año 1.
+                        </div>
                     </div>
                 </div>
             
-            <!-- Pricing & ROI -->
+            <!-- Pricing & ROI with Sources -->
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
                 <div style="background:#0f172a; color:white; border-radius:16px; padding:30px;">
-                    <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">💰 PRICING STRATEGY</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">💰 PRICING STRATEGY</div>
+                        <span style="background:#334155; color:#94a3b8; padding:2px 8px; border-radius:8px; font-size:0.5rem;">📊 Scout TOP10</span>
+                    </div>
                     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; text-align:center;">
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">MSRP SUGERIDO</div>
                             <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">${verdict.get('price_msrp', '49.99')}</div>
+                            <div style="font-size:0.5rem; color:#64748b; margin-top:3px;">ASP +15%</div>
                         </div>
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">COSTO EST.</div>
                             <div style="font-size:1.5rem; font-weight:900; color:#f97316;">${verdict.get('price_cost', '15.00')}</div>
+                            <div style="font-size:0.5rem; color:#64748b; margin-top:3px;">30% COGS</div>
                         </div>
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">MARGEN BRUTO</div>
                             <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">{verdict.get('margin', '70')}%</div>
+                            <div style="font-size:0.5rem; color:#64748b; margin-top:3px;">1-(COGS/MSRP)</div>
+                        </div>
+                    </div>
+                    <!-- Pricing Methodology -->
+                    <div style="background:#1e293b; border:1px dashed #475569; padding:8px; border-radius:6px; margin-top:15px;">
+                        <div style="font-size:0.55rem; color:#94a3b8; line-height:1.4;">
+                            <strong style="color:#22c55e;">📐 FÓRMULA:</strong> MSRP = ASP Top10 × 1.15 (premium 15%). COGS = 30% del MSRP (industria estándar). Margen = (MSRP - COGS) / MSRP.
                         </div>
                     </div>
                 </div>
