@@ -1,12 +1,11 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# NEXUS-360 MANDAMIENTO ARQUITECTÓNICO: NO DATA INVENTION
+# NEXUS-360 SCOUT AGENT
 # ═══════════════════════════════════════════════════════════════════════════════
 # 
-# REGLA ABSOLUTA: Ningún agente puede INVENTAR datos cuantitativos.
-# Todos los valores numéricos DEBEN provenir de:
-#   1. Archivos POE reales (X-Ray, Cerebro, etc.)
-#   2. APIs verificables (Amazon, Google Trends, etc.)
-#   3. O marcarse explícitamente como "DATOS PENDIENTES"
+# POLÍTICA DE DATOS:
+# - TOP 10 Competidores: Del LLM (análisis cualitativo: nombres, pros, cons, gaps)
+# - PRECIOS en TOP 10: Marcados como "ESTIMADO IA" si no hay POE
+# - PRECIOS MSRP/TAM/SAM: SOLO de archivos POE (o PENDIENTE)
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -21,13 +20,12 @@ class Nexus2Scout:
     """
     NEXUS-2 Scout Agent - Market Intelligence
     
-    MANDAMIENTO: Este agente NO INVENTA datos cuantitativos.
-    - Precios, ventas, market share: SOLO de archivos POE
-    - LLM solo se usa para análisis CUALITATIVO (sentimiento, gaps, tendencias)
-    - Si no hay datos POE, los campos cuantitativos = "PENDIENTE"
+    Genera TOP 10 competidores vía LLM (análisis cualitativo).
+    Los PRECIOS del LLM se marcan claramente como "ESTIMADO IA".
+    Para precios consistentes, se requieren archivos POE (X-Ray).
     """
     
-    task_description = "Market Intelligence basada SOLO en datos POE verificables"
+    task_description = "Market Intelligence con transparencia de fuentes de datos"
     
     def __init__(self):
         self.db = get_db()
@@ -40,60 +38,89 @@ class Nexus2Scout:
         
         Args:
             context_str: Descripción del nicho/producto
-            poe_data: Datos extraídos de archivos POE (X-Ray, Cerebro, etc.)
-                      SI poe_data es None o vacío, los campos cuantitativos = PENDIENTE
+            poe_data: Datos extraídos de archivos POE (X-Ray, Helium10)
         
         Returns:
-            dict con findings - NUNCA con datos inventados
+            dict con findings incluyendo TOP 10 y source tracking
         """
         logger.info(f"[{self.role}] Analyzing Market: {context_str}")
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASO 1: Verificar si hay datos POE reales
+        # PASO 1: Verificar si hay datos POE reales para PRECIOS
         # ═══════════════════════════════════════════════════════════════════
         has_poe_data = poe_data is not None and poe_data.get("has_real_data", False)
         
         if has_poe_data:
-            logger.info(f"[{self.role}] ✅ POE DATA DETECTED - Using real verified data")
-            top_10 = poe_data.get("products", [])[:10]
-            data_source = "POE_VERIFIED"
+            logger.info(f"[{self.role}] ✅ POE DATA DETECTED - Using real verified pricing")
+            poe_products = poe_data.get("products", [])[:10]
+            pricing_source = "POE_VERIFIED"
             data_source_file = poe_data.get("source_file", "Unknown")
         else:
-            logger.warning(f"[{self.role}] ⚠️ NO POE DATA - Quantitative fields will be PENDIENTE")
-            top_10 = []  # NO INVENTAMOS PRODUCTOS
-            data_source = "PENDIENTE"
+            logger.info(f"[{self.role}] ℹ️ No POE data - LLM prices marked as estimates")
+            poe_products = []
+            pricing_source = "LLM_ESTIMATE"
             data_source_file = None
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASO 2: LLM solo para análisis CUALITATIVO (no cuantitativo)
+        # PASO 2: LLM para análisis de mercado y TOP 10
+        # El TOP 10 es válido para: nombres, pros, cons, gaps, brechas
+        # Los PRECIOS se marcan según la fuente (POE vs LLM)
         # ═══════════════════════════════════════════════════════════════════
-        logger.info(f"[{self.role}] Executing qualitative analysis via LLM...")
+        logger.info(f"[{self.role}] Executing market analysis via LLM...")
+        
+        llm_top_10 = []
+        social = {}
+        trends = []
+        keywords = []
+        sentiment_summary = "Análisis en progreso."
+        scholar_audit = []
+        content_opportunities = {}
+        sales_intelligence = {}
         
         try:
             llm_data = generate_market_intel(context_str)
             
-            # SOLO extraemos datos CUALITATIVOS del LLM
+            # TOP 10 del LLM - válido para análisis cualitativo
+            llm_top_10 = llm_data.get("top_10_products", [])
+            
+            # Marcar los precios del LLM como estimados
+            for product in llm_top_10:
+                if not has_poe_data:
+                    product["price_source"] = "LLM_ESTIMATE"
+                    product["price_disclaimer"] = "⚡ Estimado"
+                else:
+                    product["price_source"] = "POE_VERIFIED"
+                    product["price_disclaimer"] = "📁 POE"
+            
+            # Datos cualitativos (siempre del LLM - esto es análisis, no invención)
             social = llm_data.get("social_listening", {})
             trends = llm_data.get("trends", [])
             keywords = llm_data.get("keywords", [])
             sentiment_summary = llm_data.get("sentiment_summary", "Análisis en progreso.")
             scholar_audit = llm_data.get("scholar_audit", [])
             content_opportunities = llm_data.get("content_opportunities", {})
-            
-            # IMPORTANTE: NO usamos top_10_products del LLM - son inventados
-            # Solo usamos los datos POE reales
+            sales_intelligence = llm_data.get("sales_intelligence", {})
             
         except Exception as e:
             logger.error(f"[{self.role}] LLM analysis failed: {e}")
-            social = {}
-            trends = []
-            keywords = []
-            sentiment_summary = "Error en análisis LLM"
-            scholar_audit = []
-            content_opportunities = {}
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASO 3: Construir findings CON TRANSPARENCIA sobre fuente de datos
+        # PASO 3: Decidir qué TOP 10 usar
+        # Si hay POE: merge con datos reales de precio
+        # Si no hay POE: usar LLM pero marcar precios como estimados
+        # ═══════════════════════════════════════════════════════════════════
+        
+        if has_poe_data and poe_products:
+            # Usar productos POE (tienen precios reales)
+            final_top_10 = poe_products
+            for p in final_top_10:
+                p["price_source"] = "POE_VERIFIED"
+        else:
+            # Usar TOP 10 del LLM (análisis cualitativo válido, precios estimados)
+            final_top_10 = llm_top_10
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # PASO 4: Construir findings CON TRANSPARENCIA
         # ═══════════════════════════════════════════════════════════════════
         
         findings = {
@@ -101,22 +128,17 @@ class Nexus2Scout:
             "product_anchor": context_str[:50],
             "scout_anchor": context_str[:50],
             
-            # DATOS CUANTITATIVOS: Solo de POE o PENDIENTE
-            "top_10_products": top_10,
-            "data_source": data_source,
+            # TOP 10 con source tracking
+            "top_10_products": final_top_10,
+            "pricing_source": pricing_source,
             "data_source_file": data_source_file,
             "has_poe_data": has_poe_data,
             
-            # Si no hay POE, estos campos son explícitamente PENDIENTE
-            "sales_intelligence": poe_data.get("sales_data", {}) if has_poe_data else {
-                "status": "PENDIENTE",
-                "message": "Subir archivo X-Ray de Helium10 para datos reales"
-            },
-            
-            # DATOS CUALITATIVOS: Del LLM (análisis, no invención)
+            # Datos cualitativos del LLM (análisis, no invención)
             "social_listening": social,
             "trends": trends,
             "keywords": keywords,
+            "sales_intelligence": sales_intelligence,
             "scholar_audit": scholar_audit,
             "sentiment_summary": sentiment_summary,
             "content_opportunities": content_opportunities,
@@ -124,9 +146,9 @@ class Nexus2Scout:
             # Metadata
             "timestamp": timestamp_now(),
             "data_integrity": {
-                "quantitative_source": data_source,
+                "top_10_source": pricing_source,
                 "qualitative_source": "LLM_ANALYSIS",
-                "warning": None if has_poe_data else "⚠️ DATOS CUANTITATIVOS PENDIENTES - Subir archivos POE"
+                "price_disclaimer": "⚡ Precios estimados por IA" if not has_poe_data else "📁 Precios de archivos POE"
             }
         }
         
@@ -144,4 +166,4 @@ class Nexus2Scout:
 # Entry point for testing
 if __name__ == "__main__":
     scout = Nexus2Scout()
-    logger.info(f"{scout.role} Online - NO DATA INVENTION MODE")
+    logger.info(f"{scout.role} Online")
