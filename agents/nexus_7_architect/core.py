@@ -1297,7 +1297,31 @@ class Nexus7Architect:
             </div>
         </div>
 
-        <footer style="margin-top:50px; text-align:center; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:20px;">NEXUS-360 ADVANCED STRATEGY UNIT | {timestamp_now().strftime('%Y')}</footer>
+        <!-- SECTION X: Risk Matrix (NEW v2.0) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">X. Matriz de Riesgos <span class="agent-badge">Guardian v2.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_risk_matrix(g_data)}
+            </div>
+        </div>
+
+        <!-- SECTION XI: Análisis de 3 Escenarios (NEW v2.0) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">XI. Proyección de 3 Escenarios <span class="agent-badge">Mathematician v2.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_three_scenarios(m_data)}
+            </div>
+        </div>
+
+        <!-- SECTION XII: Pain Points & USP (NEW v2.0) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">XII. Análisis de Pain Points & USP <span class="agent-badge">Strategist v2.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_pain_points(st_data)}
+            </div>
+        </div>
+
+        <footer style="margin-top:50px; text-align:center; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:20px;">NEXUS-360 ADVANCED STRATEGY UNIT v2.0 | {timestamp_now().strftime('%Y')}</footer>
     </div>
 </body>
 </html>"""
@@ -1325,3 +1349,190 @@ class Nexus7Architect:
         if not self.db: return
         try: self.db.collection("reports").document(data["id"]).set(data)
         except: pass
+
+    def _render_risk_matrix(self, g_data: dict) -> str:
+        """Render Risk Matrix section from Guardian v2.0 data."""
+        risk_matrix = g_data.get("risk_matrix", [])
+        veto_triggered = g_data.get("veto_triggered", False)
+        veto_reasons = g_data.get("veto_reasons", [])
+        
+        veto_banner = ""
+        if veto_triggered:
+            veto_banner = f'''
+            <div style="background:#fef2f2; border:2px solid #dc2626; border-radius:12px; padding:20px; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <div style="background:#dc2626; color:white; padding:8px 15px; border-radius:8px; font-weight:900; font-size:0.9rem;">⛔ VETO ACTIVO</div>
+                    <div style="color:#991b1b; font-weight:700;">Este producto tiene bloqueadores críticos que impiden proceder sin acción.</div>
+                </div>
+                <ul style="margin-top:15px; color:#7f1d1d;">
+                    {"".join(f"<li>{r}</li>" for r in veto_reasons)}
+                </ul>
+            </div>'''
+        
+        rows = ""
+        for risk in risk_matrix:
+            impact_color = "#dc2626" if risk.get("impact") == "CRÍTICO" else ("#f59e0b" if risk.get("impact") == "ALTO" else "#3b82f6")
+            rows += f'''
+            <tr>
+                <td style="font-weight:700;">{risk.get("risk", "")}</td>
+                <td>{risk.get("description", "")}</td>
+                <td><span style="background:{impact_color}; color:white; padding:4px 10px; border-radius:4px; font-size:0.7rem; font-weight:700;">{risk.get("impact", "")}</span></td>
+                <td style="font-size:0.85rem;">{risk.get("mitigation", "")}</td>
+                <td><span style="background:#e2e8f0; padding:4px 8px; border-radius:4px; font-size:0.7rem;">{risk.get("status", "")}</span></td>
+            </tr>'''
+        
+        return f'''{veto_banner}
+        <table>
+            <thead>
+                <tr>
+                    <th>Riesgo</th>
+                    <th>Descripción</th>
+                    <th>Impacto</th>
+                    <th>Mitigación</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+        </table>'''
+
+    def _render_three_scenarios(self, m_data: dict) -> str:
+        """Render 3 Scenarios section from Mathematician v2.0 data."""
+        scenarios = m_data.get("three_scenarios", {})
+        tacos = m_data.get("tacos_analysis", {})
+        thresholds = m_data.get("success_thresholds", {})
+        q4 = m_data.get("q4_logistics", {})
+        
+        scenario_cards = ""
+        for key, s in scenarios.items():
+            bg_color = "#fef2f2" if key == "conservative" else ("#f0fdf4" if key == "aggressive" else "#eff6ff")
+            border_color = "#fca5a5" if key == "conservative" else ("#86efac" if key == "aggressive" else "#93c5fd")
+            proj = s.get("projections", {})
+            scenario_cards += f'''
+            <div style="background:{bg_color}; border:1px solid {border_color}; border-radius:12px; padding:20px;">
+                <h4 style="margin:0 0 10px 0; color:#1e293b;">{s.get("name", key)}</h4>
+                <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">{s.get("description", "")}</p>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.85rem;">
+                    <div><strong>Unidades/mes:</strong> {proj.get("monthly_units", 0)}</div>
+                    <div><strong>Revenue:</strong> ${proj.get("monthly_revenue", 0):,.2f}</div>
+                    <div><strong>Gasto PPC:</strong> ${proj.get("ppc_spend", 0):,.2f}</div>
+                    <div><strong>Margen Neto:</strong> {proj.get("net_margin_pct", 0)}%</div>
+                </div>
+                <div style="margin-top:15px; text-align:right;">
+                    <span style="background:#1e293b; color:white; padding:4px 10px; border-radius:6px; font-size:0.7rem;">{s.get("viability", "")}</span>
+                </div>
+            </div>'''
+        
+        # TACoS Card
+        tacos_status_color = "#22c55e" if "Saludable" in tacos.get("status", "") else ("#f59e0b" if "Monitorear" in tacos.get("status", "") else "#dc2626")
+        tacos_card = f'''
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-top:20px;">
+            <h4 style="margin:0 0 15px 0;">📊 TACoS (Total Advertising Cost of Sales)</h4>
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div style="font-size:2rem; font-weight:900; color:{tacos_status_color};">{tacos.get("current_estimate", 0)}%</div>
+                <div>
+                    <div style="font-size:0.8rem; color:#64748b;">Umbral saludable: &lt;{tacos.get("sustainable_threshold", 15)}%</div>
+                    <div style="font-size:0.9rem; font-weight:600; color:{tacos_status_color};">{tacos.get("status", "")}</div>
+                </div>
+            </div>
+        </div>'''
+        
+        # Success Thresholds
+        metrics_html = ""
+        for m in thresholds.get("metrics", []):
+            status_color = "#22c55e" if "PASS" in m.get("status", "") else "#f59e0b"
+            metrics_html += f'''
+            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #e2e8f0;">
+                <span>{m.get("metric", "")}</span>
+                <span>{m.get("threshold", "")}</span>
+                <span><strong>{m.get("current", "")}</strong></span>
+                <span style="color:{status_color}; font-weight:700;">{m.get("status", "")}</span>
+            </div>'''
+        
+        verdict_color = "#22c55e" if thresholds.get("overall_verdict") == "GO" else "#f59e0b"
+        thresholds_card = f'''
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:20px; margin-top:20px;">
+            <h4 style="margin:0 0 15px 0;">🎯 {thresholds.get("title", "Umbrales de Éxito")}</h4>
+            {metrics_html}
+            <div style="margin-top:15px; text-align:center;">
+                <span style="background:{verdict_color}; color:white; padding:8px 20px; border-radius:8px; font-weight:900; font-size:1rem;">{thresholds.get("overall_verdict", "REVIEW")}</span>
+            </div>
+        </div>'''
+        
+        return f'''
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
+            {scenario_cards}
+        </div>
+        {tacos_card}
+        {thresholds_card}'''
+
+    def _render_pain_points(self, st_data: dict) -> str:
+        """Render Pain Points and USP section from Strategist v2.0 data."""
+        verdict = st_data.get("dynamic_verdict", {})
+        pain_data = verdict.get("pain_points_analysis", {})
+        usp_data = verdict.get("usp_proposals", [])
+        jtbd = verdict.get("jobs_to_be_done", {})
+        gap_check = verdict.get("gap_threshold_analysis", {})
+        
+        # Pain Points bars
+        categories = pain_data.get("categories", [])
+        pain_bars = ""
+        for cat in categories:
+            severity_color = "#dc2626" if cat.get("severity") == "ALTO" else ("#f59e0b" if cat.get("severity") == "MEDIO" else "#3b82f6")
+            pain_bars += f'''
+            <div style="margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <span>{cat.get("icon", "")} {cat.get("category", "")}</span>
+                    <span style="font-weight:700; color:{severity_color};">{cat.get("gap_percentage", 0)}%</span>
+                </div>
+                <div style="background:#e2e8f0; border-radius:4px; height:12px; overflow:hidden;">
+                    <div style="background:{severity_color}; width:{cat.get('gap_percentage', 0)}%; height:100%;"></div>
+                </div>
+                <div style="font-size:0.7rem; color:#64748b; margin-top:3px;">{", ".join(cat.get("complaints", []))}</div>
+            </div>'''
+        
+        # USP Cards
+        usp_cards = ""
+        for usp in usp_data:
+            usp_cards += f'''
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center;">
+                <div style="background:#6366f1; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-weight:700;">{usp.get("angle", 1)}</div>
+                <h4 style="margin:0 0 8px 0; color:#1e293b;">{usp.get("theme", "")}</h4>
+                <p style="font-size:0.85rem; color:#6366f1; font-style:italic; margin-bottom:10px;">"{usp.get("headline", "")}"</p>
+                <p style="font-size:0.75rem; color:#64748b;">{usp.get("value_prop", "")}</p>
+                <div style="margin-top:10px; font-size:0.7rem; background:#f0fdf4; color:#166534; padding:4px 8px; border-radius:4px; display:inline-block;">Ataca: {usp.get("gap_addressed", "")}</div>
+            </div>'''
+        
+        # Gap Check Banner
+        gap_color = "#22c55e" if gap_check.get("threshold_met", False) else "#f59e0b"
+        gap_banner = f'''
+        <div style="background:{'#f0fdf4' if gap_check.get('threshold_met') else '#fef3c7'}; border:1px solid {gap_color}; border-radius:12px; padding:20px; margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h4 style="margin:0; color:#1e293b;">Análisis de Gap Threshold (20% mínimo)</h4>
+                    <p style="margin:5px 0 0 0; color:#64748b; font-size:0.85rem;">Insatisfacción del líder: <strong>{gap_check.get("leader_dissatisfaction", 0)}%</strong></p>
+                </div>
+                <div style="background:{gap_color}; color:white; padding:10px 20px; border-radius:8px; font-weight:700;">{gap_check.get("verdict", "PENDIENTE")}</div>
+            </div>
+        </div>'''
+        
+        return f'''
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+            <div>
+                <h4 style="margin-top:0;">📊 Clasificación de Pain Points</h4>
+                {pain_bars}
+                <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-top:15px;">
+                    <strong>Recomendación:</strong> {pain_data.get("recommendation", "")}
+                </div>
+            </div>
+            <div>
+                <h4 style="margin-top:0;">🎯 Jobs-to-be-Done Framework</h4>
+                <div style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:12px; padding:20px;">
+                    {"".join(f'<div style="margin-bottom:10px;"><span style="background:#a855f7; color:white; padding:2px 8px; border-radius:4px; font-size:0.65rem; margin-right:8px;">{j.get("type", "")}</span>{j.get("job", "")}</div>' for j in jtbd.get("job_statements", []))}
+                </div>
+            </div>
+        </div>
+        <h4 style="margin-top:30px;">💡 3 Propuestas de USP (Unique Selling Proposition)</h4>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
+            {usp_cards}
+        </div>
+        {gap_banner}'''
