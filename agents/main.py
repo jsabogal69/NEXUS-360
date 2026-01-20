@@ -127,7 +127,10 @@ async def run_folder_workflow(request: FolderIngestRequest):
         scout = Nexus2Scout()
         # Use product_description as primary anchor if provided
         scout_input = request.product_description if request.product_description else f"Batch Analysis for Folder {request.folder_id}"
-        findings = await scout.perform_osint_scan(scout_input)
+        
+        # CRITICAL: Pass POE data to Scout (NO DATA INVENTION)
+        poe_xray_data = ingestion_result.get("xray_data") if isinstance(ingestion_result, dict) else None
+        findings = await scout.perform_osint_scan(scout_input, poe_data=poe_xray_data)
         scout_url = save_artifact("scout", findings)
 
         integrator = Nexus3Integrator()
@@ -246,7 +249,7 @@ async def step_2_guardian(payload: dict):
 
 @app.post("/workflow/step/3_scout")
 async def step_3_scout(payload: dict):
-    """Executes ONLY the Scout Step (OSINT)"""
+    """Executes ONLY the Scout Step (OSINT) - NO DATA INVENTION"""
     logger.info("Executing Scout Step Endpoint...")
     
     filenames = payload.get("filenames") or []
@@ -254,11 +257,15 @@ async def step_3_scout(payload: dict):
     product_desc = payload.get("product_description") or ""
     folder_name = data_stats.get("folder_name", "Niche")
     
+    # CRITICAL: Get POE X-Ray data from Harvester result
+    xray_data = payload.get("xray_data") or {}
+    
     # Priority: User Description > Folder Name + Filenames
     context_str = product_desc if product_desc else (f"{folder_name} " + " ".join(filenames))
         
     scout = Nexus2Scout()
-    findings = await scout.perform_osint_scan(context_str)
+    # MANDAMIENTO: Pass POE data - Scout NO INVENTA datos cuantitativos
+    findings = await scout.perform_osint_scan(context_str, poe_data=xray_data)
     return {"step": "scout", "data": findings, "status": "success"}
 
 @app.post("/workflow/step/4_integrator")
@@ -341,9 +348,10 @@ async def run_full_cycle(request: IngestRequest):
         if not is_valid:
              raise HTTPException(status_code=400, detail="Input Validation Failed by Guardian")
 
-        # 3. SCOUT (Parallel Enrichment)
+        # 3. SCOUT (Parallel Enrichment) - NO DATA INVENTION
         scout = Nexus2Scout()
-        findings = await scout.perform_osint_scan(f"Analysis for {request.source_name}")
+        # Sin POE data = campos cuantitativos PENDIENTE
+        findings = await scout.perform_osint_scan(f"Analysis for {request.source_name}", poe_data=None)
 
         # 4. INTEGRATOR (SSOT)
         integrator = Nexus3Integrator()

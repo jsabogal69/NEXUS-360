@@ -1,6 +1,16 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEXUS-360 MANDAMIENTO ARQUITECTÓNICO: NO DATA INVENTION
+# ═══════════════════════════════════════════════════════════════════════════════
+# 
+# REGLA ABSOLUTA: Ningún agente puede INVENTAR datos cuantitativos.
+# Todos los valores numéricos DEBEN provenir de:
+#   1. Archivos POE reales (X-Ray, Cerebro, etc.)
+#   2. APIs verificables (Amazon, Google Trends, etc.)
+#   3. O marcarse explícitamente como "DATOS PENDIENTES"
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
 import logging
-import re
-import random
 from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
 from ..shared.llm_intel import generate_market_intel
 
@@ -8,65 +18,116 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-2")
 
 class Nexus2Scout:
-    task_description = "Reactive Market Intelligence with Patel-Vee Protocol (MANDATORY DEEP SOCIAL LISTENING)"
+    """
+    NEXUS-2 Scout Agent - Market Intelligence
+    
+    MANDAMIENTO: Este agente NO INVENTA datos cuantitativos.
+    - Precios, ventas, market share: SOLO de archivos POE
+    - LLM solo se usa para análisis CUALITATIVO (sentimiento, gaps, tendencias)
+    - Si no hay datos POE, los campos cuantitativos = "PENDIENTE"
+    """
+    
+    task_description = "Market Intelligence basada SOLO en datos POE verificables"
+    
     def __init__(self):
         self.db = get_db()
         self.role = "NEXUS-2 (Scout)"
 
     @report_agent_activity
-    async def perform_osint_scan(self, context_str: str) -> dict:
+    async def perform_osint_scan(self, context_str: str, poe_data: dict = None) -> dict:
         """
-        Hyper-Detailed Market Scout with Patel-Vee Protocol.
-        ALWAYS uses LLM (Gemini AI) for deep social listening and real competitive intelligence.
-        No hardcoded data - all insights are generated dynamically by AI.
+        Ejecuta análisis de mercado.
+        
+        Args:
+            context_str: Descripción del nicho/producto
+            poe_data: Datos extraídos de archivos POE (X-Ray, Cerebro, etc.)
+                      SI poe_data es None o vacío, los campos cuantitativos = PENDIENTE
+        
+        Returns:
+            dict con findings - NUNCA con datos inventados
         """
-        logger.info(f"[{self.role}] Analyzing Market Landscape for: {context_str}")
+        logger.info(f"[{self.role}] Analyzing Market: {context_str}")
         
         # ═══════════════════════════════════════════════════════════════════
-        # PATEL-VEE SOCIAL LISTENING PROTOCOL
+        # PASO 1: Verificar si hay datos POE reales
         # ═══════════════════════════════════════════════════════════════════
-        logger.info(f"[{self.role}] Executing Patel-Vee Social Listening Protocol via Gemini AI...")
+        has_poe_data = poe_data is not None and poe_data.get("has_real_data", False)
         
-        # Call the LLM to generate real market intelligence
-        llm_data = generate_market_intel(context_str)
+        if has_poe_data:
+            logger.info(f"[{self.role}] ✅ POE DATA DETECTED - Using real verified data")
+            top_10 = poe_data.get("products", [])[:10]
+            data_source = "POE_VERIFIED"
+            data_source_file = poe_data.get("source_file", "Unknown")
+        else:
+            logger.warning(f"[{self.role}] ⚠️ NO POE DATA - Quantitative fields will be PENDIENTE")
+            top_10 = []  # NO INVENTAMOS PRODUCTOS
+            data_source = "PENDIENTE"
+            data_source_file = None
         
-        # Extract all data from LLM response
-        niche_name = llm_data.get("niche_name", context_str[:50])
-        top_10 = llm_data.get("top_10_products", [])
-        social = llm_data.get("social_listening", {})
-        trends = llm_data.get("trends", [])
-        keywords = llm_data.get("keywords", [])
-        sales_intelligence = llm_data.get("sales_intelligence", {})
-        sentiment_summary = llm_data.get("sentiment_summary", "Análisis en progreso.")
-        scholar_audit = llm_data.get("scholar_audit", [])
-        content_opportunities = llm_data.get("content_opportunities", {})
+        # ═══════════════════════════════════════════════════════════════════
+        # PASO 2: LLM solo para análisis CUALITATIVO (no cuantitativo)
+        # ═══════════════════════════════════════════════════════════════════
+        logger.info(f"[{self.role}] Executing qualitative analysis via LLM...")
         
-        # Log success metrics
-        emotional_analysis = social.get("emotional_analysis", {})
-        pain_keywords = social.get("pain_keywords", [])
-        competitor_gaps = social.get("competitor_gaps", [])
+        try:
+            llm_data = generate_market_intel(context_str)
+            
+            # SOLO extraemos datos CUALITATIVOS del LLM
+            social = llm_data.get("social_listening", {})
+            trends = llm_data.get("trends", [])
+            keywords = llm_data.get("keywords", [])
+            sentiment_summary = llm_data.get("sentiment_summary", "Análisis en progreso.")
+            scholar_audit = llm_data.get("scholar_audit", [])
+            content_opportunities = llm_data.get("content_opportunities", {})
+            
+            # IMPORTANTE: NO usamos top_10_products del LLM - son inventados
+            # Solo usamos los datos POE reales
+            
+        except Exception as e:
+            logger.error(f"[{self.role}] LLM analysis failed: {e}")
+            social = {}
+            trends = []
+            keywords = []
+            sentiment_summary = "Error en análisis LLM"
+            scholar_audit = []
+            content_opportunities = {}
         
-        logger.info(f"[{self.role}] LLM Response Summary:")
-        logger.info(f"  - Niche: {niche_name}")
-        logger.info(f"  - Products: {len(top_10)}")
-        logger.info(f"  - Emotional Analysis: {'YES' if emotional_analysis else 'NO'}")
-        logger.info(f"  - Pain Keywords: {len(pain_keywords)}")
-        logger.info(f"  - Competitor Gaps: {len(competitor_gaps)}")
+        # ═══════════════════════════════════════════════════════════════════
+        # PASO 3: Construir findings CON TRANSPARENCIA sobre fuente de datos
+        # ═══════════════════════════════════════════════════════════════════
         
-        # Build findings object with all Patel-Vee data
         findings = {
             "id": generate_id(),
-            "product_anchor": niche_name,
-            "scout_anchor": niche_name,
+            "product_anchor": context_str[:50],
+            "scout_anchor": context_str[:50],
+            
+            # DATOS CUANTITATIVOS: Solo de POE o PENDIENTE
             "top_10_products": top_10,
+            "data_source": data_source,
+            "data_source_file": data_source_file,
+            "has_poe_data": has_poe_data,
+            
+            # Si no hay POE, estos campos son explícitamente PENDIENTE
+            "sales_intelligence": poe_data.get("sales_data", {}) if has_poe_data else {
+                "status": "PENDIENTE",
+                "message": "Subir archivo X-Ray de Helium10 para datos reales"
+            },
+            
+            # DATOS CUALITATIVOS: Del LLM (análisis, no invención)
             "social_listening": social,
             "trends": trends,
             "keywords": keywords,
-            "sales_intelligence": sales_intelligence,
             "scholar_audit": scholar_audit,
             "sentiment_summary": sentiment_summary,
             "content_opportunities": content_opportunities,
-            "timestamp": timestamp_now()
+            
+            # Metadata
+            "timestamp": timestamp_now(),
+            "data_integrity": {
+                "quantitative_source": data_source,
+                "qualitative_source": "LLM_ANALYSIS",
+                "warning": None if has_poe_data else "⚠️ DATOS CUANTITATIVOS PENDIENTES - Subir archivos POE"
+            }
         }
         
         self._save_findings(findings)
@@ -74,10 +135,13 @@ class Nexus2Scout:
 
     def _save_findings(self, data: dict):
         if not self.db: return
-        try: self.db.collection("validated_intelligence").document(data["id"]).set(data)
-        except: pass
+        try: 
+            self.db.collection("validated_intelligence").document(data["id"]).set(data)
+        except: 
+            pass
+
 
 # Entry point for testing
 if __name__ == "__main__":
     scout = Nexus2Scout()
-    logger.info(f"{scout.role} Online.")
+    logger.info(f"{scout.role} Online - NO DATA INVENTION MODE")
