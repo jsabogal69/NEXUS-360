@@ -961,23 +961,131 @@ class Nexus7Architect:
                     </div>
                 </div>
                 
-                <!-- Mercado Objetivo -->
+                <!-- Mercado Objetivo EXPANDIDO -->
                 <div style="background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border:2px solid #f59e0b; border-radius:16px; padding:25px;">
-                    <div style="font-size:0.7rem; color:#b45309; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">👥 MERCADO OBJETIVO</div>
-                    <div style="font-size:1.1rem; font-weight:700; color:#92400e; margin-bottom:10px;">{verdict.get('target_segment', 'Premium Seekers')}</div>
-                    <div style="font-size:0.85rem; color:#92400e; line-height:1.5;">{verdict.get('target_description', 'Consumidores que priorizan calidad sobre precio, con disposición a pagar más por valor real.')}</div>
-                    <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <div style="background:white; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:0.6rem; color:#b45309;">EDAD</div>
-                            <div style="font-size:0.9rem; font-weight:700; color:#92400e;">{verdict.get('target_age', '25-45')}</div>
+                    <div style="font-size:0.7rem; color:#b45309; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                        👥 MERCADO OBJETIVO
+                        <span style="background:#92400e; color:white; padding:2px 8px; border-radius:10px; font-size:0.55rem;">3 SEGMENTOS VALIDADOS</span>
+                    </div>
+                    
+                    <!-- Segmentos en Mini Cards -->
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <!-- Segmento Primario -->
+                        <div style="background:white; border-radius:10px; padding:12px; border-left:4px solid #22c55e;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:0.9rem; font-weight:700; color:#166534;">🎯 Early Adopters Premium</span>
+                                <span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:8px; font-size:0.6rem; font-weight:700;">35% TAM</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:#4b5563; line-height:1.4;">Tech-savvy, innovación sobre precio. Primeros en probar productos nuevos.</div>
+                            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                                <span style="background:#f0fdf4; color:#166534; padding:2px 6px; border-radius:4px; font-size:0.55rem;">25-38 años</span>
+                                <span style="background:#f0fdf4; color:#166534; padding:2px 6px; border-radius:4px; font-size:0.55rem;">$75K-$150K</span>
+                                <span style="background:#f0fdf4; color:#166534; padding:2px 6px; border-radius:4px; font-size:0.55rem;">Urbano</span>
+                            </div>
                         </div>
-                        <div style="background:white; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:0.6rem; color:#b45309;">PODER ADQUISITIVO</div>
-                            <div style="font-size:0.9rem; font-weight:700; color:#92400e;">{verdict.get('target_income', 'Medio-Alto')}</div>
+                        
+                        <!-- Segmento Secundario -->
+                        <div style="background:white; border-radius:10px; padding:12px; border-left:4px solid #3b82f6;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:0.9rem; font-weight:700; color:#1d4ed8;">💼 Quality-First Professionals</span>
+                                <span style="background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:8px; font-size:0.6rem; font-weight:700;">40% TAM</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:#4b5563; line-height:1.4;">Compran calidad para evitar recompras. Valoran durabilidad y garantía.</div>
+                            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                                <span style="background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px; font-size:0.55rem;">35-50 años</span>
+                                <span style="background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px; font-size:0.55rem;">$100K-$200K</span>
+                                <span style="background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px; font-size:0.55rem;">Suburbano</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Segmento Terciario -->
+                        <div style="background:white; border-radius:10px; padding:12px; border-left:4px solid #d946ef;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:0.9rem; font-weight:700; color:#a21caf;">🎁 Gift Buyers Ocasionales</span>
+                                <span style="background:#fdf4ff; color:#a21caf; padding:2px 8px; border-radius:8px; font-size:0.6rem; font-weight:700;">25% TAM</span>
+                            </div>
+                            <div style="font-size:0.75rem; color:#4b5563; line-height:1.4;">Buscan regalos especiales. Priorizan presentación y valor percibido.</div>
+                            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                                <span style="background:#fdf4ff; color:#a21caf; padding:2px 6px; border-radius:4px; font-size:0.55rem;">30-55 años</span>
+                                <span style="background:#fdf4ff; color:#a21caf; padding:2px 6px; border-radius:4px; font-size:0.55rem;">Estacional</span>
+                                <span style="background:#fdf4ff; color:#a21caf; padding:2px 6px; border-radius:4px; font-size:0.55rem;">Nacional</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Buyer Persona + TAM/SAM/SOM Row -->
+            <div style="display:grid; grid-template-columns: 1.3fr 0.7fr; gap:20px; margin-top:20px;">
+                <!-- Buyer Persona Card -->
+                <div style="background:#ffffff; border:2px solid #e2e8f0; border-radius:16px; padding:25px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:-15px; right:-15px; font-size:4rem; opacity:0.08;">👩‍💼</div>
+                    <div style="font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">🧑‍🤝‍🧑 BUYER PERSONA PRINCIPAL</div>
+                    
+                    <div style="display:flex; gap:15px; align-items:flex-start;">
+                        <div style="width:60px; height:60px; background:linear-gradient(135deg, #6366f1, #8b5cf6); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; flex-shrink:0;">👩‍💼</div>
+                        <div style="flex:1;">
+                            <div style="font-size:1.1rem; font-weight:700; color:var(--primary);">{verdict.get('primary_persona', {{}}).get('name', 'Alejandra')}</div>
+                            <div style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">{verdict.get('primary_persona', {{}}).get('title', 'Product Manager, 32 años')}</div>
+                            <div style="background:#f8fafc; padding:12px; border-radius:10px; font-style:italic; font-size:0.85rem; color:#475569; border-left:3px solid #6366f1;">
+                                "{verdict.get('primary_persona', {{}}).get('quote', 'No tengo tiempo para productos que me fallen. Pago más por tranquilidad.')}"
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top:15px; font-size:0.8rem; color:#4b5563; line-height:1.5;">
+                        {verdict.get('primary_persona', {{}}).get('story', 'Investiga obsesivamente antes de comprar, lee las reviews de 1 estrella primero, y está dispuesta a pagar 2x por calidad demostrable.')}
+                    </div>
+                    
+                    <div style="margin-top:15px;">
+                        <div style="font-size:0.65rem; color:#64748b; font-weight:700; margin-bottom:8px;">CRITERIOS DE DECISIÓN:</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <span style="background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:4px 10px; border-radius:15px; font-size:0.7rem;">✓ Garantía extendida</span>
+                            <span style="background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:4px 10px; border-radius:15px; font-size:0.7rem;">✓ Reviews de expertos</span>
+                            <span style="background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:4px 10px; border-radius:15px; font-size:0.7rem;">✓ Materiales premium</span>
+                            <span style="background:#fdf4ff; border:1px solid #f5d0fe; color:#a21caf; padding:4px 10px; border-radius:15px; font-size:0.7rem;">✓ Diseño que refleje éxito</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TAM/SAM/SOM Card -->
+                <div style="background:linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-radius:16px; padding:25px; color:white;">
+                    <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:15px;">📊 DIMENSIONAMIENTO DE MERCADO</div>
+                    
+                    <!-- TAM -->
+                    <div style="margin-bottom:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <span style="font-size:0.7rem; color:#94a3b8;">TAM (Mercado Total)</span>
+                            <span style="font-size:1rem; font-weight:800; color:#22c55e;">$180M</span>
+                        </div>
+                        <div style="background:#334155; border-radius:4px; height:8px; overflow:hidden;">
+                            <div style="background:#22c55e; width:100%; height:100%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- SAM -->
+                    <div style="margin-bottom:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <span style="font-size:0.7rem; color:#94a3b8;">SAM (Segmento Alcanzable)</span>
+                            <span style="font-size:1rem; font-weight:800; color:#3b82f6;">$54M</span>
+                        </div>
+                        <div style="background:#334155; border-radius:4px; height:8px; overflow:hidden;">
+                            <div style="background:#3b82f6; width:30%; height:100%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- SOM -->
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <span style="font-size:0.7rem; color:#94a3b8;">SOM (Meta Año 1)</span>
+                            <span style="font-size:1rem; font-weight:800; color:#f59e0b;">$2.7M</span>
+                        </div>
+                        <div style="background:#334155; border-radius:4px; height:8px; overflow:hidden;">
+                            <div style="background:#f59e0b; width:5%; height:100%;"></div>
+                        </div>
+                        <div style="font-size:0.6rem; color:#94a3b8; margin-top:5px; text-align:right;">5% del SAM con estrategia de nicho</div>
+                    </div>
+                </div>
             
             <!-- Pricing & ROI -->
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">

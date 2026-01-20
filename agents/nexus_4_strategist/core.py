@@ -157,11 +157,68 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
                 # Diferenciadores
                 "differentiators": differentiators,
                 "moat": "Ecosistema exclusivo con materiales premium y servicios vinculados",
-                # Mercado objetivo
-                "target_segment": "Inversores de Estilo de Vida",
-                "target_description": "Consumidores que priorizan calidad y durabilidad sobre precio, buscando productos que reflejen su estatus.",
-                "target_age": "28-45",
-                "target_income": "Medio-Alto",
+                # ═══════════════════════════════════════════════════════════════
+                # MERCADO OBJETIVO EXPANDIDO - Análisis Multi-Segmento
+                # ═══════════════════════════════════════════════════════════════
+                # Segmentos de Mercado
+                "target_segments": [
+                    {
+                        "id": "primary",
+                        "name": "Early Adopters Premium",
+                        "size": "35%",
+                        "description": "Consumidores tech-savvy que valoran innovación sobre precio. Primeros en probar productos nuevos.",
+                        "demographics": {"age": "25-38", "income": "$75K-$150K", "education": "Universitario+", "location": "Urbano"},
+                        "psychographics": {"values": "Innovación, Eficiencia, Status", "lifestyle": "Digital-first, alta actividad en redes", "personality": "Abiertos a experiencias"},
+                        "behaviors": {"purchase_frequency": "Mensual", "brand_loyalty": "Media (cambian por novedad)", "research_level": "Alto (reviews, comparativas)"},
+                        "pain_points": ["Frustración con productos genéricos", "Decepción post-compra con calidad", "Falta de diferenciación real"],
+                        "motivations": ["Ser los primeros en adoptar", "Proyectar imagen de éxito", "Obtener valor excepcional"],
+                        "channels": ["YouTube Reviews", "Reddit", "TikTok", "Newsletter de Tech"]
+                    },
+                    {
+                        "id": "secondary",
+                        "name": "Profesionales Quality-First",
+                        "size": "40%",
+                        "description": "Compradores pragmáticos que invierten en calidad para evitar recompras. Valoran durabilidad.",
+                        "demographics": {"age": "35-50", "income": "$100K-$200K", "education": "Profesional", "location": "Suburbano/Urbano"},
+                        "psychographics": {"values": "Durabilidad, Confiabilidad, ROI", "lifestyle": "Orientado a familia/carrera", "personality": "Analítico, metódico"},
+                        "behaviors": {"purchase_frequency": "Trimestral", "brand_loyalty": "Alta (repiten marca)", "research_level": "Muy alto (investigan antes)"},
+                        "pain_points": ["Tiempo perdido con productos defectuosos", "Frustra comprar 2 veces lo mismo", "Servicio al cliente deficiente"],
+                        "motivations": ["Comprar una vez, bien", "Tranquilidad de garantía", "Eficiencia de tiempo"],
+                        "channels": ["Amazon Reviews", "Recomendaciones personales", "Foros especializados", "Comparativas de expertos"]
+                    },
+                    {
+                        "id": "tertiary",
+                        "name": "Gift Buyers Ocasionales",
+                        "size": "25%",
+                        "description": "Compradores que buscan regalos especiales. Priorizan presentación y percepción de valor.",
+                        "demographics": {"age": "30-55", "income": "Variable", "education": "Variado", "location": "Nacional"},
+                        "psychographics": {"values": "Generosidad, Aprecio, Impresión", "lifestyle": "Orientado a relaciones", "personality": "Empático, detallista"},
+                        "behaviors": {"purchase_frequency": "Estacional (fechas clave)", "brand_loyalty": "Baja (decide por contexto)", "research_level": "Medio (reviews rápidos)"},
+                        "pain_points": ["Incertidumbre de si gustará", "Packaging decepcionante", "Falta de opciones premium"],
+                        "motivations": ["Impresionar al receptor", "Ser recordado positivamente", "Encontrar algo único"],
+                        "channels": ["Búsqueda Google", "Guías de regalos", "Influencers de lifestyle", "Pinterest"]
+                    }
+                ],
+                # Buyer Persona Principal
+                "primary_persona": {
+                    "name": "Alejandra",
+                    "title": "Product Manager en Tech Startup, 32 años",
+                    "avatar": "👩‍💼",
+                    "quote": "\"No tengo tiempo para productos que me fallen. Pago más por tranquilidad.\"",
+                    "story": f"Alejandra descubrió {anchor} después de que su versión genérica fallara 3 veces en un año. Ahora investiga obsesivamente antes de comprar, lee las reviews de 1 estrella primero, y está dispuesta a pagar 2x si un producto tiene garantía de calidad demostrable.",
+                    "decision_criteria": ["Garantía extendida", "Reviews de expertos", "Materiales premium", "Diseño que refleje éxito"]
+                },
+                # TAM/SAM/SOM
+                "market_sizing": {
+                    "tam": f"Total de compradores de {anchor} en Amazon US: $180M anuales",
+                    "sam": f"Segmento premium dispuesto a pagar +30% sobre precio promedio: $54M (30%)",
+                    "som": "Meta realista año 1: $2.7M (5% del SAM con estrategia de nicho)"
+                },
+                # Legacy fields for backwards compatibility
+                "target_segment": "Early Adopters Premium + Quality-First Professionals",
+                "target_description": "Consumidores que priorizan calidad y durabilidad sobre precio, con frustración demostrada hacia productos genéricos.",
+                "target_age": "25-50",
+                "target_income": "$75K-$200K",
                 # Pricing
                 "price_msrp": str(suggested_msrp),
                 "price_cost": str(estimated_cost),
