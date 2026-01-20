@@ -105,3 +105,141 @@ INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_21a358b7-0fd9-48fd-9bce-161
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 INFO:     127.0.0.1:55486 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
 INFO:     127.0.0.1:55503 - "GET /dashboard/reports/report_21a358b7-0fd9-48fd-9bce-161d69a6d041.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62830 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:62830 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:62834 - "GET /dashboard/ HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:62855 - "GET /dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62855 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:NEXUS-1:[NEXUS-1] 📋 POE GUIDE DETECTED: GUIA CONTENIDO POE - Onion Shampoo
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: Helium_10_Xray_2026-01-20 -> 
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: NicheDetailsSearchTermsTab_1_13_2026 -> 
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: NicheDetailsProductsTab_1_13_2026 -> 
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla -> 
+INFO:NEXUS-1:[NEXUS-1] ✅ POE GUIDE PARSED: 4 file instructions loaded
+INFO:NEXUS-1:[NEXUS-1] 📖 Helium_10_Xray_2026-01-20 -> []
+INFO:DATA-EXPERT:[DATA-EXPERT] File 'Helium_10_Xray_2026-01-20' matched by filename keyword
+INFO:DATA-EXPERT:[DATA-EXPERT] Processing Helium_10_Xray_2026-01-20 with 76 rows, columns: ['display_order', 'product_details', 'asin', 'url', 'image_url', 'brand', 'price__us_', 'parent_level_sales', 'asin_sales', 'recent_purchases']
+INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for Helium_10_Xray_2026-01-20: {'price': 'price__us_', 'sales': 'parent_level_sales', 'revenue': 'parent_level_revenue', 'bsr': 'bsr', 'asin': 'asin', 'title': 'product_details', 'reviews': 'ratings', 'dimensions': 'dimensions', 'active_sellers': 'active_sellers'}
+INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 76 products from Helium_10_Xray_2026-01-20. AVG: $22.32
+INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 76 products, AVG $22.32
+INFO:NEXUS-1:[NEXUS-1] Processing: anyeluz_reviews (1).xlsx (no guide entry)
+INFO:NEXUS-1:[NEXUS-1] 📖 ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla (1).pdf -> []
+INFO:NEXUS-1:[NEXUS-1] 📖 ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla.pdf -> []
+INFO:NEXUS-1:[NEXUS-1] 📖 ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla -> []
+WARNING:googleapiclient.http:Encountered 403 Forbidden with reason "fileNotDownloadable"
+WARNING:NEXUS-1:Failed expert extraction for ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla: <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/19NlxF8h3nH5bHpw27tMZfRocSMl4Jt8Wdwi5lGdJpec?alt=media returned "Only files with binary content can be downloaded. Use Export with Docs Editors files.". Details: "[{'message': 'Only files with binary content can be downloaded. Use Export with Docs Editors files.', 'domain': 'global', 'reason': 'fileNotDownloadable', 'location': 'alt', 'locationType': 'parameter'}]">
+INFO:NEXUS-1:[NEXUS-1] 📖 NicheDetailsSearchTermsTab_1_13_2026 -> []
+INFO:NEXUS-1:[NEXUS-1] 📖 NicheDetailsProductsTab_1_13_2026 -> []
+INFO:DATA-EXPERT:[DATA-EXPERT] File 'NicheDetailsProductsTab_1_13_2026' matched by filename keyword
+INFO:DATA-EXPERT:[DATA-EXPERT] Processing NicheDetailsProductsTab_1_13_2026 with 28 rows, columns: ['product_name', 'asin', 'brand', 'category', 'launch_date', 'niche_click_count__past_360_days_', 'click_share__past_360_days_', 'average_selling_price__past_360_days___usd_', 'total_ratings', 'average_customer_rating']
+INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for NicheDetailsProductsTab_1_13_2026: {'price': 'average_selling_price__past_360_days___usd_', 'bsr': 'average_bsr', 'asin': 'asin', 'title': 'product_name', 'reviews': 'total_ratings', 'active_sellers': 'average___of_sellers_and_vendors__past_360_days_'}
+INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 28 products from NicheDetailsProductsTab_1_13_2026. AVG: $30.11
+INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 28 products, AVG $30.11
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: dbc4330a-6de4-4dbd-a657-e3ebf113ec74
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 8354f425-ecf3-43c5-9235-cfd274a0fd1f
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 5cf937e3-07b2-4cf8-95c1-a48da322641d
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 67414723-76bb-4564-bd6c-865313371b5f
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: ca3117c3-bd73-4c7e-b1d9-8e5832bbfaea
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 688380de-ea81-4977-8480-aca0f8c8314b
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 4808983d-bb31-4799-b743-0596d24aa3a7
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-2:[NEXUS-2 (Scout)] Analyzing Market: Onion Shampoo and Conditioner Set - Salt Free & Keratin Safe - Hair Growth Duo with Onion Extract and Biotin - 16.9 Fl Oz (Pack of 2)
+INFO:NEXUS-2:[NEXUS-2 (Scout)] ✅ POE DATA DETECTED - Using real verified pricing
+INFO:NEXUS-2:[NEXUS-2 (Scout)] Executing market analysis via LLM...
+INFO:LLM-INTEL:[LLM-INTEL] Successfully generated intelligence for: Onion Shampoo and Conditioner Set - Salt Free & Ke...
+INFO:NEXUS-3:[NEXUS-3 (Integrator)] Consolidating inputs: ['dbc4330a-6de4-4dbd-a657-e3ebf113ec74', '8354f425-ecf3-43c5-9235-cfd274a0fd1f', '5cf937e3-07b2-4cf8-95c1-a48da322641d', '67414723-76bb-4564-bd6c-865313371b5f', 'ca3117c3-bd73-4c7e-b1d9-8e5832bbfaea', '688380de-ea81-4977-8480-aca0f8c8314b', '4808983d-bb31-4799-b743-0596d24aa3a7', '40545b51-da98-481c-bc9e-d9d759b9f5c5']
+INFO:NEXUS-4:[NEXUS-4 (Strategist)] Hyper-Detailed Strategic Analysis for: Onion Shampoo and Conditioner Set - Salt Free & Ke
+INFO:NEXUS-5:[NEXUS-5 (Mathematician)] Computing Deep Financial Models...
+INFO:NEXUS-6:[NEXUS-6 (Senior Partner)] Drafting Executive Summary...
+INFO:NEXUS-7:[NEXUS-7 (Architect)] Generating Premium Detailed Report...
+INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Initialized. DB: MockDB
+INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Archiving case: report_d91ef734-7b55-409e-8cf7-71c1de69ca9c
+WARNING:agents.nexus_8_archivist.core:[Nexus-8 Archivist] ⚠️ No DB - case not persisted (MockDB mode)
+INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_d91ef734-7b55-409e-8cf7-71c1de69ca9c
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+INFO:     127.0.0.1:62887 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62916 - "GET /dashboard/reports/report_d91ef734-7b55-409e-8cf7-71c1de69ca9c.html HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62979 - "GET /dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62979 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62987 - "GET /dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62987 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
+INFO:NEXUS-1:[NEXUS-1] 📋 POE GUIDE DETECTED: GUIA CONTENIDO POE - Onion Shampoo
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: Helium_10_Xray_2026-01-20 -> 
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: NicheDetailsSearchTermsTab_1_13_2026 -> 
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: NicheDetailsProductsTab_1_13_2026 -> 
+INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla -> 
+INFO:NEXUS-1:[NEXUS-1] ✅ POE GUIDE PARSED: 4 file instructions loaded
+INFO:NEXUS-1:[NEXUS-1] Processing: GUIA CONTENIDO POE - Onion Shampoo - Hoja 3.pdf (no guide entry)
+INFO:NEXUS-1:[NEXUS-1] 📖 Helium_10_Xray_2026-01-20 -> []
+INFO:DATA-EXPERT:[DATA-EXPERT] File 'Helium_10_Xray_2026-01-20' matched by filename keyword
+INFO:DATA-EXPERT:[DATA-EXPERT] Processing Helium_10_Xray_2026-01-20 with 76 rows, columns: ['display_order', 'product_details', 'asin', 'url', 'image_url', 'brand', 'price__us_', 'parent_level_sales', 'asin_sales', 'recent_purchases']
+INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for Helium_10_Xray_2026-01-20: {'price': 'price__us_', 'sales': 'parent_level_sales', 'revenue': 'parent_level_revenue', 'bsr': 'bsr', 'asin': 'asin', 'title': 'product_details', 'reviews': 'ratings', 'dimensions': 'dimensions', 'active_sellers': 'active_sellers'}
+INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 76 products from Helium_10_Xray_2026-01-20. AVG: $22.32
+INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 76 products, AVG $22.32
+INFO:NEXUS-1:[NEXUS-1] Processing: anyeluz_reviews (1).xlsx (no guide entry)
+INFO:NEXUS-1:[NEXUS-1] 📖 ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla (1).pdf -> []
+INFO:NEXUS-1:[NEXUS-1] 📖 ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla.pdf -> []
+INFO:NEXUS-1:[NEXUS-1] 📖 ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla -> []
+WARNING:googleapiclient.http:Encountered 403 Forbidden with reason "fileNotDownloadable"
+WARNING:NEXUS-1:Failed expert extraction for ESTUDIO DE OPORTUNIDAD - Shampoo Cebolla: <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/19NlxF8h3nH5bHpw27tMZfRocSMl4Jt8Wdwi5lGdJpec?alt=media returned "Only files with binary content can be downloaded. Use Export with Docs Editors files.". Details: "[{'message': 'Only files with binary content can be downloaded. Use Export with Docs Editors files.', 'domain': 'global', 'reason': 'fileNotDownloadable', 'location': 'alt', 'locationType': 'parameter'}]">
+INFO:NEXUS-1:[NEXUS-1] 📖 NicheDetailsSearchTermsTab_1_13_2026 -> []
+INFO:NEXUS-1:[NEXUS-1] 📖 NicheDetailsProductsTab_1_13_2026 -> []
+INFO:DATA-EXPERT:[DATA-EXPERT] File 'NicheDetailsProductsTab_1_13_2026' matched by filename keyword
+INFO:DATA-EXPERT:[DATA-EXPERT] Processing NicheDetailsProductsTab_1_13_2026 with 28 rows, columns: ['product_name', 'asin', 'brand', 'category', 'launch_date', 'niche_click_count__past_360_days_', 'click_share__past_360_days_', 'average_selling_price__past_360_days___usd_', 'total_ratings', 'average_customer_rating']
+INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for NicheDetailsProductsTab_1_13_2026: {'price': 'average_selling_price__past_360_days___usd_', 'bsr': 'average_bsr', 'asin': 'asin', 'title': 'product_name', 'reviews': 'total_ratings', 'active_sellers': 'average___of_sellers_and_vendors__past_360_days_'}
+INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 28 products from NicheDetailsProductsTab_1_13_2026. AVG: $30.11
+INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 28 products, AVG $30.11
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 19e81013-39e9-4cfb-a678-4d4b90bf804c
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 03048001-2a6f-43ce-8c96-182f7b2cdd5c
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 99de3852-c389-4be8-a296-804ac99412de
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: bf2167eb-46ae-4085-8852-44a168986702
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 26e793c9-3ba2-43e0-b377-193f5c862a98
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: f602c461-895b-4e8d-af8e-91728c0b0d2a
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 8b7db855-f2c8-4aac-8647-761a26b5e51b
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 38a93d71-a6c3-4adb-8100-3952d5dfb250
+ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
+INFO:NEXUS-2:[NEXUS-2 (Scout)] Analyzing Market: Onion Shampoo and Conditioner Set - Salt Free & Keratin Safe - Hair Growth Duo with Onion Extract and Biotin - 16.9 Fl Oz (Pack of 2)
+INFO:NEXUS-2:[NEXUS-2 (Scout)] ✅ POE DATA DETECTED - Using real verified pricing
+INFO:NEXUS-2:[NEXUS-2 (Scout)] Executing market analysis via LLM...
+INFO:LLM-INTEL:[LLM-INTEL] Successfully generated intelligence for: Onion Shampoo and Conditioner Set - Salt Free & Ke...
+INFO:NEXUS-3:[NEXUS-3 (Integrator)] Consolidating inputs: ['19e81013-39e9-4cfb-a678-4d4b90bf804c', '03048001-2a6f-43ce-8c96-182f7b2cdd5c', '99de3852-c389-4be8-a296-804ac99412de', 'bf2167eb-46ae-4085-8852-44a168986702', '26e793c9-3ba2-43e0-b377-193f5c862a98', 'f602c461-895b-4e8d-af8e-91728c0b0d2a', '8b7db855-f2c8-4aac-8647-761a26b5e51b', '38a93d71-a6c3-4adb-8100-3952d5dfb250', '042a1ec6-857f-4276-a919-29f3267459be']
+INFO:NEXUS-4:[NEXUS-4 (Strategist)] Hyper-Detailed Strategic Analysis for: Onion Shampoo and Conditioner Set - Salt Free & Ke
+INFO:NEXUS-5:[NEXUS-5 (Mathematician)] Computing Deep Financial Models...
+INFO:NEXUS-6:[NEXUS-6 (Senior Partner)] Drafting Executive Summary...
+INFO:NEXUS-7:[NEXUS-7 (Architect)] Generating Premium Detailed Report...
+INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Initialized. DB: MockDB
+INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Archiving case: report_376f9a28-cb2d-4095-80f6-7abc8ebc6f15
+WARNING:agents.nexus_8_archivist.core:[Nexus-8 Archivist] ⚠️ No DB - case not persisted (MockDB mode)
+INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_376f9a28-cb2d-4095-80f6-7abc8ebc6f15
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+[ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
+INFO:     127.0.0.1:63009 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63672 - "GET /dashboard/reports/report_376f9a28-cb2d-4095-80f6-7abc8ebc6f15.html HTTP/1.1" 200 OK
