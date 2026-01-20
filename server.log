@@ -1,6 +1,6 @@
 INFO:     Will watch for changes in these directories: ['/Users/jaimesabogal/Nexus-360']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [52356] using StatReload
+INFO:     Started reloader process [54402] using StatReload
 /Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/auth/__init__.py:54: FutureWarning: 
     You are using a Python version 3.9 past its end of life. Google will update
     google-auth with critical bug fixes on a best-effort basis, but not
@@ -28,13 +28,13 @@ See README for more details:
 https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
 
   import google.generativeai as genai
-INFO:     Started server process [52392]
+INFO:     Started server process [54438]
 INFO:     Waiting for application startup.
 INFO:NEXUS-GATEWAY:NEXUS-360 API Gateway Initialized.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:55126 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55136 - "GET /dashboard/ HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55136 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55455 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55467 - "GET /dashboard/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55472 - "GET /favicon.ico HTTP/1.1" 404 Not Found
 INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
 INFO:NEXUS-1:[NEXUS-1] 📋 POE GUIDE DETECTED: GUIA CONTENIDO POE
 INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: NicheDetailsSearchTermsTab_1_14_2026 -> 
@@ -56,45 +56,45 @@ INFO:NEXUS-1:[NEXUS-1] 📖 POE - Cycling Socks Reviews -> []
 INFO:NEXUS-1:[NEXUS-1] 📖 Helium_10_Xray_2026-01-14 -> []
 INFO:DATA-EXPERT:[DATA-EXPERT] File 'Helium_10_Xray_2026-01-14' matched by filename keyword
 INFO:DATA-EXPERT:[DATA-EXPERT] Processing Helium_10_Xray_2026-01-14 with 75 rows, columns: ['display_order', 'product_details', 'asin', 'url', 'image_url', 'brand', 'price__us_', 'parent_level_sales', 'asin_sales', 'recent_purchases']
-INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for Helium_10_Xray_2026-01-14: {'price': 'price__us_', 'sales': 'parent_level_sales', 'revenue': 'parent_level_revenue', 'bsr': 'bsr', 'asin': 'asin', 'title': 'product_details', 'reviews': 'ratings'}
+INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for Helium_10_Xray_2026-01-14: {'price': 'price__us_', 'sales': 'parent_level_sales', 'revenue': 'parent_level_revenue', 'bsr': 'bsr', 'asin': 'asin', 'title': 'product_details', 'reviews': 'ratings', 'dimensions': 'dimensions', 'active_sellers': 'active_sellers'}
 INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 75 products from Helium_10_Xray_2026-01-14. AVG: $22.6
 INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 75 products, AVG $22.6
 INFO:NEXUS-1:[NEXUS-1] 📖 NicheDetailsSearchTermsTab_1_14_2026 -> []
 INFO:NEXUS-1:[NEXUS-1] 📖 NicheDetailsProductsTab_1_14_2026 -> []
 INFO:DATA-EXPERT:[DATA-EXPERT] File 'NicheDetailsProductsTab_1_14_2026' matched by filename keyword
 INFO:DATA-EXPERT:[DATA-EXPERT] Processing NicheDetailsProductsTab_1_14_2026 with 90 rows, columns: ['product_name', 'asin', 'brand', 'category', 'launch_date', 'niche_click_count__past_360_days_', 'click_share__past_360_days_', 'average_selling_price__past_360_days___usd_', 'total_ratings', 'average_customer_rating']
-INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for NicheDetailsProductsTab_1_14_2026: {'price': 'average_selling_price__past_360_days___usd_', 'bsr': 'average_bsr', 'asin': 'asin', 'title': 'product_name', 'reviews': 'total_ratings'}
+INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for NicheDetailsProductsTab_1_14_2026: {'price': 'average_selling_price__past_360_days___usd_', 'bsr': 'average_bsr', 'asin': 'asin', 'title': 'product_name', 'reviews': 'total_ratings', 'active_sellers': 'average___of_sellers_and_vendors__past_360_days_'}
 INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 90 products from NicheDetailsProductsTab_1_14_2026. AVG: $18.59
 INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 90 products, AVG $18.59
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: cc941efc-b7f8-4f87-9b00-d3830f082c01
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: f46a250a-be15-4169-be9f-287b92bed18d
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 3428f6a0-d559-4f80-b163-59bd8a8d42b0
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 876afd11-8954-4b77-b691-702577a24f56
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 9a55a6e9-8b85-4ab4-b6ba-5833c86b7f09
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 70f169ea-92da-4a02-84f7-2eecee24d9d6
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 1b1e8d8f-61bd-4fd4-9f38-a4a7d534ba75
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 9f640d47-97c1-4834-9ca6-1bb79817bf53
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: c276b7c1-1fec-4f58-9d3e-9f80484bf6cb
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: af48cf56-e032-42f8-8c7f-f182dc169be6
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 4f843adf-738c-4e88-874f-0c543890ca42
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 5bc5498c-3e24-4469-bab2-9a0fd7a493f5
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 9d26dfe2-ba38-4fbd-b34f-4e4fd271d2b4
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 478ae167-8373-4a45-a68c-7ed8097fb6d8
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 787558e4-aab6-4cac-9236-c9ef7a2fc329
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: e96acc39-2073-41a3-80e3-b145928fd114
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
 INFO:NEXUS-2:[NEXUS-2 (Scout)] Analyzing Market: Ankle Compression Sock for Men and Women 2/4/6 Pairs, Low Cut Compression Ru
 INFO:NEXUS-2:[NEXUS-2 (Scout)] ✅ POE DATA DETECTED - Using real verified pricing
 INFO:NEXUS-2:[NEXUS-2 (Scout)] Executing market analysis via LLM...
 INFO:LLM-INTEL:[LLM-INTEL] Successfully generated intelligence for: Ankle Compression Sock for Men and Women 2/4/6 Pai...
-INFO:NEXUS-3:[NEXUS-3 (Integrator)] Consolidating inputs: ['cc941efc-b7f8-4f87-9b00-d3830f082c01', '3428f6a0-d559-4f80-b163-59bd8a8d42b0', '9a55a6e9-8b85-4ab4-b6ba-5833c86b7f09', '1b1e8d8f-61bd-4fd4-9f38-a4a7d534ba75', 'c276b7c1-1fec-4f58-9d3e-9f80484bf6cb', '4f843adf-738c-4e88-874f-0c543890ca42', '9d26dfe2-ba38-4fbd-b34f-4e4fd271d2b4', '787558e4-aab6-4cac-9236-c9ef7a2fc329', '3ff9d434-3d8a-496f-9182-699194254b12']
+INFO:NEXUS-3:[NEXUS-3 (Integrator)] Consolidating inputs: ['f46a250a-be15-4169-be9f-287b92bed18d', '876afd11-8954-4b77-b691-702577a24f56', '70f169ea-92da-4a02-84f7-2eecee24d9d6', '9f640d47-97c1-4834-9ca6-1bb79817bf53', 'af48cf56-e032-42f8-8c7f-f182dc169be6', '5bc5498c-3e24-4469-bab2-9a0fd7a493f5', '478ae167-8373-4a45-a68c-7ed8097fb6d8', 'e96acc39-2073-41a3-80e3-b145928fd114', 'dc2a74cb-8e6e-40c9-9876-ce66235eed26']
 INFO:NEXUS-4:[NEXUS-4 (Strategist)] Hyper-Detailed Strategic Analysis for: Ankle Compression Sock for Men and Women 2/4/6 Pai
 INFO:NEXUS-5:[NEXUS-5 (Mathematician)] Computing Deep Financial Models...
 INFO:NEXUS-6:[NEXUS-6 (Senior Partner)] Drafting Executive Summary...
 INFO:NEXUS-7:[NEXUS-7 (Architect)] Generating Premium Detailed Report...
 INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Initialized. DB: MockDB
-INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Archiving case: report_8e770e43-f0fd-4854-9901-fd7229b3b840
+INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Archiving case: report_21a358b7-0fd9-48fd-9bce-161d69a6d041
 WARNING:agents.nexus_8_archivist.core:[Nexus-8 Archivist] ⚠️ No DB - case not persisted (MockDB mode)
-INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_8e770e43-f0fd-4854-9901-fd7229b3b840
+INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_21a358b7-0fd9-48fd-9bce-161d69a6d041
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
@@ -103,41 +103,5 @@ INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_8e770e43-f0fd-4854-9901-fd7
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
-INFO:     127.0.0.1:55158 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55174 - "GET /dashboard/reports/report_8e770e43-f0fd-4854-9901-fd7229b3b840.html HTTP/1.1" 200 OK
-WARNING:  StatReload detected changes in 'agents/shared/data_expert.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [52392]
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/auth/__init__.py:54: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/oauth2/__init__.py:40: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/api_core/_python_version_support.py:246: FutureWarning: You are using a non-supported Python version (3.9.6). Google will not post any further updates to google.api_core supporting this Python version. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.api_core.
-  warnings.warn(message, FutureWarning)
-/Users/jaimesabogal/Nexus-360/agents/shared/llm_intel.py:22: FutureWarning: 
-
-All support for the `google.generativeai` package has ended. It will no longer be receiving 
-updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
-See README for more details:
-
-https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
-
-  import google.generativeai as genai
-INFO:     Started server process [53877]
-INFO:     Waiting for application startup.
-INFO:NEXUS-GATEWAY:NEXUS-360 API Gateway Initialized.
-INFO:     Application startup complete.
+INFO:     127.0.0.1:55486 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55503 - "GET /dashboard/reports/report_21a358b7-0fd9-48fd-9bce-161d69a6d041.html HTTP/1.1" 200 OK
