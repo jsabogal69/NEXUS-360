@@ -601,19 +601,46 @@ class Nexus7Architect:
         <div style="margin-top:20px;">
             <!-- Charts Row -->
             <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:30px; margin-bottom:30px;">
-                <!-- Pie Chart: Market Share -->
+                <!-- Pie Chart: Market Share with Percentages -->
                 <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
-                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">📊 Market Share por Marca</h4>
+                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px;">
+                        📊 Market Share por Marca
+                        <span style="background:#3b82f6; color:white; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:700;">TOP {len(pie_labels) if pie_labels else 5}</span>
+                    </h4>
                     <div style="position:relative; height:280px;">
                         <canvas id="pieChart"></canvas>
                     </div>
+                    <!-- Legend with percentages -->
+                    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:15px; padding-top:15px; border-top:1px solid #e2e8f0;">
+                        {(''.join([f'<span style="display:flex; align-items:center; gap:4px; font-size:0.7rem; color:#475569;"><span style="width:10px; height:10px; border-radius:50%; background:{pie_colors[i] if i < len(pie_colors) else "#6366f1"};"></span>{pie_labels[i] if i < len(pie_labels) else "N/A"}: <strong>{pie_values[i] if i < len(pie_values) else 0}%</strong></span>' for i in range(min(len(pie_labels), 5))]) if pie_labels else '<span style="color:#94a3b8; font-size:0.75rem;">Sin datos de marcas</span>')}
+                    </div>
                 </div>
                 
-                <!-- Line Chart: Seasonality -->
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:30px;">
-                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif);">📈 Evolución de Demanda por Evento</h4>
+                <!-- Bar Chart: Seasonality with Values -->
+                <div style="background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border:1px solid #e2e8f0; border-radius:16px; padding:30px;">
+                    <h4 style="margin:0 0 20px 0; color:var(--primary); font-family:var(--serif); display:flex; align-items:center; gap:10px;">
+                        📈 Evolución de Demanda por Mes
+                        <span style="background:#22c55e; color:white; padding:2px 8px; border-radius:10px; font-size:0.6rem; font-weight:700;">ÍNDICE %</span>
+                    </h4>
                     <div style="position:relative; height:280px;">
                         <canvas id="lineChart"></canvas>
+                    </div>
+                    <!-- Key Stats -->
+                    <div style="display:flex; justify-content:space-between; margin-top:15px; padding-top:15px; border-top:1px solid #e2e8f0;">
+                        <div style="text-align:center;">
+                            <div style="font-size:0.6rem; color:#64748b;">PICO MÁXIMO</div>
+                            <div style="font-size:1.1rem; font-weight:800; color:#22c55e;">Noviembre</div>
+                            <div style="font-size:0.7rem; color:#22c55e;">100%</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:0.6rem; color:#64748b;">PROMEDIO</div>
+                            <div style="font-size:1.1rem; font-weight:800; color:#3b82f6;">72%</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:0.6rem; color:#64748b;">PICO BAJO</div>
+                            <div style="font-size:1.1rem; font-weight:800; color:#f59e0b;">Marzo</div>
+                            <div style="font-size:0.7rem; color:#f59e0b;">50%</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -639,10 +666,14 @@ class Nexus7Architect:
             </div>
         </div>
         
-        <!-- Chart.js Scripts -->
+        <!-- Chart.js with DataLabels Plugin -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
         <script>
-            // Pie Chart: Market Share
+            // Register datalabels plugin
+            Chart.register(ChartDataLabels);
+            
+            // Pie Chart: Market Share with Percentages
             new Chart(document.getElementById('pieChart'), {{
                 type: 'doughnut',
                 data: {{
@@ -650,27 +681,48 @@ class Nexus7Architect:
                     datasets: [{{
                         data: {pie_values},
                         backgroundColor: {pie_colors[:len(pie_values)]},
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverBorderWidth: 4,
+                        hoverOffset: 8
                     }}]
                 }},
                 options: {{
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '55%',
                     plugins: {{
                         legend: {{
-                            position: 'right',
-                            labels: {{
-                                usePointStyle: true,
-                                padding: 15,
-                                font: {{ size: 11 }}
-                            }}
+                            display: false
+                        }},
+                        tooltip: {{
+                            callbacks: {{
+                                label: function(context) {{
+                                    return context.label + ': ' + context.raw + '%';
+                                }}
+                            }},
+                            backgroundColor: '#1e293b',
+                            titleFont: {{ size: 14, weight: 'bold' }},
+                            bodyFont: {{ size: 13 }},
+                            padding: 12,
+                            cornerRadius: 8
+                        }},
+                        datalabels: {{
+                            color: '#1e293b',
+                            font: {{ weight: 'bold', size: 12 }},
+                            formatter: function(value, context) {{
+                                if (value >= 10) return value + '%';
+                                return '';
+                            }},
+                            anchor: 'end',
+                            align: 'end',
+                            offset: 5
                         }}
                     }}
                 }}
             }});
             
-            // Line Chart: Seasonality
+            // Bar Chart: Seasonality with Value Labels
             new Chart(document.getElementById('lineChart'), {{
                 type: 'bar',
                 data: {{
@@ -678,10 +730,23 @@ class Nexus7Architect:
                     datasets: [{{
                         label: 'Índice de Demanda',
                         data: {line_values},
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                        borderColor: '#3b82f6',
-                        borderWidth: 1,
-                        borderRadius: 6
+                        backgroundColor: function(context) {{
+                            const value = context.raw;
+                            if (value >= 95) return 'rgba(239, 68, 68, 0.8)';  // Red for extreme
+                            if (value >= 80) return 'rgba(249, 115, 22, 0.8)'; // Orange for high
+                            if (value >= 65) return 'rgba(59, 130, 246, 0.8)'; // Blue for medium
+                            return 'rgba(34, 197, 94, 0.7)'; // Green for low
+                        }},
+                        borderColor: function(context) {{
+                            const value = context.raw;
+                            if (value >= 95) return '#ef4444';
+                            if (value >= 80) return '#f97316';
+                            if (value >= 65) return '#3b82f6';
+                            return '#22c55e';
+                        }},
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
                     }}]
                 }},
                 options: {{
@@ -691,14 +756,48 @@ class Nexus7Architect:
                         y: {{
                             beginAtZero: true,
                             max: 110,
-                            title: {{
-                                display: true,
-                                text: 'Índice de Demanda (%)'
+                            grid: {{
+                                color: 'rgba(0,0,0,0.05)'
+                            }},
+                            ticks: {{
+                                callback: function(value) {{
+                                    return value + '%';
+                                }},
+                                font: {{ size: 10 }}
+                            }}
+                        }},
+                        x: {{
+                            grid: {{
+                                display: false
+                            }},
+                            ticks: {{
+                                font: {{ size: 9 }},
+                                maxRotation: 45
                             }}
                         }}
                     }},
                     plugins: {{
-                        legend: {{ display: false }}
+                        legend: {{ display: false }},
+                        tooltip: {{
+                            callbacks: {{
+                                label: function(context) {{
+                                    return 'Demanda: ' + context.raw + '%';
+                                }}
+                            }},
+                            backgroundColor: '#1e293b',
+                            padding: 10,
+                            cornerRadius: 6
+                        }},
+                        datalabels: {{
+                            color: '#1e293b',
+                            font: {{ weight: 'bold', size: 10 }},
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 2,
+                            formatter: function(value) {{
+                                return value + '%';
+                            }}
+                        }}
                     }}
                 }}
             }});
