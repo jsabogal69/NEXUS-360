@@ -837,6 +837,19 @@ class Nexus7Architect:
         persona_quote = persona.get("quote", "No tengo tiempo para productos que me fallen. Pago más por tranquilidad.") if isinstance(persona, dict) else "Pago más por tranquilidad."
         persona_story = persona.get("story", "Investiga obsesivamente antes de comprar, lee las reviews de 1 estrella primero, y está dispuesta a pagar 2x por calidad demostrable.") if isinstance(persona, dict) else "Investiga antes de comprar."
         
+        # Extract market sizing data (now dynamic, not hardcoded)
+        market = verdict.get("market_sizing", {})
+        tam_display = market.get("tam", "PENDIENTE") if isinstance(market, dict) else "PENDIENTE"
+        sam_display = market.get("sam", "PENDIENTE") if isinstance(market, dict) else "PENDIENTE"
+        som_display = market.get("som", "PENDIENTE") if isinstance(market, dict) else "PENDIENTE"
+        market_source = market.get("source", "⚠️ Datos pendientes") if isinstance(market, dict) else "⚠️ Datos pendientes"
+        has_market_data = market.get("has_real_data", False) if isinstance(market, dict) else False
+        
+        # Extract pricing sources
+        pricing_source = verdict.get("pricing_source", "⚠️ Datos pendientes")
+        pricing_formula = verdict.get("pricing_formula", "Requiere escaneo con datos")
+        has_real_pricing = verdict.get("has_real_pricing", False)
+        
         html_report = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1060,49 +1073,46 @@ class Nexus7Architect:
                 <div style="background:linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-radius:16px; padding:25px; color:white;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                         <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">📊 DIMENSIONAMIENTO DE MERCADO</div>
-                        <span style="background:#334155; color:#94a3b8; padding:2px 8px; border-radius:8px; font-size:0.5rem;">📚 Fuente: Scout + POE</span>
+                        <span style="background:{'#22c55e' if has_market_data else '#ef4444'}; color:white; padding:2px 8px; border-radius:8px; font-size:0.5rem;">{'✓ DATOS REALES' if has_market_data else '⚠️ PENDIENTE'}</span>
                     </div>
                     
                     <!-- TAM with source -->
                     <div style="margin-bottom:12px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
                             <span style="font-size:0.65rem; color:#94a3b8;">TAM (Mercado Total)</span>
-                            <span style="font-size:0.95rem; font-weight:800; color:#22c55e;">$180M</span>
+                            <span style="font-size:0.95rem; font-weight:800; color:#22c55e;">{tam_display}</span>
                         </div>
                         <div style="background:#334155; border-radius:4px; height:6px; overflow:hidden;">
                             <div style="background:#22c55e; width:100%; height:100%;"></div>
                         </div>
-                        <div style="font-size:0.5rem; color:#64748b; margin-top:2px;">📐 Top10 × ASP × 12 meses × Categoría</div>
                     </div>
                     
                     <!-- SAM with source -->
                     <div style="margin-bottom:12px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
                             <span style="font-size:0.65rem; color:#94a3b8;">SAM (Alcanzable)</span>
-                            <span style="font-size:0.95rem; font-weight:800; color:#3b82f6;">$54M</span>
+                            <span style="font-size:0.95rem; font-weight:800; color:#3b82f6;">{sam_display}</span>
                         </div>
                         <div style="background:#334155; border-radius:4px; height:6px; overflow:hidden;">
                             <div style="background:#3b82f6; width:30%; height:100%;"></div>
                         </div>
-                        <div style="font-size:0.5rem; color:#64748b; margin-top:2px;">📐 30% del TAM (segmento premium)</div>
                     </div>
                     
                     <!-- SOM with source -->
                     <div style="margin-bottom:12px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
                             <span style="font-size:0.65rem; color:#94a3b8;">SOM (Meta Año 1)</span>
-                            <span style="font-size:0.95rem; font-weight:800; color:#f59e0b;">$2.7M</span>
+                            <span style="font-size:0.95rem; font-weight:800; color:#f59e0b;">{som_display}</span>
                         </div>
                         <div style="background:#334155; border-radius:4px; height:6px; overflow:hidden;">
                             <div style="background:#f59e0b; width:5%; height:100%;"></div>
                         </div>
-                        <div style="font-size:0.5rem; color:#64748b; margin-top:2px;">📐 5% SAM (nuevo entrante nicho)</div>
                     </div>
                     
                     <!-- Methodology Note -->
                     <div style="background:#1e293b; border:1px dashed #475569; padding:8px; border-radius:6px; margin-top:10px;">
                         <div style="font-size:0.55rem; color:#94a3b8; line-height:1.4;">
-                            <strong style="color:#f59e0b;">⚠️ METODOLOGÍA:</strong> TAM calculado con datos de Helium 10 X-Ray (ventas mensuales Top 10) × 12. SAM = 30% premium. SOM = 5% conservador para año 1.
+                            <strong style="color:#f59e0b;">📐 FUENTE:</strong> {market_source}
                         </div>
                     </div>
                 </div>
@@ -1112,29 +1122,27 @@ class Nexus7Architect:
                 <div style="background:#0f172a; color:white; border-radius:16px; padding:30px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                         <div style="font-size:0.7rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">💰 PRICING STRATEGY</div>
-                        <span style="background:#334155; color:#94a3b8; padding:2px 8px; border-radius:8px; font-size:0.5rem;">📊 Scout TOP10</span>
+                        <span style="background:{'#22c55e' if has_real_pricing else '#ef4444'}; color:white; padding:2px 8px; border-radius:8px; font-size:0.5rem;">{'✓ DATOS REALES' if has_real_pricing else '⚠️ PENDIENTE'}</span>
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; text-align:center;">
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">MSRP SUGERIDO</div>
-                            <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">${verdict.get('price_msrp', '49.99')}</div>
-                            <div style="font-size:0.5rem; color:#64748b; margin-top:3px;">ASP +15%</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">{f"${verdict.get('price_msrp', 'N/A')}" if has_real_pricing else "⏳"}</div>
                         </div>
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">COSTO EST.</div>
-                            <div style="font-size:1.5rem; font-weight:900; color:#f97316;">${verdict.get('price_cost', '15.00')}</div>
-                            <div style="font-size:0.5rem; color:#64748b; margin-top:3px;">30% COGS</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#f97316;">{f"${verdict.get('price_cost', 'N/A')}" if has_real_pricing else "⏳"}</div>
                         </div>
                         <div>
                             <div style="font-size:0.65rem; color:#94a3b8;">MARGEN BRUTO</div>
-                            <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">{verdict.get('margin', '70')}%</div>
-                            <div style="font-size:0.5rem; color:#64748b; margin-top:3px;">1-(COGS/MSRP)</div>
+                            <div style="font-size:1.5rem; font-weight:900; color:#3b82f6;">{f"{verdict.get('margin', 'N/A')}%" if has_real_pricing else "⏳"}</div>
                         </div>
                     </div>
                     <!-- Pricing Methodology -->
                     <div style="background:#1e293b; border:1px dashed #475569; padding:8px; border-radius:6px; margin-top:15px;">
                         <div style="font-size:0.55rem; color:#94a3b8; line-height:1.4;">
-                            <strong style="color:#22c55e;">📐 FÓRMULA:</strong> MSRP = ASP Top10 × 1.15 (premium 15%). COGS = 30% del MSRP (industria estándar). Margen = (MSRP - COGS) / MSRP.
+                            <strong style="color:#22c55e;">📐 FUENTE:</strong> {pricing_source}<br>
+                            <strong style="color:#3b82f6;">📊 FÓRMULA:</strong> {pricing_formula}
                         </div>
                     </div>
                 </div>

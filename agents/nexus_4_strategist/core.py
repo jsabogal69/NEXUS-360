@@ -129,15 +129,55 @@ Nuestra ventaja reside en el diseño de un 'Moat' inexpugnable. Al desvincular e
 ### III. Veredicto NEXUS
 Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un objeto; vendemos infraestructura de vida. La hoja de ruta está calibrada para ganar autoridad técnica antes de escalar. Es momento de dejar de ser un vendedor para convertirnos en el **dueño de la categoría**. El Dossier está listo para ejecución."""
 
-        # Build comprehensive verdict with concrete proposal
-        top_10_products = ssot_data.get("scout_data", {}).get("top_10_products", [])
-        avg_price = sum([p.get("price", 50) for p in top_10_products]) / len(top_10_products) if top_10_products else 49.99
-        suggested_msrp = round(avg_price * 1.15, 2)  # 15% above market average for premium positioning
-        estimated_cost = round(suggested_msrp * 0.30, 2)  # Assume 30% COGS for healthy margin
-        margin = round((1 - estimated_cost / suggested_msrp) * 100)
+        # ═══════════════════════════════════════════════════════════════════════
+        # CRITICAL: NO HALLUCINATION - All values MUST come from real data
+        # If data is not available, we show "PENDIENTE" instead of fake numbers
+        # ═══════════════════════════════════════════════════════════════════════
         
-        # Extract differentiators from gaps
-        differentiators = [g.get("proposal", "Innovación clave")[:60] for g in gaps[:3]] if gaps else ["Calidad superior", "Precio competitivo", "Experiencia única"]
+        top_10_products = ssot_data.get("scout_data", {}).get("top_10_products", [])
+        
+        # Check if we have REAL data from Scout
+        has_real_pricing_data = len(top_10_products) > 0 and any(p.get("price", 0) > 0 for p in top_10_products)
+        
+        if has_real_pricing_data:
+            # Calculate from REAL Scout data
+            prices = [p.get("price", 0) for p in top_10_products if p.get("price", 0) > 0]
+            avg_price = sum(prices) / len(prices) if prices else 0
+            suggested_msrp = round(avg_price * 1.15, 2)  # 15% above market average
+            estimated_cost = round(suggested_msrp * 0.30, 2)  # Industry standard 30% COGS
+            margin = round((1 - estimated_cost / suggested_msrp) * 100) if suggested_msrp > 0 else 0
+            
+            # Track data source for transparency
+            pricing_source = f"Scout TOP10 ({len(prices)} productos con precio)"
+            pricing_formula = f"ASP ${round(avg_price, 2)} × 1.15 = ${suggested_msrp}"
+            
+            # Calculate TAM from real data (monthly sales × 12 × category multiplier)
+            monthly_sales = ssot_data.get("scout_data", {}).get("monthly_sales_estimate", 0)
+            if monthly_sales > 0:
+                tam_value = round(monthly_sales * 12 * avg_price / 1000000, 1)  # In millions
+                sam_value = round(tam_value * 0.30, 1)  # 30% premium segment
+                som_value = round(sam_value * 0.05, 1)  # 5% year 1 target
+                tam_source = "Scout: ventas mensuales × 12 × ASP"
+            else:
+                # Estimate TAM from top 10 if no monthly sales data
+                tam_value = round(len(top_10_products) * avg_price * 5000 * 12 / 1000000, 1)  # Rough estimate
+                sam_value = round(tam_value * 0.30, 1)
+                som_value = round(sam_value * 0.05, 1)
+                tam_source = "Estimado: TOP10 × ASP × volumen promedio"
+        else:
+            # NO REAL DATA - Show pending instead of hallucinating
+            suggested_msrp = "PENDIENTE"
+            estimated_cost = "PENDIENTE"
+            margin = "PENDIENTE"
+            pricing_source = "⚠️ No hay datos de Scout para calcular"
+            pricing_formula = "Requiere escaneo con datos de precio"
+            tam_value = "PENDIENTE"
+            sam_value = "PENDIENTE"
+            som_value = "PENDIENTE"
+            tam_source = "⚠️ Ejecutar Scout con datos POE"
+        
+        # Extract differentiators from gaps (these come from LLM analysis, not hallucinated)
+        differentiators = [g.get("proposal", "Innovación clave")[:60] for g in gaps[:3]] if gaps else ["Análisis en progreso...", "Ejecutar escaneo completo", "Datos pendientes"]
         
         strategy_output = {
             "id": generate_id(),
@@ -208,21 +248,30 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
                     "story": f"Alejandra descubrió {anchor} después de que su versión genérica fallara 3 veces en un año. Ahora investiga obsesivamente antes de comprar, lee las reviews de 1 estrella primero, y está dispuesta a pagar 2x si un producto tiene garantía de calidad demostrable.",
                     "decision_criteria": ["Garantía extendida", "Reviews de expertos", "Materiales premium", "Diseño que refleje éxito"]
                 },
-                # TAM/SAM/SOM
+                # TAM/SAM/SOM - Now calculated from real data
                 "market_sizing": {
-                    "tam": f"Total de compradores de {anchor} en Amazon US: $180M anuales",
-                    "sam": f"Segmento premium dispuesto a pagar +30% sobre precio promedio: $54M (30%)",
-                    "som": "Meta realista año 1: $2.7M (5% del SAM con estrategia de nicho)"
+                    "tam": f"${tam_value}M" if tam_value != "PENDIENTE" else "PENDIENTE",
+                    "tam_value": tam_value,
+                    "sam": f"${sam_value}M" if sam_value != "PENDIENTE" else "PENDIENTE",
+                    "sam_value": sam_value,
+                    "som": f"${som_value}M" if som_value != "PENDIENTE" else "PENDIENTE",
+                    "som_value": som_value,
+                    "source": tam_source,
+                    "has_real_data": has_real_pricing_data
                 },
+                # Data source tracking for transparency
+                "pricing_source": pricing_source,
+                "pricing_formula": pricing_formula,
                 # Legacy fields for backwards compatibility
                 "target_segment": "Early Adopters Premium + Quality-First Professionals",
                 "target_description": "Consumidores que priorizan calidad y durabilidad sobre precio, con frustración demostrada hacia productos genéricos.",
                 "target_age": "25-50",
                 "target_income": "$75K-$200K",
-                # Pricing
+                # Pricing - Now from real Scout data or PENDIENTE
                 "price_msrp": str(suggested_msrp),
                 "price_cost": str(estimated_cost),
                 "margin": str(margin),
+                "has_real_pricing": has_real_pricing_data,
                 # Acciones inmediatas
                 "action_1": "Validar concepto con focus group del segmento objetivo",
                 "action_2": f"Desarrollar MVP que resuelva las {len(gaps)} brechas críticas",
