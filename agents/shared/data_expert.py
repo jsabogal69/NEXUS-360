@@ -151,33 +151,71 @@ class DataExpert:
         return "\n".join([p.text for p in doc.paragraphs])
 
     # ═══════════════════════════════════════════════════════════════════════
-    # X-RAY / HELIUM10 PRICE EXTRACTION (POE DATA)
+    # POE DATA EXTRACTION (X-Ray, Amazon, Helium10, Any pricing file)
     # ═══════════════════════════════════════════════════════════════════════
     
     @staticmethod
-    def is_xray_file(filename: str, df: pd.DataFrame = None) -> bool:
+    def is_pricing_data_file(filename: str, df: pd.DataFrame = None) -> bool:
         """
-        Detects if a file is a Helium10 X-Ray export based on filename or columns.
+        Detects if a file contains pricing/competitive data.
+        Matches: Helium10, Amazon exports, any file with price columns.
         """
-        xray_keywords = ["xray", "x-ray", "helium", "h10", "cerebro", "magnet"]
+        # Keywords in filename that indicate pricing data
+        filename_keywords = [
+            "xray", "x-ray", "helium", "h10", "cerebro", "magnet",  # Helium10
+            "amazon", "seller", "product", "listing", "competitor",  # Amazon
+            "price", "precio", "pricing", "sales", "ventas",  # Generic
+            "market", "analysis", "export", "data"  # Generic exports
+        ]
         
         # Check filename
-        if any(kw in filename.lower() for kw in xray_keywords):
+        fname_lower = filename.lower()
+        if any(kw in fname_lower for kw in filename_keywords):
+            logger.info(f"[DATA-EXPERT] File '{filename}' matched by filename keyword")
             return True
         
         # Check columns if DataFrame provided
-        if df is not None:
-            xray_columns = ["price", "sales", "revenue", "bsr", "title", "asin", "reviews"]
-            col_names = [c.lower() for c in df.columns]
-            matches = sum(1 for c in xray_columns if any(c in col for col in col_names))
-            return matches >= 3  # At least 3 X-Ray columns present
+        if df is not None and not df.empty:
+            # Columns that indicate pricing data (English and Spanish)
+            pricing_columns = [
+                # English
+                "price", "sales", "revenue", "bsr", "asin", "title", "reviews",
+                "units", "cost", "margin", "rank", "rating", "seller",
+                # Spanish
+                "precio", "ventas", "ingresos", "titulo", "costo", "margen",
+                "calificacion", "vendedor", "unidades"
+            ]
+            
+            col_names_lower = [str(c).lower().strip() for c in df.columns]
+            
+            # Count matches
+            matches = 0
+            matched_cols = []
+            for pricing_col in pricing_columns:
+                for actual_col in col_names_lower:
+                    if pricing_col in actual_col:
+                        matches += 1
+                        matched_cols.append(actual_col)
+                        break
+            
+            # If we have at least 2 pricing-related columns, it's a pricing file
+            if matches >= 2:
+                logger.info(f"[DATA-EXPERT] File '{filename}' matched {matches} columns: {matched_cols}")
+                return True
         
         return False
+    
+    # Keep old function name for backwards compatibility
+    @staticmethod
+    def is_xray_file(filename: str, df: pd.DataFrame = None) -> bool:
+        """Alias for is_pricing_data_file for backwards compatibility."""
+        return DataExpert.is_pricing_data_file(filename, df)
 
     @staticmethod
     def extract_xray_pricing(df: pd.DataFrame, filename: str = "") -> dict:
         """
-        Extracts pricing data from Helium10 X-Ray CSV/Excel exports.
+        Extracts pricing data from any competitive/pricing file.
+        Supports: Helium10, Amazon exports, generic pricing CSVs.
         
         Returns:
             {
@@ -199,40 +237,50 @@ class DataExpert:
         }
         
         if df is None or df.empty:
+            logger.warning(f"[DATA-EXPERT] Empty dataframe for {filename}")
             return result
         
-        # Normalize column names for matching
+        logger.info(f"[DATA-EXPERT] Processing {filename} with {len(df)} rows, columns: {list(df.columns)[:10]}")
+        
+        # Flexible column mapping - supports multiple names per field
+        column_aliases = {
+            "price": ["price", "precio", "cost", "costo", "unit price", "precio unitario", "msrp", "buy box"],
+            "sales": ["sales", "ventas", "units", "unidades", "monthly sales", "ventas mensuales", "units sold"],
+            "revenue": ["revenue", "ingresos", "monthly revenue", "gross", "total sales"],
+            "bsr": ["bsr", "rank", "ranking", "best seller", "posicion"],
+            "asin": ["asin", "product id", "sku", "id producto"],
+            "title": ["title", "titulo", "product", "producto", "name", "nombre", "description"],
+            "reviews": ["reviews", "reseñas", "review count", "numero de reseñas", "ratings"]
+        }
+        
         col_map = {}
-        for col in df.columns:
-            col_lower = col.lower().strip()
-            
-            # Price column detection
-            if "price" in col_lower and "drop" not in col_lower:
-                col_map["price"] = col
-            # Sales column detection
-            elif "sales" in col_lower or "units" in col_lower:
-                col_map["sales"] = col
-            # Revenue column detection
-            elif "revenue" in col_lower:
-                col_map["revenue"] = col
-            # BSR/Rank column detection
-            elif "bsr" in col_lower or "rank" in col_lower:
-                col_map["bsr"] = col
-            # ASIN column detection
-            elif "asin" in col_lower:
-                col_map["asin"] = col
-            # Title/Product name detection
-            elif "title" in col_lower or "product" in col_lower or "name" in col_lower:
-                col_map["title"] = col
-            # Reviews detection
-            elif "review" in col_lower and "rating" not in col_lower:
-                col_map["reviews"] = col
+        for field, aliases in column_aliases.items():
+            for col in df.columns:
+                col_lower = str(col).lower().strip()
+                if any(alias in col_lower for alias in aliases):
+                    col_map[field] = col
+                    break
         
-        logger.info(f"[DATA-EXPERT] X-Ray column mapping: {col_map}")
+        logger.info(f"[DATA-EXPERT] Column mapping for {filename}: {col_map}")
         
-        # Must have at least price column
+        # We need at least price OR (sales + title) to be useful
+        if "price" not in col_map and "sales" not in col_map:
+            logger.warning(f"[DATA-EXPERT] No price or sales column found in {filename}")
+            # Try to find ANY numeric column that could be price
+            for col in df.columns:
+                try:
+                    sample = df[col].dropna().head(10)
+                    if sample.apply(lambda x: isinstance(x, (int, float)) or (isinstance(x, str) and x.replace('.','').replace(',','').replace('$','').isdigit())).any():
+                        numeric_vals = sample.apply(DataExpert.normalize_number)
+                        if 1 < numeric_vals.mean() < 500:  # Reasonable price range
+                            col_map["price"] = col
+                            logger.info(f"[DATA-EXPERT] Auto-detected price column: {col}")
+                            break
+                except:
+                    continue
+        
         if "price" not in col_map:
-            logger.warning(f"[DATA-EXPERT] No price column found in {filename}")
+            logger.warning(f"[DATA-EXPERT] Could not find price column in {filename}")
             return result
         
         # Extract products
