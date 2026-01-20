@@ -305,7 +305,112 @@ class Nexus8Guardian:
                 {"std": "Product Liability Insurance", "status": "RECOMMENDED", "desc": f"Seguro de responsabilidad del producto para '{anchor}'. Protección legal contra claims de consumidores."},
                 {"std": "FBA Compliance (Amazon)", "status": "MANDATORY", "desc": "Requisitos de empaque, etiquetado y códigos de barras para Fulfillment by Amazon. Pasos de prep específicos por categoría."}
             ]
-
+        # ═══════════════════════════════════════════════════════════════════
+        # RISK MATRIX CONSTRUCTION
+        # ═══════════════════════════════════════════════════════════════════
+        risk_matrix = []
+        veto_triggered = False
+        veto_reasons = []
+        
+        # Gating Categories that require Amazon approval
+        gating_categories = {
+            "topical": ["TOPICAL", "SKIN", "CREAM", "LOTION", "SERUM", "COSMETIC"],
+            "hazmat": ["BATTERY", "LITHIUM", "FLAMMABLE", "AEROSOL", "CHEMICAL"],
+            "pesticide": ["PESTICIDE", "INSECTICIDE", "REPELLENT", "HERBICIDE"],
+            "medical": ["MEDICAL", "HEALTH", "THERAPEUTIC", "CURE", "TREAT"],
+            "supplement": ["SUPPLEMENT", "VITAMIN", "DIETARY", "HERBAL"]
+        }
+        
+        # Check for gating requirements
+        for gate_type, keywords in gating_categories.items():
+            if any(kw in norm_anchor for kw in keywords):
+                risk_matrix.append({
+                    "risk": f"Amazon Gating - {gate_type.title()}",
+                    "description": f"Categoría '{gate_type}' requiere aprobación previa de Amazon",
+                    "impact": "ALTO",
+                    "mitigation": "Solicitar ungating en Seller Central antes de listado",
+                    "status": "PENDIENTE"
+                })
+        
+        # AUTOMATIC VETO CONDITIONS
+        # Topical products without COA
+        if is_beauty_personal_care:
+            risk_matrix.append({
+                "risk": "Certificate of Analysis (COA)",
+                "description": "Productos tópicos requieren COA de laboratorio independiente",
+                "impact": "CRÍTICO",
+                "mitigation": "Obtener COA de proveedor o laboratorio tercero",
+                "status": "REQUERIDO"
+            })
+            # Check if user declared having COA (future: from input data)
+            has_coa = False  # TODO: Check from input files
+            if not has_coa:
+                veto_triggered = True
+                veto_reasons.append("⚠️ VETO: Producto Topical sin Certificate of Analysis (COA)")
+        
+        # Baby products - strictest requirements
+        if is_baby:
+            risk_matrix.append({
+                "risk": "CPSIA Testing Certificate",
+                "description": "Productos infantiles requieren CPC (Children's Product Certificate)",
+                "impact": "CRÍTICO",
+                "mitigation": "Testing en laboratorio CPSC-accepted antes de importación",
+                "status": "OBLIGATORIO"
+            })
+            has_cpc = False  # TODO: Check from input files
+            if not has_cpc:
+                veto_triggered = True
+                veto_reasons.append("⚠️ VETO: Producto para bebé sin Children's Product Certificate (CPC)")
+        
+        # Food/Supplements - FDA requirements
+        if is_food:
+            risk_matrix.append({
+                "risk": "FDA Facility Registration",
+                "description": "Instalaciones de manufactura deben estar registradas con FDA",
+                "impact": "CRÍTICO",
+                "mitigation": "Verificar FDA Registration Number del fabricante",
+                "status": "OBLIGATORIO"
+            })
+            has_fda_reg = False  # TODO: Check from input files
+            if not has_fda_reg:
+                veto_triggered = True
+                veto_reasons.append("⚠️ VETO: Suplemento/Alimento sin FDA Facility Registration")
+        
+        # Patent risk (basic keyword detection)
+        patent_red_flags = ["PATENTED", "PATENT PENDING", "®", "™", "PROPRIETARY"]
+        if any(flag in norm_anchor for flag in patent_red_flags):
+            risk_matrix.append({
+                "risk": "Posible Infracción de Patente",
+                "description": "Producto o descripción contiene indicadores de patente activa",
+                "impact": "ALTO",
+                "mitigation": "Consulta legal antes de producción",
+                "status": "INVESTIGAR"
+            })
+        
+        # Liability risk for personal use products
+        if is_beauty_personal_care or is_baby or is_food or is_fitness:
+            risk_matrix.append({
+                "risk": "Product Liability Insurance",
+                "description": "Productos de uso personal requieren seguro de responsabilidad",
+                "impact": "MEDIO",
+                "mitigation": "Obtener póliza de $1M+ antes de ventas",
+                "status": "RECOMENDADO"
+            })
+        
+        # Add default risks
+        risk_matrix.append({
+            "risk": "Cambios Regulatorios",
+            "description": "Regulaciones pueden cambiar post-lanzamiento",
+            "impact": "MEDIO",
+            "mitigation": "Monitoreo continuo de CPSC, FDA, FTC",
+            "status": "ONGOING"
+        })
+        
+        # Determine final risk level based on veto
+        if veto_triggered:
+            risk_level = "CRITICAL - VETO ACTIVO"
+            compliance_score = max(compliance_score - 30, 0)
+        
         return {
             "id": generate_id(),
             "niche_compliance": anchor,
@@ -314,8 +419,15 @@ class Nexus8Guardian:
             "audits": audit_results,
             "total_standards": len(audit_results),
             "mandatory_count": len([a for a in audit_results if a["status"] == "MANDATORY"]),
+            
+            # NEW v2.0: Risk Matrix and Veto System
+            "risk_matrix": risk_matrix,
+            "veto_triggered": veto_triggered,
+            "veto_reasons": veto_reasons,
+            "veto_message": veto_reasons[0] if veto_reasons else None,
+            
             "security_protocol": "EYES ONLY - E2E Encrypted Pipeline",
-            "audit_note": f"Auditoría exhaustiva de {len(audit_results)} estándares internacionales para la categoría '{anchor}'. Se identificaron {len([a for a in audit_results if a['status'] == 'MANDATORY'])} requisitos obligatorios y {len([a for a in audit_results if a['status'] == 'RECOMMENDED'])} recomendados.",
+            "audit_note": f"Auditoría de {len(audit_results)} estándares. Matriz de riesgo: {len(risk_matrix)} factores identificados." + (" ⛔ VETO AUTOMÁTICO ACTIVADO" if veto_triggered else ""),
             "timestamp": timestamp_now()
         }
 

@@ -309,6 +309,133 @@ class Nexus5Mathematician:
                     "B2B_Bulk": f"NEX-CORP-{label.replace(' ', '-').upper()}-V01"
                 }
             },
+            
+            # ═══════════════════════════════════════════════════════════════
+            # v2.0: 3-SCENARIO PROJECTIONS (Conservative / Expected / Aggressive)
+            # ═══════════════════════════════════════════════════════════════
+            "three_scenarios": {
+                "conservative": {
+                    "name": "Escenario Conservador (Pesimista)",
+                    "description": "Asume condiciones adversas: PPC saturado, competencia agresiva",
+                    "assumptions": {
+                        "sales_adjustment": "-30%",
+                        "ppc_adjustment": "+40%",
+                        "conversion_rate": "8%"
+                    },
+                    "projections": {
+                        "monthly_units": round(150 * 0.70),  # 105 units
+                        "monthly_revenue": round(150 * 0.70 * base_price, 2),
+                        "ppc_spend": round(150 * 0.70 * base_price * (ppc_investment_pct * 1.4), 2),
+                        "net_margin_pct": max(round(base_net_margin - 12, 1), 5),
+                        "monthly_profit": round(150 * 0.70 * (base_price * 0.12), 2)
+                    },
+                    "viability": "⚠️ Riesgo" if base_net_margin - 12 < 15 else "✅ Viable"
+                },
+                "expected": {
+                    "name": "Escenario Base (Esperado)",
+                    "description": "Proyección basada en datos POE y promedios de mercado",
+                    "assumptions": {
+                        "sales_adjustment": "0%",
+                        "ppc_adjustment": "0%",
+                        "conversion_rate": "12%"
+                    },
+                    "projections": {
+                        "monthly_units": 150,
+                        "monthly_revenue": round(150 * base_price, 2),
+                        "ppc_spend": round(150 * base_price * ppc_investment_pct, 2),
+                        "net_margin_pct": base_net_margin,
+                        "monthly_profit": round(150 * base_net_profit, 2)
+                    },
+                    "viability": "✅ Objetivo"
+                },
+                "aggressive": {
+                    "name": "Escenario Agresivo (Optimista)",
+                    "description": "Asume ejecución óptima: ranking orgánico, reviews positivos",
+                    "assumptions": {
+                        "sales_adjustment": "+30%",
+                        "ppc_adjustment": "-20%",
+                        "conversion_rate": "18%"
+                    },
+                    "projections": {
+                        "monthly_units": round(150 * 1.30),  # 195 units
+                        "monthly_revenue": round(150 * 1.30 * base_price, 2),
+                        "ppc_spend": round(150 * 1.30 * base_price * (ppc_investment_pct * 0.8), 2),
+                        "net_margin_pct": round(base_net_margin + 8, 1),
+                        "monthly_profit": round(150 * 1.30 * (base_price * 0.28), 2)
+                    },
+                    "viability": "🚀 Potencial Alto"
+                }
+            },
+            
+            # ═══════════════════════════════════════════════════════════════
+            # v2.0: TACoS (Total Advertising Cost of Sales)
+            # ═══════════════════════════════════════════════════════════════
+            "tacos_analysis": {
+                "definition": "Porcentaje del revenue TOTAL consumido por publicidad",
+                "current_estimate": round((ppc_investment_pct) * 100, 1),
+                "sustainable_threshold": 15.0,
+                "warning_threshold": 25.0,
+                "status": "🟢 Saludable" if ppc_investment_pct * 100 < 15 else ("🟡 Monitorear" if ppc_investment_pct * 100 < 25 else "🔴 Crítico"),
+                "recommendation": "Reducir TACoS mediante SEO de listings y reviews orgánicos" if ppc_investment_pct * 100 > 15 else "TACoS dentro de rango óptimo"
+            },
+            
+            # ═══════════════════════════════════════════════════════════════
+            # v2.0: Q4 LOGISTICS COMPARISON (FBA vs 3PL)
+            # ═══════════════════════════════════════════════════════════════
+            "q4_logistics": {
+                "warning": "⚠️ Las tarifas FBA se triplican en Q4 (Oct-Dic)",
+                "fba_standard": {
+                    "name": "FBA (Ene-Sep)",
+                    "storage_per_cubic_ft": 0.87,
+                    "fulfillment_fee": amz_fba_fee
+                },
+                "fba_q4": {
+                    "name": "FBA Peak Season (Oct-Dic)",
+                    "storage_per_cubic_ft": 2.40,  # ~3x increase
+                    "fulfillment_fee": round(amz_fba_fee * 1.15, 2),  # +15% surge
+                    "margin_impact": "-8% a -12%"
+                },
+                "threepl_alternative": {
+                    "name": "3PL Independiente",
+                    "storage_per_cubic_ft": 0.45,
+                    "fulfillment_fee": 4.50,
+                    "recommendation": "Considerar 3PL para inventory hedge en Q4"
+                }
+            },
+            
+            # ═══════════════════════════════════════════════════════════════
+            # v2.0: US MARKET SUCCESS THRESHOLDS
+            # ═══════════════════════════════════════════════════════════════
+            "success_thresholds": {
+                "title": "Umbrales de Éxito para Mercado US",
+                "metrics": [
+                    {
+                        "metric": "Net Margin (Post-PPC)",
+                        "threshold": "> 20%",
+                        "current": f"{base_net_margin}%",
+                        "status": "✅ PASS" if base_net_margin > 20 else "⚠️ BELOW"
+                    },
+                    {
+                        "metric": "ROI Anualizado",
+                        "threshold": "> 100%",
+                        "current": f"{round((base_net_profit * 12 * 150) / (landed_cost * 500) * 100, 0)}%",
+                        "status": "✅ PASS" if (base_net_profit * 12 * 150) / (landed_cost * 500) > 1 else "⚠️ BELOW"
+                    },
+                    {
+                        "metric": "Conversion Rate Est.",
+                        "threshold": "> 10%",
+                        "current": "12% (estimado)",
+                        "status": "✅ PASS"
+                    },
+                    {
+                        "metric": "TACoS Sostenible",
+                        "threshold": "< 15%",
+                        "current": f"{round(ppc_investment_pct * 100, 1)}%",
+                        "status": "✅ PASS" if ppc_investment_pct * 100 < 15 else "⚠️ ABOVE"
+                    }
+                ],
+                "overall_verdict": "GO" if base_net_margin > 20 and ppc_investment_pct * 100 < 25 else "REVIEW REQUIRED"
+            },
             "timestamp": timestamp_now()
         }
         

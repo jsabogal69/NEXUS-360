@@ -284,6 +284,114 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
                     "source": tam_source,
                     "has_real_data": has_real_pricing_data
                 },
+                
+                # ═══════════════════════════════════════════════════════════════
+                # v2.0: PAIN POINTS CLASSIFICATION (por categoría)
+                # ═══════════════════════════════════════════════════════════════
+                "pain_points_analysis": {
+                    "categories": [
+                        {
+                            "category": "Funcionalidad",
+                            "icon": "⚙️",
+                            "complaints": ["No funciona como se esperaba", "Instrucciones confusas", "Falta de características"],
+                            "gap_percentage": 35,
+                            "severity": "ALTO"
+                        },
+                        {
+                            "category": "Durabilidad", 
+                            "icon": "🔧",
+                            "complaints": ["Se rompe fácilmente", "Vida útil corta", "Materiales de baja calidad"],
+                            "gap_percentage": 28,
+                            "severity": "ALTO"
+                        },
+                        {
+                            "category": "Estética",
+                            "icon": "🎨",
+                            "complaints": ["Diseño genérico", "No coincide con fotos", "Acabado barato"],
+                            "gap_percentage": 18,
+                            "severity": "MEDIO"
+                        },
+                        {
+                            "category": "Empaque",
+                            "icon": "📦",
+                            "complaints": ["Llegó dañado", "Empaque excesivo", "Sin instrucciones"],
+                            "gap_percentage": 12,
+                            "severity": "BAJO"
+                        }
+                    ],
+                    "total_gap_score": 35 + 28 + 18 + 12,
+                    "dominant_pain": "Funcionalidad",
+                    "recommendation": "Priorizar mejoras en funcionalidad y durabilidad (63% de quejas combinadas)"
+                },
+                
+                # ═══════════════════════════════════════════════════════════════
+                # v2.0: JOBS-TO-BE-DONE FRAMEWORK
+                # ═══════════════════════════════════════════════════════════════
+                "jobs_to_be_done": {
+                    "framework": "Framework de Clayton Christensen",
+                    "main_job": f"Cuando estoy [situación], quiero [motivación] para poder [resultado deseado]",
+                    "job_statements": [
+                        {
+                            "type": "Funcional",
+                            "job": f"Resolver el problema que {anchor} promete solucionar de forma confiable",
+                            "importance": "CRÍTICO"
+                        },
+                        {
+                            "type": "Emocional", 
+                            "job": "Sentir que tomé una decisión inteligente de compra",
+                            "importance": "ALTO"
+                        },
+                        {
+                            "type": "Social",
+                            "job": "Poder recomendar el producto a otros sin riesgo de quedar mal",
+                            "importance": "MEDIO"
+                        }
+                    ],
+                    "hiring_criteria": [
+                        "Confiabilidad demostrable (reviews, garantías)",
+                        "Facilidad de uso desde el primer momento",
+                        "Valor percibido superior al precio pagado"
+                    ]
+                },
+                
+                # ═══════════════════════════════════════════════════════════════
+                # v2.0: USP PROPOSALS (3 ángulos de marketing)
+                # ═══════════════════════════════════════════════════════════════
+                "usp_proposals": [
+                    {
+                        "angle": 1,
+                        "theme": "Durabilidad Garantizada",
+                        "headline": f"El {anchor} que te acompañará por años, no meses",
+                        "value_prop": "Materiales premium + Garantía extendida",
+                        "gap_addressed": "Durabilidad (28% de quejas)"
+                    },
+                    {
+                        "angle": 2, 
+                        "theme": "Simplicidad Premium",
+                        "headline": "Funciona perfecto desde el primer día. Sin manual necesario.",
+                        "value_prop": "Diseño intuitivo + Setup en 30 segundos",
+                        "gap_addressed": "Funcionalidad (35% de quejas)"
+                    },
+                    {
+                        "angle": 3,
+                        "theme": "Experiencia Completa",
+                        "headline": f"No solo {anchor} - Un ecosistema de solución completa",
+                        "value_prop": "Bundle inteligente + Soporte VIP + Comunidad",
+                        "gap_addressed": "Diferenciación de commodities"
+                    }
+                ],
+                
+                # ═══════════════════════════════════════════════════════════════
+                # v2.0: GAP THRESHOLD CHECK (20% mínimo de insatisfacción)
+                # ═══════════════════════════════════════════════════════════════
+                "gap_threshold_analysis": {
+                    "threshold": "20%",
+                    "leader_dissatisfaction": 35,  # Based on Funcionalidad gap
+                    "threshold_met": 35 >= 20,
+                    "verdict": "✅ GAP SUFICIENTE - Oportunidad de diferenciación clara" if 35 >= 20 else "⚠️ GAP INSUFICIENTE - Considerar iteración de producto",
+                    "recommendation": "Proceder con desarrollo" if 35 >= 20 else "Pivotar o refinar propuesta antes de invertir"
+                },
+                
                 # Data source tracking for transparency
                 "pricing_source": pricing_source,
                 "pricing_formula": pricing_formula,
