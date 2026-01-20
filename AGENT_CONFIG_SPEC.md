@@ -129,12 +129,12 @@ AGRESIVO (Optimista):
 
 ## 5. Próximos Pasos
 
-- [ ] Implementar clasificación de Pain Points en Strategist
-- [ ] Agregar Matriz de Riesgos al output de Guardian
-- [ ] Crear modelo de 3 escenarios en Mathematician
-- [ ] Definir umbrales de veto automático
-- [ ] Integrar análisis de patentes (fuente externa)
+- [x] Implementar clasificación de Pain Points en Strategist ✅
+- [x] Agregar Matriz de Riesgos al output de Guardian ✅
+- [x] Crear modelo de 3 escenarios en Mathematician ✅
+- [x] Definir umbrales de veto automático ✅
+- [ ] Integrar análisis de patentes (fuente externa) - PENDIENTE API
 
 ---
 
-*Especificación técnica para desarrollo futuro de NEXUS-360 v2.0*
+*Especificación técnica implementada en NEXUS-360 v2.0 (2026-01-20)*
