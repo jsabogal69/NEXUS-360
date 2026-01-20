@@ -829,6 +829,14 @@ class Nexus7Architect:
 
         # HTML Assembly
         verdict = st_data.get("dynamic_verdict", {})
+        
+        # Extract persona data safely BEFORE f-string (can't use {{}} for dict in f-string)
+        persona = verdict.get("primary_persona", {})
+        persona_name = persona.get("name", "Alejandra") if isinstance(persona, dict) else "Alejandra"
+        persona_title = persona.get("title", "Product Manager en Tech Startup, 32 años") if isinstance(persona, dict) else "Product Manager, 32 años"
+        persona_quote = persona.get("quote", "No tengo tiempo para productos que me fallen. Pago más por tranquilidad.") if isinstance(persona, dict) else "Pago más por tranquilidad."
+        persona_story = persona.get("story", "Investiga obsesivamente antes de comprar, lee las reviews de 1 estrella primero, y está dispuesta a pagar 2x por calidad demostrable.") if isinstance(persona, dict) else "Investiga antes de comprar."
+        
         html_report = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1025,16 +1033,16 @@ class Nexus7Architect:
                     <div style="display:flex; gap:15px; align-items:flex-start;">
                         <div style="width:60px; height:60px; background:linear-gradient(135deg, #6366f1, #8b5cf6); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.8rem; flex-shrink:0;">👩‍💼</div>
                         <div style="flex:1;">
-                            <div style="font-size:1.1rem; font-weight:700; color:var(--primary);">{verdict.get('primary_persona', {{}}).get('name', 'Alejandra')}</div>
-                            <div style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">{verdict.get('primary_persona', {{}}).get('title', 'Product Manager, 32 años')}</div>
+                            <div style="font-size:1.1rem; font-weight:700; color:var(--primary);">{persona_name}</div>
+                            <div style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">{persona_title}</div>
                             <div style="background:#f8fafc; padding:12px; border-radius:10px; font-style:italic; font-size:0.85rem; color:#475569; border-left:3px solid #6366f1;">
-                                "{verdict.get('primary_persona', {{}}).get('quote', 'No tengo tiempo para productos que me fallen. Pago más por tranquilidad.')}"
+                                "{persona_quote}"
                             </div>
                         </div>
                     </div>
                     
                     <div style="margin-top:15px; font-size:0.8rem; color:#4b5563; line-height:1.5;">
-                        {verdict.get('primary_persona', {{}}).get('story', 'Investiga obsesivamente antes de comprar, lee las reviews de 1 estrella primero, y está dispuesta a pagar 2x por calidad demostrable.')}
+                        {persona_story}
                     </div>
                     
                     <div style="margin-top:15px;">
