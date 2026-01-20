@@ -681,12 +681,14 @@
 
                     const steps = [
                         { name: 'NEXUS-1 (Harvester)', msg: `Procesados ${data.files_processed} archivos. ${modeBadge}`, link: data.artifacts?.harvester },
-                        { name: 'NEXUS-8 (The Guardian)', msg: 'Validación de integridad completada.', link: data.artifacts?.guardian },
+                        { name: 'NEXUS-8 (Guardian)', msg: 'Validación de integridad completada.', link: data.artifacts?.guardian },
                         { name: 'NEXUS-2 (Scout)', msg: 'Enriquecimiento OSINT por lote finalizado.', link: data.artifacts?.scout },
                         { name: 'NEXUS-3 (Integrator)', msg: 'Consolidación SSOT.', link: data.artifacts?.integrator },
                         { name: 'NEXUS-4 (Strategist)', msg: 'Análisis de brechas estratégicas.', link: data.artifacts?.strategist },
+                        { name: 'NEXUS-5 (Mathematician)', msg: 'Modelado financiero de 3 niveles completado.', link: null },
                         { name: 'NEXUS-6 (Senior Partner)', msg: 'Síntesis ejecutiva generada.', link: data.artifacts?.senior_partner },
-                        { name: 'NEXUS-7 (Architect)', msg: 'Paquete final generado.', link: data.final_report_url }
+                        { name: 'NEXUS-7 (Architect)', msg: 'Paquete final generado.', link: data.final_report_url },
+                        { name: 'NEXUS-9 (Archivist)', msg: `Caso archivado. Hash: ${data.product_hash || 'N/A'}`, link: null }
                     ];
 
                     panel.innerHTML = ""; // Clear initial loading msg
@@ -752,13 +754,14 @@
                 if (response.ok) {
                     const steps = [
                         { name: 'NEXUS-1 (Harvester)', msg: 'Datos ingeridos y guardados en firebase/raw_inputs.' },
-                        { name: 'NEXUS-8 (The Guardian)', msg: 'Validación de integridad completada. Sin amenazas detectadas.' },
+                        { name: 'NEXUS-8 (Guardian)', msg: 'Validación de integridad completada. Sin amenazas detectadas.' },
                         { name: 'NEXUS-2 (Scout)', msg: 'Análisis OSINT y tendencias de búsqueda integradas.' },
                         { name: 'NEXUS-3 (Integrator)', msg: 'Single Source of Truth (SSOT) creado con éxito.' },
                         { name: 'NEXUS-4 (Strategist)', msg: 'Gaps de mercado detectados y oportunidades de marketing identificadas.' },
                         { name: 'NEXUS-5 (Mathematician)', msg: 'Modelado financiero de 3 niveles completado. ROI verificado.' },
                         { name: 'NEXUS-6 (Senior Partner)', msg: 'Síntesis ejecutiva finalizada con tono Calidez Latina.' },
-                        { name: 'NEXUS-7 (Architect)', msg: 'Reporte PDF y Dashboard HTML generados.' }
+                        { name: 'NEXUS-7 (Architect)', msg: 'Reporte PDF y Dashboard HTML generados.' },
+                        { name: 'NEXUS-9 (Archivist)', msg: 'Caso archivado para estudios longitudinales.' }
                     ];
 
                     steps.forEach((step, index) => {
