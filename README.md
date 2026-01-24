@@ -47,3 +47,4 @@ curl -X POST "http://127.0.0.1:8000/workflow/full_cycle" \
 ## Known Issues
 - **Dashboard**: The Next.js dashboard could not be initialized due to missing Node.js in the environment.
 - **Persistence**: Data is currently mocked or logged to console if `serviceAccountKey.json` is missing.
+- **OAuth Error**: If you see `Error 400: redirect_uri_mismatch`, ensure you are accessing the dashboard via `http://localhost:8000/dashboard/` and NOT `http://127.0.0.1:8000/...`.

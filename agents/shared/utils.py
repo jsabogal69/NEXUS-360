@@ -25,6 +25,15 @@ class MockCollection:
             def set(self, data): 
                 if self.n not in self.s: self.s[self.n] = {}
                 self.s[self.n][self.i] = data
+            def update(self, data):
+                if self.n not in self.s: self.s[self.n] = {}
+                if self.i not in self.s[self.n]:
+                     self.s[self.n][self.i] = data
+                else:
+                    if isinstance(self.s[self.n][self.i], dict):
+                        self.s[self.n][self.i].update(data)
+                    else:
+                        self.s[self.n][self.i] = data
             def get(self):
                 data = self.s.get(self.n, {}).get(self.i)
                 return MockDocument(data) if data else type('EmptyDoc', (), {'exists': False})()
@@ -34,15 +43,22 @@ class MockFirestore:
     _storage = {}
     def collection(self, name): return MockCollection(self._storage, name)
 
+_MOCK_DB_INSTANCE = None
+
 def get_db():
+    global _MOCK_DB_INSTANCE
+    if _MOCK_DB_INSTANCE: return _MOCK_DB_INSTANCE
+
     try:
         if not firebase_admin._apps:
             cred = credentials.Certificate(CREDENTIALS_PATH)
             firebase_admin.initialize_app(cred)
         return firestore.client()
     except Exception as e:
-        print(f"[ERROR] Firebase Init Failed: {e}. Falling back to In-Memory MockDB.")
-        return MockFirestore()
+        if not _MOCK_DB_INSTANCE:
+             print(f"[ERROR] Firebase Init Failed: {e}. Falling back to In-Memory MockDB.")
+             _MOCK_DB_INSTANCE = MockFirestore()
+        return _MOCK_DB_INSTANCE
 
 # --- SHARED TYPES ---
 class AgentRole(Enum):

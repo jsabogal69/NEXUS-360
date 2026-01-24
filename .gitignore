@@ -11,3 +11,5 @@ agents/reports/*.log
 .vscode/
 .idea/
 .env
+server.log
+agents/static/reports/blueprint_*.html

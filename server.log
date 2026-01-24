@@ -1,6 +1,6 @@
 INFO:     Will watch for changes in these directories: ['/Users/jaimesabogal/Nexus-360']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [66979] using StatReload
+INFO:     Started reloader process [68002] using StatReload
 /Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/auth/__init__.py:54: FutureWarning: 
     You are using a Python version 3.9 past its end of life. Google will update
     google-auth with critical bug fixes on a best-effort basis, but not
@@ -28,14 +28,16 @@ See README for more details:
 https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
 
   import google.generativeai as genai
-INFO:     Started server process [67015]
+INFO:     Started server process [68038]
 INFO:     Waiting for application startup.
 INFO:NEXUS-GATEWAY:NEXUS-360 API Gateway Initialized.
 INFO:     Application startup complete.
-INFO:     127.0.0.1:49251 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
-INFO:     127.0.0.1:49251 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
-INFO:     127.0.0.1:49261 - "GET /dashboard/ HTTP/1.1" 304 Not Modified
-INFO:     127.0.0.1:49296 - "GET /dashboard/ HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49537 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:49537 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:49562 - "GET /dashboard/ HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49567 - "GET /dashboard/ HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:49579 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:49579 - "GET /dashboard HTTP/1.1" 307 Temporary Redirect
 INFO:googleapiclient.discovery_cache:file_cache is only supported with oauth2client<4.0.0
 INFO:NEXUS-1:[NEXUS-1] 📋 POE GUIDE DETECTED: GUIA CONTENIDO POE - Onion Shampoo
 INFO:NEXUS-1:[NEXUS-1] 📝 Guide entry: Helium_10_Xray_2026-01-20 -> 
@@ -63,35 +65,35 @@ INFO:DATA-EXPERT:[DATA-EXPERT] Processing NicheDetailsProductsTab_1_13_2026 with
 INFO:DATA-EXPERT:[DATA-EXPERT] Column mapping for NicheDetailsProductsTab_1_13_2026: {'price': 'average_selling_price__past_360_days___usd_', 'bsr': 'average_bsr', 'asin': 'asin', 'title': 'product_name', 'reviews': 'total_ratings', 'active_sellers': 'average___of_sellers_and_vendors__past_360_days_'}
 INFO:DATA-EXPERT:[DATA-EXPERT] ✅ Extracted 28 products from NicheDetailsProductsTab_1_13_2026. AVG: $30.11
 INFO:NEXUS-1:[NEXUS-1] 💰 X-RAY PRICING EXTRACTED: 28 products, AVG $30.11
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 7cddcec4-7278-4166-ba9f-83e4fe9ebf75
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: e3656375-4fca-42b3-87fe-7280a4e343ab
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: f6056a66-71a2-4db6-96c6-f321de89ea83
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: bbd50474-4fd7-4112-8938-b3e72ee5a6ad
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 23729d80-f70a-4b17-ad48-bd5f35aed2af
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 38411eef-2dfe-45be-9ce3-141569b4cbca
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: b3304b09-9e58-44f0-bcab-16bcaa7d5d7f
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 832ba626-afc6-46f4-8b2f-6e28a5670422
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: b8ff8393-d855-43eb-a967-79c13fec9380
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 687d5ec5-8998-4f4c-8b43-d94b0c985576
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 0f1ea6f5-9199-4eb3-8de5-147817154b5d
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: b9f8dfdb-b607-4fda-a4a7-1df5dac3ac16
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 0e4f445a-ee4a-49b7-9f69-a420be57c86d
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 221bc1d3-7942-4155-b68d-80231b43da55
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
-INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 3ce6d45b-cf54-4fca-8dbb-f34866e6e1f3
+INFO:NEXUS-8:[NEXUS-8 (The Guardian)] Expertise Validation for: 8f57c1ea-e501-4d72-8378-af111f4fa8e0
 ERROR:NEXUS-8:Failed to update Firestore: 'DocRef' object has no attribute 'update'
 INFO:NEXUS-2:[NEXUS-2 (Scout)] Analyzing Market: Onion Shampoo and Conditioner Set - Salt Free & Keratin Safe - Hair Growth Duo with Onion Extract and Biotin - 16.9 Fl Oz (Pack of 2)
 INFO:NEXUS-2:[NEXUS-2 (Scout)] ✅ POE DATA DETECTED - Using real verified pricing
 INFO:NEXUS-2:[NEXUS-2 (Scout)] Executing market analysis via LLM...
 INFO:LLM-INTEL:[LLM-INTEL] Successfully generated intelligence for: Onion Shampoo and Conditioner Set - Salt Free & Ke...
-INFO:NEXUS-3:[NEXUS-3 (Integrator)] Consolidating inputs: ['7cddcec4-7278-4166-ba9f-83e4fe9ebf75', 'f6056a66-71a2-4db6-96c6-f321de89ea83', '23729d80-f70a-4b17-ad48-bd5f35aed2af', 'b3304b09-9e58-44f0-bcab-16bcaa7d5d7f', 'b8ff8393-d855-43eb-a967-79c13fec9380', '0f1ea6f5-9199-4eb3-8de5-147817154b5d', '0e4f445a-ee4a-49b7-9f69-a420be57c86d', '3ce6d45b-cf54-4fca-8dbb-f34866e6e1f3', 'e545fab2-3b57-44fe-b04b-b9a75545a7df']
+INFO:NEXUS-3:[NEXUS-3 (Integrator)] Consolidating inputs: ['e3656375-4fca-42b3-87fe-7280a4e343ab', 'bbd50474-4fd7-4112-8938-b3e72ee5a6ad', '38411eef-2dfe-45be-9ce3-141569b4cbca', '832ba626-afc6-46f4-8b2f-6e28a5670422', '687d5ec5-8998-4f4c-8b43-d94b0c985576', 'b9f8dfdb-b607-4fda-a4a7-1df5dac3ac16', '221bc1d3-7942-4155-b68d-80231b43da55', '8f57c1ea-e501-4d72-8378-af111f4fa8e0', '8bcb3da0-ca9d-4d7f-a7e0-8fc67461551d']
 INFO:NEXUS-4:[NEXUS-4 (Strategist)] Hyper-Detailed Strategic Analysis for: Onion Shampoo and Conditioner Set - Salt Free & Ke
 INFO:NEXUS-5:[NEXUS-5 (Mathematician)] Computing Deep Financial Models...
 INFO:NEXUS-6:[NEXUS-6 (Senior Partner)] Drafting Executive Summary...
 INFO:NEXUS-7:[NEXUS-7 (Architect)] Generating Premium Detailed Report...
 INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Initialized. DB: MockDB
-INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Archiving case: report_b16404d6-669e-467d-a3a1-f92cce0d81ca
+INFO:agents.nexus_8_archivist.core:[Nexus-8 Archivist] Archiving case: report_93d658aa-226a-4b19-a64c-88c9e7d583ad
 WARNING:agents.nexus_8_archivist.core:[Nexus-8 Archivist] ⚠️ No DB - case not persisted (MockDB mode)
-INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_b16404d6-669e-467d-a3a1-f92cce0d81ca
+INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_93d658aa-226a-4b19-a64c-88c9e7d583ad
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
@@ -100,77 +102,10 @@ INFO:NEXUS-GATEWAY:[ARCHIVIST] Case archived: report_b16404d6-669e-467d-a3a1-f92
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
 [ERROR] Firebase Init Failed: [Errno 2] No such file or directory: 'serviceAccountKey.json'. Falling back to In-Memory MockDB.
-INFO:     127.0.0.1:49315 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49326 - "GET /dashboard/reports/report_b16404d6-669e-467d-a3a1-f92cce0d81ca.html HTTP/1.1" 200 OK
-WARNING:  StatReload detected changes in 'agents/nexus_7_architect/core.py'. Reloading...
+INFO:     127.0.0.1:49597 - "POST /workflow/folder_ingestion HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49622 - "GET /dashboard/reports/report_93d658aa-226a-4b19-a64c-88c9e7d583ad.html HTTP/1.1" 200 OK
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [67015]
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/auth/__init__.py:54: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/oauth2/__init__.py:40: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/api_core/_python_version_support.py:246: FutureWarning: You are using a non-supported Python version (3.9.6). Google will not post any further updates to google.api_core supporting this Python version. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.api_core.
-  warnings.warn(message, FutureWarning)
-/Users/jaimesabogal/Nexus-360/agents/shared/llm_intel.py:22: FutureWarning: 
-
-All support for the `google.generativeai` package has ended. It will no longer be receiving 
-updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
-See README for more details:
-
-https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
-
-  import google.generativeai as genai
-INFO:     Started server process [67337]
-INFO:     Waiting for application startup.
-INFO:NEXUS-GATEWAY:NEXUS-360 API Gateway Initialized.
-INFO:     Application startup complete.
-WARNING:  StatReload detected changes in 'agents/nexus_7_architect/core.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [67337]
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/auth/__init__.py:54: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
-  warnings.warn(
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/oauth2/__init__.py:40: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/Users/jaimesabogal/Nexus-360/venv/lib/python3.9/site-packages/google/api_core/_python_version_support.py:246: FutureWarning: You are using a non-supported Python version (3.9.6). Google will not post any further updates to google.api_core supporting this Python version. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.api_core.
-  warnings.warn(message, FutureWarning)
-/Users/jaimesabogal/Nexus-360/agents/shared/llm_intel.py:22: FutureWarning: 
-
-All support for the `google.generativeai` package has ended. It will no longer be receiving 
-updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
-See README for more details:
-
-https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
-
-  import google.generativeai as genai
-INFO:     Started server process [67409]
-INFO:     Waiting for application startup.
-INFO:NEXUS-GATEWAY:NEXUS-360 API Gateway Initialized.
-INFO:     Application startup complete.
+INFO:     Finished server process [68038]
+INFO:     Stopping reloader process [68002]

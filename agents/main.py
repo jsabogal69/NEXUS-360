@@ -14,7 +14,9 @@ from .nexus_5_mathematician.core import Nexus5Mathematician
 from .nexus_6_senior_partner.core import Nexus6SeniorPartner
 from .nexus_7_architect.core import Nexus7Architect
 from .nexus_8_guardian.core import Nexus8Guardian
+from .nexus_8_guardian.core import Nexus8Guardian
 from .nexus_8_archivist.core import Nexus8Archivist
+from .nexus_9_inspector.core import Nexus9Inspector
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -179,6 +181,12 @@ async def run_folder_workflow(request: FolderIngestRequest):
             verdict=strategy.get("dynamic_verdict", {}),
             metadata={"ingestion_mode": ingestion_mode, "files_count": len(ingested_ids)}
         )
+        # 10. INSPECTOR (BLUEPRINT)
+        inspector = Nexus9Inspector()
+        blueprint_result = await inspector.generate_blueprint(full_data)
+        blueprint_url = blueprint_result["blueprint_url"]
+        logger.info(f"[INSPECTOR] Blueprint generated: {blueprint_url}")
+
         logger.info(f"[ARCHIVIST] Case archived: {archive_result.get('case_id')}")
 
         return {
@@ -195,7 +203,9 @@ async def run_folder_workflow(request: FolderIngestRequest):
                 "scout": scout_url,
                 "integrator": integrator_url,
                 "strategist": strategist_url,
-                "senior_partner": senior_url
+                "strategist": strategist_url,
+                "senior_partner": senior_url,
+                "inspector": blueprint_url
             },
             "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect", "Archivist"]
         }
@@ -326,6 +336,16 @@ async def step_8_architect(payload: dict):
     architect = Nexus7Architect()
     report = await architect.generate_report_artifacts(full_data)
     return {"step": "architect", "data": report, "status": "success"}
+
+@app.post("/workflow/step/9_inspector")
+async def step_9_inspector(payload: dict):
+    """Executes ONLY the Inspector Step (Blueprint)"""
+    logger.info("Executing Inspector Step Endpoint...")
+    full_data = payload.get("full_data") or payload
+    
+    inspector = Nexus9Inspector()
+    blueprint_result = await inspector.generate_blueprint(full_data)
+    return {"step": "inspector", "data": blueprint_result, "status": "success"}
 
 # --- END STEP-BY-STEP ---
 

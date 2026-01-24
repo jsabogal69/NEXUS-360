@@ -618,7 +618,18 @@
             const aRes = await callStep('/workflow/step/8_architect', { full_data: full_data });
             log(panel, `Arquitecto: Reporte generado.`, "success");
 
-            document.getElementById('result-container').innerHTML = `<a href="${aRes.data.pdf_url}" target="_blank" class="artifact-link">VER REPORTE FINAL</a>`;
+            await requireUserApproval(panel, "Generar AUDITORÍA INTERNA (Agente Inspector)", "NEXUS-9 generará el Blueprint Técnico revelando la trazabilidad completa, fórmulas y fuentes para uso confidencial del equipo.");
+
+            // STEP 9: INSPECTOR
+            log(panel, "Ejecutando NEXUS-9 (Inspector)...", "loading");
+            const insRes = await callStep('/workflow/step/9_inspector', { full_data: full_data });
+            log(panel, `Inspector: Blueprint Técnico generado.`, "success");
+
+            document.getElementById('result-container').innerHTML = `
+                <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                    <a href="${aRes.data.pdf_url}" target="_blank" class="artifact-link" style="margin-top:0; background:var(--obs-lime); color:#14532d;">VER REPORTE CLIENTE</a>
+                    <a href="${insRes.data.blueprint_url}" target="_blank" class="artifact-link" style="margin-top:0; background:#334155;">VER BLUEPRINT INTERNO (AUDITORÍA)</a>
+                </div>`;
         }
 
         async function callStep(endpoint, body) {
@@ -688,6 +699,7 @@
                         { name: 'NEXUS-5 (Mathematician)', msg: 'Modelado financiero de 3 niveles completado.', link: null },
                         { name: 'NEXUS-6 (Senior Partner)', msg: 'Síntesis ejecutiva generada.', link: data.artifacts?.senior_partner },
                         { name: 'NEXUS-7 (Architect)', msg: 'Paquete final generado.', link: data.final_report_url },
+                        { name: 'NEXUS-9 (Inspector)', msg: 'Blueprint técnico generado (Uso Interno).', link: data.artifacts?.inspector },
                         { name: 'NEXUS-9 (Archivist)', msg: `Caso archivado. Hash: ${data.product_hash || 'N/A'}`, link: null }
                     ];
 
@@ -712,7 +724,11 @@
                     });
 
                     setTimeout(() => {
-                        resultContainer.innerHTML = `<a href="${data.final_report_url}" target="_blank" class="artifact-link">VER REPORTE INTEGRADO FINAL</a>`;
+                        resultContainer.innerHTML = `
+                        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                            <a href="${data.final_report_url}" target="_blank" class="artifact-link" style="margin-top:0; background:var(--obs-lime); color:#14532d;">VER REPORTE INTEGRADO</a>
+                            ${data.artifacts?.inspector ? `<a href="${data.artifacts.inspector}" target="_blank" class="artifact-link" style="margin-top:0; background:#334155;">VER BLUEPRINT INTERNO</a>` : ''}
+                        </div>`;
                     }, steps.length * 800 + 400);
 
                 } else {

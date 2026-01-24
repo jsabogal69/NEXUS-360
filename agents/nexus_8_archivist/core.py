@@ -6,6 +6,7 @@ import hashlib
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+from ..shared.utils import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +31,9 @@ class Nexus8Archivist:
     """
     
     def __init__(self, db=None):
-        self.db = db
+        self.db = db if db else get_db()
         self.role = "Nexus-8 Archivist"
-        logger.info(f"[{self.role}] Initialized. DB: {'Active' if db else 'MockDB'}")
+        logger.info(f"[{self.role}] Initialized. DB: {self.db}")
     
     def archive_case(
         self,
