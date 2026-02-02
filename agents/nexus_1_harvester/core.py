@@ -303,17 +303,28 @@ class Nexus1Harvester:
                 # X-RAY / HELIUM10 PRICE EXTRACTION (POE REAL DATA)
                 # ═══════════════════════════════════════════════════════════════
                 xray_pricing = None
+                search_terms_data = None
+                
                 try:
-                    if structured_data and DataExpert.is_xray_file(f['name']):
+                    if structured_data:
                         # Convert structured_data back to DataFrame for extraction
                         import pandas as pd
                         df_temp = pd.DataFrame(structured_data)
-                        xray_pricing = DataExpert.extract_xray_pricing(df_temp, f['name'])
                         
-                        if xray_pricing.get("has_real_data"):
-                            logger.info(f"[{self.role}] 💰 X-RAY PRICING EXTRACTED: {xray_pricing['total_products']} products, AVG ${xray_pricing['avg_price']}")
+                        # 1. Try X-Ray
+                        if DataExpert.is_xray_file(f['name'], df_temp):
+                            xray_pricing = DataExpert.extract_xray_pricing(df_temp, f['name'])
+                            if xray_pricing.get("has_real_data"):
+                                logger.info(f"[{self.role}] 💰 X-RAY PRICING EXTRACTED: {xray_pricing['total_products']} products")
+                        
+                        # 2. Try Search Terms
+                        if DataExpert.is_search_terms_file(f['name'], df_temp):
+                            search_terms_data = DataExpert.extract_search_terms_data(df_temp, f['name'])
+                            if search_terms_data.get("has_search_data"):
+                                logger.info(f"[{self.role}] 🔍 SEARCH TERMS EXTRACTED: Vol {search_terms_data['total_search_volume']}")
+
                 except Exception as ex:
-                    logger.warning(f"[{self.role}] X-Ray extraction error: {ex}")
+                    logger.warning(f"[{self.role}] extraction error: {ex}")
 
                 # Build lineage with guide context
                 file_lineage[f['name']] = {
@@ -322,6 +333,7 @@ class Nexus1Harvester:
                     "size_kb": round(int(f.get('size', 0))/1024, 1),
                     "is_structured": structured_data is not None,
                     "is_xray": xray_pricing.get("has_real_data", False) if xray_pricing else False,
+                    "is_search_terms": search_terms_data.get("has_search_data", False) if search_terms_data else False,
                     # POE Guide context
                     "poe_source": guide_instruction.get("source") if guide_instruction else None,
                     "poe_definition": guide_instruction.get("definition") if guide_instruction else None,
@@ -342,7 +354,9 @@ class Nexus1Harvester:
                     # Include POE context for downstream agents
                     "poe_context": guide_instruction if guide_instruction else None,
                     # X-Ray pricing data (POE REAL DATA)
-                    "xray_pricing": xray_pricing if xray_pricing and xray_pricing.get("has_real_data") else None
+                    "xray_pricing": xray_pricing if xray_pricing and xray_pricing.get("has_real_data") else None,
+                    # Search Terms data (POE REAL DATA)
+                    "search_terms_data": search_terms_data if search_terms_data and search_terms_data.get("has_search_data") else None
                 }
                 doc_id = self._save_to_raw_inputs(data_packet)
                 if doc_id:
@@ -350,10 +364,15 @@ class Nexus1Harvester:
             
             # Aggregate X-Ray data from all files
             aggregated_xray = {"has_real_data": False, "products": [], "source_files": []}
+            aggregated_search = {"has_real_data": False, "total_volume": 0, "avg_conversion": 0, "source_files": []}
+            
             for f_name, lineage in file_lineage.items():
                 if lineage.get("is_xray"):
                     aggregated_xray["has_real_data"] = True
                     aggregated_xray["source_files"].append(f_name)
+                if lineage.get("is_search_terms"):
+                    aggregated_search["has_real_data"] = True
+                    aggregated_search["source_files"].append(f_name)
             
             return {
                 "ids": ingested_ids,
@@ -361,13 +380,20 @@ class Nexus1Harvester:
                 "mode": "REAL_DRIVE",
                 "message": f"Ingesta Experta de {len(files)} archivos completada.",
                 "poe_guide": poe_guide_summary,
-                "xray_data": aggregated_xray,  # New: X-Ray pricing sources
+                "xray_data": aggregated_xray,
+                "search_data": aggregated_search,
                 "data_stats": {
                     "total_files": len(files),
                     "folder_name": folder_name,
                     "lineage": file_lineage,
                     "files_with_poe_context": sum(1 for v in file_lineage.values() if v.get("poe_source")),
-                    "files_with_xray_pricing": sum(1 for v in file_lineage.values() if v.get("is_xray"))
+                    "files_with_xray_pricing": sum(1 for v in file_lineage.values() if v.get("is_xray")),
+                    "files_with_search_terms": sum(1 for v in file_lineage.values() if v.get("is_search_terms")),
+                    "confidence_manifesto": {
+                        "🟢 POE": "Datos reales de archivos Amazon (X-Ray/H10/Search Terms)",
+                        "🟡 ESTIMADO": "Cálculo derivado o análisis de IA",
+                        "🔴 PENDIENTE": "Sin fuente de datos verificada"
+                    }
                 }
             }
             

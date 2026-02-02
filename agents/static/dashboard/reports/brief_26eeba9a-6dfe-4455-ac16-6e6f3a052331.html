@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Brief: baby monitor ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --verdict-go: #16a34a;
+            --verdict-caution: #d97706;
+            --verdict-nogo: #dc2626;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            padding: 30px;
+            color: var(--primary);
+        }
+        
+        .brief-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 30px 40px;
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+        }
+        
+        .header-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .header-product {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        
+        .header-meta {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .content {
+            padding: 30px 40px;
+        }
+        
+        .verdict-card {
+            background: #fffbeb;
+            border: 2px solid #fde68a;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .verdict-icon {
+            font-size: 3rem;
+        }
+        
+        .verdict-content {
+            flex: 1;
+        }
+        
+        .verdict-status {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #d97706;
+            margin-bottom: 4px;
+        }
+        
+        .verdict-summary {
+            font-size: 0.9rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+        
+        .confidence-badge {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 20px;
+            text-align: center;
+        }
+        
+        .confidence-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        
+        .confidence-label {
+            font-size: 0.65rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .metric-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .metric-label {
+            font-size: 0.65rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-sub {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .section-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+        }
+        
+        .competitive-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .competitive-row:last-child {
+            border-bottom: none;
+        }
+        
+        .competitive-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .competitive-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .footer-link:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .footer-meta {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .brief-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .footer-link {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="brief-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">🎯 Executive Decision Brief</div>
+            <div class="header-product">baby monitor ai</div>
+            <div class="header-meta">Generado: 2026-01-30 14:26:58.796951 • 3 fuentes analizadas</div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Verdict Section -->
+            <div class="verdict-card">
+                <div class="verdict-icon">⚠️</div>
+                <div class="verdict-content">
+                    <div class="verdict-status">CAUTION</div>
+                    <div class="verdict-summary">Oportunidad viable con reservas. Requiere validación adicional antes de comprometer capital.</div>
+                </div>
+                <div class="confidence-badge">
+                    <div class="confidence-value">95%</div>
+                    <div class="confidence-label">Confianza</div>
+                </div>
+            </div>
+            
+            <!-- Key Metrics Grid -->
+            <div class="section-title">📊 Métricas Clave</div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">$50.0M</div>
+                    <div class="metric-label">TAM</div>
+                    <div class="metric-sub">Mercado Total</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#dc2626;">0.0%</div>
+                    <div class="metric-label">Margen Neto</div>
+                    <div class="metric-sub">POE Verificado</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color:#3b82f6;">0%</div>
+                    <div class="metric-label">ROI Esperado</div>
+                    <div class="metric-sub">Escenario Base</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">12 meses</div>
+                    <div class="metric-label">Payback</div>
+                    <div class="metric-sub">Break-Even</div>
+                </div>
+            </div>
+            
+            <!-- Two Column Section -->
+            <div class="two-col">
+                <!-- Risks -->
+                <div>
+                    <div class="section-title">⚠️ Radar de Riesgos</div>
+                    <div class="section-card">
+                        
+            <div style="display:flex; align-items:flex-start; gap:12px; padding:12px; background:#fffbeb; border-radius:10px; margin-bottom:10px;">
+                <span style="font-size:1.2rem;">🟡</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#d97706; font-size:0.85rem;">Margen neto (0%) por debajo del umbral óptimo (20%)</div>
+                    <div style="font-size:0.75rem; color:#64748b; margin-top:4px;">💡 <em>Negociar mejores costos con proveedores</em></div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:12px; padding:12px; background:#f0fdf4; border-radius:10px; margin-bottom:10px;">
+                <span style="font-size:1.2rem;">🟢</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#16a34a; font-size:0.85rem;">Sin riesgos adicionales detectados</div>
+                    <div style="font-size:0.75rem; color:#64748b; margin-top:4px;">💡 <em>Monitoreo continuo recomendado</em></div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:12px; padding:12px; background:#f0fdf4; border-radius:10px; margin-bottom:10px;">
+                <span style="font-size:1.2rem;">🟢</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#16a34a; font-size:0.85rem;">Sin riesgos adicionales detectados</div>
+                    <div style="font-size:0.75rem; color:#64748b; margin-top:4px;">💡 <em>Monitoreo continuo recomendado</em></div>
+                </div>
+            </div>
+                    </div>
+                </div>
+                
+                <!-- Competitive Snapshot -->
+                <div>
+                    <div class="section-title">🎯 Snapshot Competitivo</div>
+                    <div class="section-card">
+                        <div class="competitive-row">
+                            <span class="competitive-label">Precio Promedio Mercado</span>
+                            <span class="competitive-value">$29.99</span>
+                        </div>
+                        <div class="competitive-row">
+                            <span class="competitive-label">FBA Fees Estimado</span>
+                            <span class="competitive-value" style="color:#dc2626;">-$0.00</span>
+                        </div>
+                        <div class="competitive-row">
+                            <span class="competitive-label">Competidores Activos</span>
+                            <span class="competitive-value">4</span>
+                        </div>
+                        <div class="competitive-row">
+                            <span class="competitive-label">SOM Captureable</span>
+                            <span class="competitive-value" style="color:#16a34a;">$375K</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="section-title">✅ Próximos Pasos Recomendados</div>
+            <div class="section-card">
+                
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:var(--primary); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;">1</span>
+                <span style="font-size:0.85rem; color:#334155;">Profundizar análisis de márgenes con costos reales</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:var(--primary); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;">2</span>
+                <span style="font-size:0.85rem; color:#334155;">Evaluar diferenciadores viables vs competencia</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:var(--primary); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;">3</span>
+                <span style="font-size:0.85rem; color:#334155;">Considerar entrada en temporada alta</span>
+            </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-meta">
+                NEXUS-360 Intelligence Platform • Powered by AI
+            </div>
+            <a href="/dashboard/reports/2729f08f-e5c9-40e3-9181-64f9e8635c64.html" class="footer-link">
+                📄 Ver Análisis Completo →
+            </a>
+        </div>
+    </div>
+</body>
+</html>

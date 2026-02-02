@@ -214,96 +214,42 @@ class DataExpert:
     @staticmethod
     def extract_xray_pricing(df: pd.DataFrame, filename: str = "") -> dict:
         """
-        Extracts pricing data from any competitive/pricing file.
-        Supports: Helium10, Amazon exports, generic pricing CSVs.
-        
-        Returns:
-            {
-                "has_real_data": True/False,
-                "products": [{asin, title, price, sales, revenue, bsr}, ...],
-                "avg_price": float,
-                "price_range": {"min": float, "max": float},
-                "total_products": int,
-                "source_file": str
-            }
+        Extracts Product Intelligence: Pricing, Sales, Revenue, BSR + 
+        New fields: Fees, Dimensions, Launch Date, Click Share.
         """
+        # Dictionary to store results
         result = {
             "has_real_data": False,
             "products": [],
-            "avg_price": 0,
-            "price_range": {"min": 0, "max": 0},
+            "avg_price": 0.0,
+            "price_range": "N/A",
             "total_products": 0,
             "source_file": filename
         }
         
         if df is None or df.empty:
-            logger.warning(f"[DATA-EXPERT] Empty dataframe for {filename}")
             return result
+            
+        logger.info(f"[DATA-EXPERT] Extracting Product Data from {filename}")
         
-        logger.info(f"[DATA-EXPERT] Processing {filename} with {len(df)} rows, columns: {list(df.columns)[:10]}")
-        
-        # Flexible column mapping - supports multiple names per field
-        # INCLUDES: User's specific POE Guide column names (Helium10, Amazon Niche)
+        # 1. Map columns (Expanded)
+        col_map = {}
         column_aliases = {
-            "price": [
-                # Standard
-                "price", "precio", "cost", "costo", "unit price", "precio unitario", "msrp", "buy box",
-                # Amazon Niche specific
-                "average selling price", "asp", "selling price", "avg price",
-                # Helium10 specific
-                "fba price", "fbm price"
-            ],
-            "sales": [
-                # Standard
-                "sales", "ventas", "units", "unidades", "units sold",
-                # Helium10 specific
-                "monthly sales", "sales (monthly)", "est. sales", "estimated sales",
-                # Amazon Niche specific
-                "niche click count", "click count"
-            ],
-            "revenue": [
-                # Standard
-                "revenue", "ingresos", "gross", "total sales",
-                # Helium10 specific
-                "monthly revenue", "est. revenue", "estimated revenue"
-            ],
-            "bsr": [
-                # Standard
-                "bsr", "rank", "ranking", "best seller", "posicion",
-                # Helium10 specific
-                "best sellers rank", "sales rank"
-            ],
-            "asin": [
-                "asin", "product id", "sku", "id producto", "parent asin", "child asin"
-            ],
-            "title": [
-                "title", "titulo", "product", "producto", "name", "nombre", "description", "product name"
-            ],
-            "reviews": [
-                # Standard
-                "reviews", "reseñas", "review count", "numero de reseñas",
-                # Amazon Niche specific
-                "total ratings", "ratings", "rating count"
-            ],
-            # Additional useful columns from POE Guide
-            "click_share": [
-                "click share", "cuota de clic", "market share"
-            ],
-            "launch_date": [
-                "launch date", "fecha de lanzamiento", "date first available"
-            ],
-            "fba_fees": [
-                "fba fees", "fba fee", "fulfillment fee", "tarifas fba"
-            ],
-            "dimensions": [
-                "dimensions", "dimensiones", "package dimensions", "item dimensions"
-            ],
-            "active_sellers": [
-                "active sellers", "sellers", "vendedores activos", "number of sellers"
-            ]
+            "price": ["price", "precio", "average selling price", "asp"],
+            "sales": ["sales", "ventas", "units", "unidades", "monthly sales"],
+            "revenue": ["revenue", "ingresos", "facturación"],
+            "bsr": ["bsr", "rank", "ranking", "best sellers rank"],
+            "asin": ["asin", "product id"],
+            "title": ["title", "título", "product name", "nombre"],
+            "reviews": ["reviews", "reseñas", "ratings", "total ratings", "review count"],
+            "fees": ["fees", "fba fees", "tarifas", "amazon fees"],
+            "active_sellers": ["active sellers", "sellers", "vendedores", "num sellers"],
+            "dimensions": ["dimensions", "dimensiones", "size", "talla"],
+            "launch_date": ["launch date", "fecha lanzamiento", "creation date", "date first available"],
+            "click_share": ["click share", "cuota de clic", "share", "click share %"],
+            "click_count": ["niche click count", "click count", "recuento de clics"]
         }
         
-        col_map = {}
         for field, aliases in column_aliases.items():
             for col in df.columns:
                 col_lower = str(col).lower().strip()
@@ -311,62 +257,61 @@ class DataExpert:
                     col_map[field] = col
                     break
         
-        logger.info(f"[DATA-EXPERT] Column mapping for {filename}: {col_map}")
-        
-        # We need at least price OR (sales + title) to be useful
-        if "price" not in col_map and "sales" not in col_map:
-            logger.warning(f"[DATA-EXPERT] No price or sales column found in {filename}")
-            # Try to find ANY numeric column that could be price
-            for col in df.columns:
-                try:
-                    sample = df[col].dropna().head(10)
-                    if sample.apply(lambda x: isinstance(x, (int, float)) or (isinstance(x, str) and x.replace('.','').replace(',','').replace('$','').isdigit())).any():
-                        numeric_vals = sample.apply(DataExpert.normalize_number)
-                        if 1 < numeric_vals.mean() < 500:  # Reasonable price range
-                            col_map["price"] = col
-                            logger.info(f"[DATA-EXPERT] Auto-detected price column: {col}")
-                            break
-                except:
-                    continue
-        
-        if "price" not in col_map:
-            logger.warning(f"[DATA-EXPERT] Could not find price column in {filename}")
+        # Validation: Needs at least Price or Sales or Click Count to be useful
+        if "price" not in col_map and "sales" not in col_map and "click_count" not in col_map:
+            logger.warning(f"[DATA-EXPERT] Missing essential columns in {filename}")
             return result
-        
-        # Extract products
+            
         products = []
         prices = []
         
         for idx, row in df.iterrows():
             try:
+                # Basic Fields
                 price_val = DataExpert.normalize_number(row.get(col_map.get("price", ""), 0))
+                sales_val = int(DataExpert.normalize_number(row.get(col_map.get("sales", ""), 0)))
                 
-                if price_val > 0:  # Only include products with valid prices
-                    product = {
-                        "asin": str(row.get(col_map.get("asin", ""), f"ASIN-{idx}"))[:12],
-                        "title": str(row.get(col_map.get("title", ""), f"Product {idx}"))[:100],
-                        "price": round(price_val, 2),
-                        "sales": int(DataExpert.normalize_number(row.get(col_map.get("sales", ""), 0))),
-                        "revenue": round(DataExpert.normalize_number(row.get(col_map.get("revenue", ""), 0)), 2),
-                        "bsr": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))),
-                        "reviews": int(DataExpert.normalize_number(row.get(col_map.get("reviews", ""), 0)))
-                    }
+                # Demand Proxy: If no sales, check for Click Count
+                if sales_val == 0 and "click_count" in col_map:
+                     sales_val = int(DataExpert.normalize_number(row.get(col_map.get("click_count", ""), 0)))
+                
+                asin = str(row.get(col_map.get("asin", ""), f"ASIN-{idx}"))
+                if len(asin) > 20: asin = asin[:12]
+                
+                product = {
+                    "asin": asin,
+                    "title": str(row.get(col_map.get("title", ""), f"Product {idx}"))[:150],
+                    "price": round(price_val, 2),
+                    "sales": sales_val,
+                    "revenue": round(DataExpert.normalize_number(row.get(col_map.get("revenue", ""), 0)), 2),
+                    "bsr": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))),
+                    "reviews": int(DataExpert.normalize_number(row.get(col_map.get("reviews", ""), 0))),
+                    # Extended Intelligence
+                    "fees": round(DataExpert.normalize_number(row.get(col_map.get("fees", ""), 0)), 2),
+                    "active_sellers": int(DataExpert.normalize_number(row.get(col_map.get("active_sellers", ""), 1))),
+                    "dimensions": str(row.get(col_map.get("dimensions", ""), "N/A")),
+                    "launch_date": str(row.get(col_map.get("launch_date", ""), "N/A")),
+                    "click_share": DataExpert.normalize_number(row.get(col_map.get("click_share", ""), 0))
+                }
+                
+                if product["price"] > 0 or product["sales"] > 0 or product["click_share"] > 0:
                     products.append(product)
-                    prices.append(price_val)
-                    
+                    if product["price"] > 0:
+                        prices.append(product["price"])
+                        
             except Exception as e:
-                logger.debug(f"[DATA-EXPERT] Row {idx} skip: {e}")
                 continue
-        
+                
         if products:
             result["has_real_data"] = True
-            result["products"] = products[:20]  # Top 20 products
-            result["avg_price"] = round(sum(prices) / len(prices), 2)
-            result["price_range"] = {"min": round(min(prices), 2), "max": round(max(prices), 2)}
+            result["products"] = products[:50] # Increase limit to 50
             result["total_products"] = len(products)
+            if prices:
+                result["avg_price"] = round(sum(prices) / len(prices), 2)
+                result["price_range"] = f"${min(prices)} - ${max(prices)}"
             
-            logger.info(f"[DATA-EXPERT] ✅ Extracted {len(products)} products from {filename}. AVG: ${result['avg_price']}")
-        
+            logger.info(f"[DATA-EXPERT] 💰 Extracted {len(products)} products from {filename}. Avg Price: ${result['avg_price']}")
+            
         return result
 
     @staticmethod
@@ -384,9 +329,152 @@ class DataExpert:
             
             if DataExpert.is_xray_file(filename, df):
                 return DataExpert.extract_xray_pricing(df, filename)
+            elif DataExpert.is_search_terms_file(filename, df):
+                return DataExpert.extract_search_terms_data(df, filename)
             else:
-                return {"has_real_data": False, "reason": "Not identified as X-Ray file"}
+                return {"has_real_data": False, "reason": "Not identified as X-Ray or Search Terms file"}
                 
         except Exception as e:
             logger.error(f"[DATA-EXPERT] Error extracting pricing: {e}")
             return {"has_real_data": False, "error": str(e)}
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # SEARCH TERMS DATA EXTRACTION (Amazon Search Terms / Niche Details)
+    # ═══════════════════════════════════════════════════════════════════════
+
+    @staticmethod
+    def is_search_terms_file(filename: str, df: pd.DataFrame = None) -> bool:
+        """
+        Detects if a file contains Search Terms data (Volume, Conversion, Click Share).
+        Matches: Amazon Brand Analytics, Niche Details - Search Terms Tab.
+        """
+        filename_keywords = [
+            "search terms", "search_terms", "searchterms", "terminos de busqueda",
+            "keyword", "palabra clave", "niche details", "search volume"
+        ]
+        
+        fname_lower = filename.lower()
+        if any(kw in fname_lower for kw in filename_keywords):
+            logger.info(f"[DATA-EXPERT] File '{filename}' matched as Search Terms by filename")
+            return True
+            
+        if df is not None and not df.empty:
+            st_columns = [
+                "search term", "search volume", "click share", "conversion rate",
+                "volumen de busqueda", "tasa de conversion"
+            ]
+            col_names_lower = [str(c).lower().strip() for c in df.columns]
+            
+            matches = 0
+            for st_col in st_columns:
+                for actual_col in col_names_lower:
+                    if st_col in actual_col:
+                        matches += 1
+                        break
+            
+            if matches >= 2:
+                logger.info(f"[DATA-EXPERT] File '{filename}' matched {matches} Search Terms columns")
+                return True
+                
+        return False
+
+    @staticmethod
+    def extract_search_terms_data(df: pd.DataFrame, filename: str = "") -> dict:
+        """
+        Extracts Search Terms intelligence: Volume, Growth, Conversion.
+        
+        Returns:
+            {
+                "has_search_data": True,
+                "terms": [{term, volume, growth_90d, click_share, conversion_rate}, ...],
+                "total_search_volume": int,
+                "avg_conversion_rate": float, # Weighted by volume
+                "top_keywords": [str],
+                "source_file": str
+            }
+        """
+        result = {
+            "has_search_data": False,
+            "terms": [],
+            "total_search_volume": 0,
+            "avg_conversion_rate": 0.0,
+            "top_keywords": [],
+            "source_file": filename
+        }
+        
+        if df is None or df.empty:
+            return result
+            
+        logger.info(f"[DATA-EXPERT] Extracting Search Terms from {filename}")
+        
+        # Column mapping
+        col_map = {}
+        column_aliases = {
+            "term": ["search term", "término de búsqueda", "keyword", "palabra clave"],
+            "volume": ["search volume", "volumen de búsqueda", "count", "recuento"],
+            "growth_90d": ["growth (past 90 days)", "crecimiento (90 días)", "change"],
+            "click_share": ["click share", "cuota de clic", "participación de clic"],
+            "conversion_rate": ["search conversion rate", "conversion rate", "tasa de conversión", "conv. rate"]
+        }
+        
+        for field, aliases in column_aliases.items():
+            for col in df.columns:
+                col_lower = str(col).lower().strip()
+                if any(alias in col_lower for alias in aliases):
+                    col_map[field] = col
+                    break
+        
+        if "term" not in col_map or "volume" not in col_map:
+            logger.warning(f"[DATA-EXPERT] Missing essential search term columns in {filename}")
+            return result
+            
+        terms = []
+        total_vol = 0
+        weighted_conv_sum = 0
+        total_vol_for_conv = 0
+        
+        for idx, row in df.iterrows():
+            try:
+                term = str(row.get(col_map.get("term"), "")).strip()
+                if not term or term.lower() == "nan": continue
+                
+                vol = int(DataExpert.normalize_number(row.get(col_map.get("volume"), 0)))
+                # Growth can be negative, normalize_number handles it? 
+                # Need to be careful with percentages if they are purely string like "12%"
+                # normalize_number handles basic cleaning
+                growth = DataExpert.normalize_number(row.get(col_map.get("growth_90d"), 0)) 
+                click_share = DataExpert.normalize_number(row.get(col_map.get("click_share"), 0))
+                conv_rate = DataExpert.normalize_number(row.get(col_map.get("conversion_rate"), 0))
+                
+                # Conversion rate might be percentage (e.g. 5.4 or 0.054)
+                # Heuristic: if mean > 1 it's likely percentage (5.4%), if < 1 it's decimal (0.054)
+                # We'll normalize later if needed, but usually POE data is numeric
+                
+                terms.append({
+                    "term": term,
+                    "volume": vol,
+                    "growth_90d": growth,
+                    "click_share": click_share,
+                    "conversion_rate": conv_rate
+                })
+                
+                total_vol += vol
+                if conv_rate > 0:
+                    weighted_conv_sum += (vol * conv_rate)
+                    total_vol_for_conv += vol
+                    
+            except Exception as e:
+                continue
+                
+        if terms:
+            result["has_search_data"] = True
+            result["terms"] = sorted(terms, key=lambda x: x["volume"], reverse=True)[:50] # Top 50
+            result["total_search_volume"] = total_vol
+            result["top_keywords"] = [t["term"] for t in result["terms"][:5]]
+            
+            if total_vol_for_conv > 0:
+                result["avg_conversion_rate"] = round(weighted_conv_sum / total_vol_for_conv, 2)
+            
+            logger.info(f"[DATA-EXPERT] ✅ Extracted {len(terms)} search terms. Total Vol: {total_vol}, Avg Conv: {result['avg_conversion_rate']}%")
+            
+        return result

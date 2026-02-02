@@ -139,10 +139,56 @@ razor, shaving, body wash, sunscreen, makeup, foundation, mascara...
 
 ---
 
+## 📊 GUARDRAIL #7: OPPORTUNITY SCORE
+
+**Fecha establecido:** 2026-01-28
+
+### Regla
+> El sistema debe calcular un Opportunity Score (ODI) para priorizar features de innovación.
+
+### Algoritmo
+```
+Score = Importancia + max(Importancia - Satisfacción, 0)
+```
+
+### Umbrales de Prioridad
+| Score | Categoría | Acción |
+|-------|-----------|--------|
+| ≥ 12 | HIGH_PRIORITY_INNOVATION | Invertir agresivamente |
+| 10-12 | STABLE_IMPROVEMENT | Mejora incremental |
+| < 10 | SATURATED_MARKET | Optimizar costos |
+
+### Implementación
+- **Mathematician Agent**: Calcula scores por feature
+- **Output**: `opportunity_analysis` en ROI models
+
+---
+
+## 💰 GUARDRAIL #8: MARGIN VALIDATION
+
+**Fecha establecido:** 2026-01-28
+
+### Regla
+> El Guardian debe vetar automáticamente productos con margen insuficiente en escenario conservador.
+
+### Umbral
+| Métrica | Mínimo | Resultado |
+|---------|--------|-----------|
+| Margen Neto (Conservador) | 15% | Si < 15%, VETO automático |
+
+### Flujo de Datos
+1. **Mathematician** calcula margen en escenario conservador
+2. **Mathematician** genera `margin_validation` con flag `passes_threshold`
+3. **Guardian** lee `margin_validation` y activa VETO si no pasa
+
+---
+
 ## 📋 CHANGELOG DE GUARDRAILS
 
 | Fecha | Guardrail | Cambio |
 |-------|-----------|--------|
+| 2026-01-28 | #7 | Implementado Opportunity Score (ODI) |
+| 2026-01-28 | #8 | Implementado Margin Validation Veto |
 | 2026-01-20 | #1 | Establecido NO DATA INVENTION |
 | 2026-01-20 | #2 | Añadido soporte columnas POE Guide |
 | 2026-01-20 | #3 | Implementado badges de fuente |
@@ -158,3 +204,4 @@ razor, shaving, body wash, sunscreen, makeup, foundation, mascara...
 2. Implementar en el agente correspondiente
 3. Agregar tests si aplica
 4. Actualizar CHANGELOG
+

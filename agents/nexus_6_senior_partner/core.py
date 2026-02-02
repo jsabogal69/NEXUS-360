@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
+from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity, sanitize_text_field
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-6")
@@ -37,35 +37,70 @@ class Nexus6SeniorPartner:
         # Professional Synthesis Narrative
         anchor = strategy_data.get("scout_anchor", "la categoría analizada")
         
+        # Grounding with dynamic strategic insights from Strategist
+        thesis = verdict.get("strategic_thesis", "Dominancia por Ecosistema y Diferenciación")
+        insight = verdict.get("key_insight", f"Déficit de calidad en el segmento {anchor}")
+        angle = verdict.get("competitive_angle", "Excelencia técnica y diseño emocional")
+        market_logic = verdict.get("market_sizing", {}).get("logic", "Cálculo basado en volumen promedio de mercado")
+        
         summary = (
-            f"Socio, tras una inmersión forense en los {len(strategy_data.get('analyzed_sources', []))} archivos de inteligencia y un escaneo OSINT en tiempo real, "
-            f"mi síntesis es definitiva: estamos ante una oportunidad de **Dominancia por Ecosistema**, no por producto.\n\n"
+            f"Socio, tras una inmersión forense en los {len(strategy_data.get('analyzed_sources', []))} archivos de inteligencia y un escaneo OSINT, "
+            f"mi síntesis es definitiva: **{thesis}**.\n\n"
             
-            f"**I. La Trampa de la Comoditización:** El análisis de 'Amazon Unit Economics' confirma que entrar con una 'Unidad Base' es un ejercicio de autodestrucción financiera. "
-            f"Con un margen neto proyectado de apenas el {indiv_margin}%, cualquier fluctuación en el ACOS o en las tarifas de FBA absorbería la rentabilidad. "
-            f"Vender solo hardware en este nicho es participar en una 'carrera hacia el fondo' contra fabricantes con estructuras de costo inalcanzables.\n\n"
+            f"**I. La Trampa de la Comoditización:** El análisis transversal confirma que el modelo de 'Unidad Base' es financieramente insostenible. "
+            f"Con un margen neto proyectado de apenas el {indiv_margin}%, cualquier fricción en el ACOS o FBA absorbería el beneficio. "
+            f"Vender solo hardware es una 'carrera hacia el fondo'.\n\n"
             
-            f"**II. El Foso Estratégico:** Sin embargo, la ventaja reside en lo que la competencia ignora. Hemos detectado que el mercado sufre de un **{clean_gaps[0] if clean_gaps else 'déficit cultural de producto'}**. "
-            f"Nuestra propuesta de **Digital Kit / Ecosistema Premium** no solo soluciona estos puntos de dolor, sino que dispara nuestro margen al {kit_margin}%, "
-            f"diluyendo el costo de adquisición de clientes (CAC) y creando una barrera de entrada tecnológica y emocional.\n\n"
+            f"**II. El Insight Maestro:** El mercado sufre de un **{insight}**. "
+            f"Nuestra ventaja reside en el **{angle}**. Al escalar hacia el Digital Kit / Ecosistema, proyectamos un margen del **{kit_margin}%**, "
+            f"creando un foso defensivo emocional e industrial inalcanzable para clones genéricos.\n\n"
             
-            f"**III. Veredicto NEXUS:** Mi recomendación es ignorar el retail masivo tradicional y posicionarnos como el **'Gold Standard'** de {anchor}. "
-            f"No vendemos un objeto más en su hogar; vendemos una infraestructura de bienestar y estatus. "
-            f"La hoja de ruta está calibrada para ganar autoridad técnica antes de escalar la demanda. "
-            f"Tenemos los datos, tenemos el modelo financiero y tenemos la brecha de mercado abierta.\n\n"
-            f"**Es momento de dejar de ser un vendedor para convertirnos en el dueño de la categoría.** El Dossier está listo para ejecución."
+            f"**III. Dimensionamiento Económico:** {market_logic}\n\n"
+            
+            f"**IV. Veredicto NEXUS:** Recomiendo ignorar el retail masivo tradicional para posicionarnos como el nuevo referente de {anchor}. "
+            f"El Roadmap de 90 días está calibrado para ganar autoridad técnica antes de escalar la demanda masiva.\n\n"
+            f"**Es momento de dejar de ser un vendedor para convertirnos en el dueño de la categoría.**"
         )
 
+        # ═══════════════════════════════════════════════════════════════════
+        # PASO 5: Psicológia de Consumo (Bullet Points & Educación)
+        # ═══════════════════════════════════════════════════════════════════
+        creative_copy = self._generate_creative_copy(strategy_data)
+        
         final_summary = {
             "id": generate_id(),
             "parent_math_id": math_data.get("id"),
-            "executive_summary": summary,
+            "executive_summary": sanitize_text_field(summary),
             "verdict": verdict,
+            "creative_copy": creative_copy,
             "timestamp": timestamp_now()
         }
         
         self._save_summary(final_summary)
         return final_summary
+
+    def _generate_creative_copy(self, strategy_data: dict) -> dict:
+        """
+        Genera Bullet Points basados en la frustración #1 y estrategia de educación.
+        """
+        avatars = strategy_data.get("avatars", [])
+        primary_avatar = avatars[0] if avatars else {"name": "Usuario", "pain_point": "Falta de calidad"}
+        pain_point = primary_avatar.get("pain_point", "La inconsistencia en el mercado.")
+        
+        # Bullet Point #1: Resolución de Frustración #1 (Psicología de Consumo)
+        bp1 = f"✅ ADIÓS A {pain_point.upper()}: Diseñado específicamente para resolver la frustración #1 detectada en el nicho."
+        
+        # Bullet Point #2: Beneficio Emocional JTBD
+        bp2 = "🚀 EL TRABAJO HECHO: No vendemos specs, vendemos el resultado que tu vida necesita hoy."
+        
+        # Bullet Point #3: Autoridad/Certificación
+        bp3 = "💎 CALIDAD NEXUS: Calibrado con inteligencia de mercado para exceder los estándares del Top 10."
+        
+        return {
+            "bullet_points": [bp1, bp2, bp3],
+            "education_strategy": f"Enfocar el contenido en el 'Job-to-be-done': Cómo {primary_avatar.get('name')} logra su objetivo final usando el producto.",
+            "hook": primary_avatar.get("trigger", "La solución definitiva.")
+        }
 
     def _save_summary(self, data: dict):
         if not self.db: return

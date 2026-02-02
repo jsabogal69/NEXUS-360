@@ -2192,7 +2192,7 @@ class Nexus7Architect:
             gap = c.get("gap", c.get("opportunity", "N/A"))[:25]
             # Get ASIN/SKU and full product name from CSV data
             asin = c.get("asin", c.get("sku", "N/A"))
-            product_name = c.get("title", c.get("name", ""))[:35]  # Full name from CSV
+            product_name = c.get("title", c.get("name", ""))[:75]  # Full name from CSV
             comp_rows += f'''
             <tr style="border-bottom:1px solid #e2e8f0;">
                 <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
@@ -2377,7 +2377,7 @@ class Nexus7Architect:
         :root {{ --primary: #0f172a; --accent: #3b82f6; }}
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{ font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: var(--primary); }}
-        .brief {{ max-width: 900px; margin: 0 auto; }}
+        .brief {{ width: 794px; max-width: 794px; margin: 0 auto; }}
         .page {{ background: white; border-radius: 16px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; }}
         .header {{ background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 20px 30px; position: relative; }}
         .header::after {{ content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); }}
@@ -2682,16 +2682,18 @@ class Nexus7Architect:
             
             try {{
                 const opt = {{
-                    margin: [5, 8, 5, 8],
+                    margin: [5, 5, 5, 5],
                     filename: filename,
-                    image: {{ type: 'jpeg', quality: 0.98 }},
+                    image: {{ type: 'jpeg', quality: 0.95 }},
                     html2canvas: {{ 
                         scale: 1.5,
                         useCORS: true, 
                         logging: false,
                         letterRendering: true,
                         scrollY: 0,
-                        windowWidth: 900
+                        windowWidth: 794,
+                        width: 794,
+                        height: element.scrollHeight
                     }},
                     jsPDF: {{ 
                         unit: 'mm', 
@@ -2700,9 +2702,9 @@ class Nexus7Architect:
                         compress: true
                     }},
                     pagebreak: {{ 
-                        mode: 'avoid-all',
+                        mode: ['avoid-all', 'css', 'legacy'],
                         before: '.page-break',
-                        avoid: ['tr', '.card', '.section', '.verdict-card']
+                        avoid: ['tr', '.card', '.section', '.verdict-card', '.stat-card']
                     }}
                 }};
                 

@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -84,6 +85,23 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 LOG_PATH = os.path.join(REPORTS_DIR, "agent_activity.log")
 
 import inspect
+
+def sanitize_text_field(text: str) -> str:
+    """Cleans common LLM artifacts, cutoffs, and stutters from string fields."""
+    if not isinstance(text, str):
+        return text
+    
+    s = text.strip().replace('""', '"')
+    
+    # Common cutoffs/stutters observed
+    cutoffs = [" fall primaril", " primaril", " fall", " primarily", " lead to"]
+    for cutoff in cutoffs:
+        if s.endswith(cutoff):
+            s = s[:-len(cutoff)].strip()
+            
+    # Remove hanging quotes or partial words at the very end
+    s = re.sub(r'\s+[a-zA-Z]{1,2}$', '', s) 
+    return s
 
 def report_agent_activity(func):
     """Decorator to log human input and agent task description. Makes the function async."""

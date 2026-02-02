@@ -4,8 +4,57 @@ from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_acti
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-5")
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OPPORTUNITY SCORE ALGORITHM (Ulwick ODI - Outcome-Driven Innovation)
+# ═══════════════════════════════════════════════════════════════════════════════
+def calculate_opportunity_score(importance: float, satisfaction: float) -> dict:
+    """
+    Algoritmo de Oportunidad basado en Ulwick (Outcome-Driven Innovation)
+    
+    Prioriza features donde la importancia supera la satisfacción actual.
+    Score = Importancia + max(Importancia - Satisfacción, 0)
+    
+    Args:
+        importance: Qué tan importante es la feature para el cliente (1-10)
+        satisfaction: Qué tan satisfechos están los clientes actuales (1-10)
+    
+    Returns:
+        dict con score, categoría, prioridad y recomendación
+    """
+    score = importance + max(importance - satisfaction, 0)
+    
+    if score >= 12:
+        category = "HIGH_PRIORITY_INNOVATION"
+        priority = "🔴 MÁXIMA"
+        recommendation = "Invertir agresivamente. Oportunidad de diferenciación clara."
+        color = "#dc2626"
+    elif score >= 10:
+        category = "STABLE_IMPROVEMENT"
+        priority = "🟡 MEDIA"
+        recommendation = "Mejorar incrementalmente. Mercado tiene gaps moderados."
+        color = "#f59e0b"
+    else:
+        category = "SATURATED_MARKET"
+        priority = "🟢 BAJA"
+        recommendation = "Optimizar costos. Mercado saturado, diferenciación difícil."
+        color = "#22c55e"
+    
+    return {
+        "score": round(score, 2),
+        "category": category,
+        "priority": priority,
+        "priority_color": color,
+        "recommendation": recommendation,
+        "inputs": {
+            "importance": importance,
+            "satisfaction": satisfaction
+        }
+    }
+
+
 class Nexus5Mathematician:
-    task_description = "Deep Financial Modeling & ROI Projection (Reactive)"
+    task_description = "Deep Financial Modeling, ROI Projection & Opportunity Scoring"
     def __init__(self):
         self.db = get_db()
         self.role = "NEXUS-5 (Mathematician)"
@@ -265,6 +314,79 @@ class Nexus5Mathematician:
             "verdict": "El modelo de negocio es resiliente incluso ante saturación de subasta PPC." if stress_margin > 5 else "Alerta: El margen se erosiona críticamente bajo estrés. Se requiere optimización de COGS o incremento de MSRP."
         }
 
+        # ═══════════════════════════════════════════════════════════════
+        # v2.0: 3-SCENARIO PROJECTIONS (Conservative / Expected / Aggressive)
+        # ═══════════════════════════════════════════════════════════════
+        
+        # Determine Base Conversion Rate from SSOT Search Data
+        search_data = strategy_data.get("search_data", {})
+        has_real_search_data = search_data.get("has_real_data", False)
+        base_conversion_rate = float(search_data.get("avg_conversion_rate", 12.0))
+        
+        # Adjust scenarios based on real data
+        conv_consv = max(round(base_conversion_rate * 0.7, 1), 2.0)
+        conv_exp = round(base_conversion_rate, 1)
+        conv_aggr = round(base_conversion_rate * 1.4, 1)
+        
+        source_label = "POE (Real)" if has_real_search_data else "Benchmark (Est.)"
+        
+        three_scenarios = {
+            "conservative": {
+                "name": "Escenario Conservador (Pesimista)",
+                "description": "Asume condiciones adversas: PPC saturado, competencia agresiva",
+                "assumptions": {
+                    "sales_adjustment": "-30%",
+                    "ppc_adjustment": "+40%",
+                    "conversion_rate": f"{conv_consv}% ({source_label} -30%)"
+                },
+                "projections": {
+                    "monthly_units": round(150 * 0.70),  # 105 units
+                    "monthly_revenue": round(150 * 0.70 * base_price, 2),
+                    "ppc_spend": round(150 * 0.70 * base_price * (ppc_investment_pct * 1.4), 2),
+                    "net_margin_pct": max(round(base_net_margin - 12, 1), 5),
+                    "monthly_profit": round(150 * 0.70 * (base_price * 0.12), 2)
+                },
+                "viability": "⚠️ Riesgo" if base_net_margin - 12 < 15 else "✅ Viable"
+            },
+            "expected": {
+                "name": "Escenario Base (Esperado)",
+                "description": "Proyección basada en datos POE y promedios de mercado",
+                "assumptions": {
+                    "sales_adjustment": "0%",
+                    "ppc_adjustment": "0%",
+                    "conversion_rate": f"{conv_exp}% ({source_label})"
+                },
+                "projections": {
+                    "monthly_units": 150,
+                    "monthly_revenue": round(150 * base_price, 2),
+                    "ppc_spend": round(150 * base_price * ppc_investment_pct, 2),
+                    "net_margin_pct": base_net_margin,
+                    "monthly_profit": round(150 * base_net_profit, 2)
+                },
+                "viability": "✅ Objetivo"
+            },
+            "aggressive": {
+                "name": "Escenario Agresivo (Optimista)",
+                "description": "Asume ejecución óptima: ranking orgánico, reviews positivos",
+                "assumptions": {
+                    "sales_adjustment": "+30%",
+                    "ppc_adjustment": "-20%",
+                    "conversion_rate": f"{conv_aggr}% ({source_label} +40%)"
+                },
+                "projections": {
+                    "monthly_units": round(150 * 1.30),  # 195 units
+                    "monthly_revenue": round(150 * 1.30 * base_price, 2),
+                    "ppc_spend": round(150 * 1.30 * base_price * (ppc_investment_pct * 0.8), 2),
+                    "net_margin_pct": round(base_net_margin + 8, 1),
+                    "monthly_profit": round(150 * 1.30 * (base_price * 0.28), 2)
+                },
+                "viability": "🚀 Potencial Alto"
+            }
+        }
+        
+        # Calculate conservative margin for veto validation (Direct access)
+        consv_margin = float(three_scenarios["conservative"]["projections"]["net_margin_pct"])
+
         roi_models = {
             "id": generate_id(),
             "parent_strategy_id": strategy_data.get("id"),
@@ -309,67 +431,7 @@ class Nexus5Mathematician:
                     "B2B_Bulk": f"NEX-CORP-{label.replace(' ', '-').upper()}-V01"
                 }
             },
-            
-            # ═══════════════════════════════════════════════════════════════
-            # v2.0: 3-SCENARIO PROJECTIONS (Conservative / Expected / Aggressive)
-            # ═══════════════════════════════════════════════════════════════
-            "three_scenarios": {
-                "conservative": {
-                    "name": "Escenario Conservador (Pesimista)",
-                    "description": "Asume condiciones adversas: PPC saturado, competencia agresiva",
-                    "assumptions": {
-                        "sales_adjustment": "-30%",
-                        "ppc_adjustment": "+40%",
-                        "conversion_rate": "8%"
-                    },
-                    "projections": {
-                        "monthly_units": round(150 * 0.70),  # 105 units
-                        "monthly_revenue": round(150 * 0.70 * base_price, 2),
-                        "ppc_spend": round(150 * 0.70 * base_price * (ppc_investment_pct * 1.4), 2),
-                        "net_margin_pct": max(round(base_net_margin - 12, 1), 5),
-                        "monthly_profit": round(150 * 0.70 * (base_price * 0.12), 2)
-                    },
-                    "viability": "⚠️ Riesgo" if base_net_margin - 12 < 15 else "✅ Viable"
-                },
-                "expected": {
-                    "name": "Escenario Base (Esperado)",
-                    "description": "Proyección basada en datos POE y promedios de mercado",
-                    "assumptions": {
-                        "sales_adjustment": "0%",
-                        "ppc_adjustment": "0%",
-                        "conversion_rate": "12%"
-                    },
-                    "projections": {
-                        "monthly_units": 150,
-                        "monthly_revenue": round(150 * base_price, 2),
-                        "ppc_spend": round(150 * base_price * ppc_investment_pct, 2),
-                        "net_margin_pct": base_net_margin,
-                        "monthly_profit": round(150 * base_net_profit, 2)
-                    },
-                    "viability": "✅ Objetivo"
-                },
-                "aggressive": {
-                    "name": "Escenario Agresivo (Optimista)",
-                    "description": "Asume ejecución óptima: ranking orgánico, reviews positivos",
-                    "assumptions": {
-                        "sales_adjustment": "+30%",
-                        "ppc_adjustment": "-20%",
-                        "conversion_rate": "18%"
-                    },
-                    "projections": {
-                        "monthly_units": round(150 * 1.30),  # 195 units
-                        "monthly_revenue": round(150 * 1.30 * base_price, 2),
-                        "ppc_spend": round(150 * 1.30 * base_price * (ppc_investment_pct * 0.8), 2),
-                        "net_margin_pct": round(base_net_margin + 8, 1),
-                        "monthly_profit": round(150 * 1.30 * (base_price * 0.28), 2)
-                    },
-                    "viability": "🚀 Potencial Alto"
-                }
-            },
-            
-            # ═══════════════════════════════════════════════════════════════
-            # v2.0: TACoS (Total Advertising Cost of Sales)
-            # ═══════════════════════════════════════════════════════════════
+            "three_scenarios": three_scenarios,
             "tacos_analysis": {
                 "definition": "Porcentaje del revenue TOTAL consumido por publicidad",
                 "current_estimate": round((ppc_investment_pct) * 100, 1),
@@ -378,10 +440,6 @@ class Nexus5Mathematician:
                 "status": "🟢 Saludable" if ppc_investment_pct * 100 < 15 else ("🟡 Monitorear" if ppc_investment_pct * 100 < 25 else "🔴 Crítico"),
                 "recommendation": "Reducir TACoS mediante SEO de listings y reviews orgánicos" if ppc_investment_pct * 100 > 15 else "TACoS dentro de rango óptimo"
             },
-            
-            # ═══════════════════════════════════════════════════════════════
-            # v2.0: Q4 LOGISTICS COMPARISON (FBA vs 3PL)
-            # ═══════════════════════════════════════════════════════════════
             "q4_logistics": {
                 "warning": "⚠️ Las tarifas FBA se triplican en Q4 (Oct-Dic)",
                 "fba_standard": {
@@ -402,10 +460,6 @@ class Nexus5Mathematician:
                     "recommendation": "Considerar 3PL para inventory hedge en Q4"
                 }
             },
-            
-            # ═══════════════════════════════════════════════════════════════
-            # v2.0: US MARKET SUCCESS THRESHOLDS
-            # ═══════════════════════════════════════════════════════════════
             "success_thresholds": {
                 "title": "Umbrales de Éxito para Mercado US",
                 "metrics": [
@@ -436,6 +490,13 @@ class Nexus5Mathematician:
                 ],
                 "overall_verdict": "GO" if base_net_margin > 20 and ppc_investment_pct * 100 < 25 else "REVIEW REQUIRED"
             },
+            "opportunity_analysis": self._calculate_feature_opportunities(strategy_data),
+            "margin_validation": {
+                "conservative_margin": consv_margin,
+                "minimum_threshold": 15.0,
+                "passes_threshold": consv_margin >= 15.0,
+                "veto_recommendation": "⚠️ VETO: Margen insuficiente en escenario conservador" if consv_margin < 15.0 else "✅ Margen aceptable"
+            },
             "timestamp": timestamp_now()
         }
         
@@ -447,3 +508,72 @@ class Nexus5Mathematician:
         try:
             self.db.collection("validated_intelligence").document(data["id"]).set(data)
         except: pass
+
+    def _get_true_conservative_margin(self, three_scenarios: dict) -> float:
+        """
+        Extract the net margin from the actual 'Conservative' scenario.
+        Used for Guardian veto validation.
+        """
+        conservative = three_scenarios.get("conservative", {})
+        proj = conservative.get("projections", {})
+        margin = proj.get("net_margin_pct", 0)
+        
+        if isinstance(margin, str):
+            try:
+                margin = float(margin.replace("%", ""))
+            except:
+                margin = 0
+        return float(margin)
+    
+    def _calculate_feature_opportunities(self, strategy_data: dict) -> dict:
+        """
+        Calculate Opportunity Scores for features based on pain points.
+        Uses Ulwick ODI algorithm: Score = Importance + max(Importance - Satisfaction, 0)
+        """
+        pain_points = strategy_data.get("dynamic_verdict", {}).get("pain_points_analysis", {})
+        categories = pain_points.get("categories", [])
+        
+        if not categories:
+            # Default features if no pain points data
+            categories = [
+                {"category": "Funcionalidad", "gap_percentage": 35, "severity": "ALTO"},
+                {"category": "Durabilidad", "gap_percentage": 28, "severity": "ALTO"},
+                {"category": "Estética", "gap_percentage": 18, "severity": "MEDIO"},
+                {"category": "Empaque", "gap_percentage": 12, "severity": "BAJO"},
+            ]
+        
+        feature_scores = []
+        for cat in categories:
+            # Convert gap percentage to importance (higher gap = higher importance)
+            importance = min(10, cat.get("gap_percentage", 5) / 4)  # Scale 0-100 to 0-10
+            
+            # Assume current satisfaction is inverse of severity
+            severity = cat.get("severity", "MEDIO")
+            if severity == "ALTO":
+                satisfaction = 3.0
+            elif severity == "MEDIO":
+                satisfaction = 5.0
+            else:
+                satisfaction = 7.0
+            
+            # Calculate opportunity score
+            score_data = calculate_opportunity_score(importance, satisfaction)
+            score_data["feature"] = cat.get("category", "Unknown")
+            score_data["gap_percentage"] = cat.get("gap_percentage", 0)
+            feature_scores.append(score_data)
+        
+        # Sort by score descending
+        feature_scores.sort(key=lambda x: x["score"], reverse=True)
+        
+        # Count priorities
+        high_priority = len([f for f in feature_scores if f["category"] == "HIGH_PRIORITY_INNOVATION"])
+        
+        return {
+            "methodology": "Ulwick ODI (Outcome-Driven Innovation)",
+            "formula": "Score = Importance + max(Importance - Satisfaction, 0)",
+            "threshold_high": 12,
+            "threshold_medium": 10,
+            "features": feature_scores,
+            "high_priority_count": high_priority,
+            "strategic_insight": f"Detectadas {high_priority} oportunidades de alta prioridad para innovación disruptiva." if high_priority > 0 else "Mercado estable. Enfocarse en optimización de costos."
+        }

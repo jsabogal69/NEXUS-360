@@ -23,6 +23,13 @@ class Nexus3Integrator:
         lineage = data_stats.get("lineage", {})
         input_details = []
         scout_context = {}
+        search_context = {
+            "total_volume": 0,
+            "avg_conversion_rate": 0.0,
+            "weighted_conversion_sum": 0,
+            "total_volume_for_conversion": 0,
+            "top_keywords": []
+        }
         
         for i_id in input_ids:
             try:
@@ -73,6 +80,18 @@ class Nexus3Integrator:
                     if doc and doc.exists:
                         d = doc.to_dict()
                         name = d.get("file_name", "Archivo")
+                        
+                        # SEARCH TERMS AGGREGATION
+                        st_data = d.get("search_terms_data", {})
+                        if st_data and st_data.get("has_search_data"):
+                            search_context["total_volume"] += st_data.get("total_search_volume", 0)
+                            search_context["top_keywords"].extend(st_data.get("top_keywords", []))
+                            if st_data.get("avg_conversion_rate", 0) > 0:
+                                vol = st_data.get("total_search_volume", 0)
+                                conv = st_data.get("avg_conversion_rate", 0)
+                                search_context["weighted_conversion_sum"] += (vol * conv)
+                                search_context["total_volume_for_conversion"] += vol
+                                
                         input_details.append({
                             "id": i_id, 
                             "name": name, 
@@ -92,6 +111,18 @@ class Nexus3Integrator:
                      "summary": self._infer_summary(name, lineage.get(name, {}))
                  })
 
+        # Calculate final weighted conversion rate
+        final_conversion_rate = 12.0 # Default if no data
+        if search_context["total_volume_for_conversion"] > 0:
+            final_conversion_rate = round(search_context["weighted_conversion_sum"] / search_context["total_volume_for_conversion"], 2)
+            
+        search_data_summary = {
+            "has_real_data": search_context["total_volume"] > 0,
+            "total_search_volume": search_context["total_volume"],
+            "avg_conversion_rate": final_conversion_rate,
+            "top_keywords": list(set(search_context["top_keywords"]))[:10]
+        }
+
         # Robust anchor recovery
         scout_anchor = scout_context.get("product_anchor")
         if not scout_anchor:
@@ -99,6 +130,11 @@ class Nexus3Integrator:
         if not scout_anchor:
             scout_anchor = "Mercado Detectado"
 
+        # ═══════════════════════════════════════════════════════════════════
+        # PASO 5: Cuadro de las 4 Acciones (ERRC Grid - Océano Azul)
+        # ═══════════════════════════════════════════════════════════════════
+        errc_grid = self._calculate_errc_grid(scout_context)
+        
         consolidated_record = {
             "id": generate_id(),
             "type": "ssot_record",
@@ -106,11 +142,58 @@ class Nexus3Integrator:
             "data_stats": data_stats,
             "scout_anchor": scout_anchor,
             "scout_data": scout_context, # Preserve full scout detail (including sales_intelligence)
+            "search_data": search_data_summary, # Added Search Intelligence
+            "errc_grid": errc_grid,      # Single Source of Truth for Blue Ocean
             "timestamp": timestamp_now()
         }
         
         self._save_ssot(consolidated_record)
         return consolidated_record
+
+    def _calculate_errc_grid(self, scout_data: dict) -> dict:
+        """
+        Calcula el Cuadro de las 4 Acciones (Eliminar, Reducir, Incrementar, Crear)
+        basándose en el análisis de mercado del Scout.
+        """
+        cons = scout_data.get("social_listening", {}).get("cons", [])
+        pros = scout_data.get("social_listening", {}).get("pros", [])
+        trends = scout_data.get("trends", [])
+        
+        # Lógica de Análisis para el Océano Azul
+        eliminate = []
+        reduce = []
+        raise_actions = []
+        create = []
+        
+        # 1. ELIMINAR: Características costosas que el cliente ya no valora o que causan fricción
+        for c in cons:
+            if any(word in c.lower() for word in ["costoso", "caro", "complejo", "difícil", "innecesario"]):
+                eliminate.append(f"Eliminar {c.split(':')[0] if ':' in c else c}")
+        
+        # 2. REDUCIR: Características sobre-diseñadas que exceden la necesidad del cliente
+        for p in pros:
+            if any(word in p.lower() for word in ["estándar", "común", "genérico", "promedio"]):
+                reduce.append(f"Reducir dependencia en {p}")
+        
+        # 3. INCREMENTAR: Elementos que deben estar muy por encima del estándar de la industria
+        for c in cons:
+            if any(word in c.lower() for word in ["falta", "pobre", "malo", "débil", "lento"]):
+                raise_actions.append(f"Incrementar {c.replace('Falta de ', '').replace('Pobre ', '')}")
+        
+        # 4. CREAR: Elementos que la industria nunca ha ofrecido (basado en White Space / Trends)
+        white_space = scout_data.get("social_listening", {}).get("white_space_topics", [])
+        for topic in white_space:
+            create.append(f"Crear solución de {topic}")
+        
+        for t in trends:
+            create.append(f"Innovar en {t.get('title')}")
+
+        return {
+            "eliminate": eliminate[:3] or ["Redundancias técnicas", "Embalaje excesivo"],
+            "reduce": reduce[:3] or ["Marketing genérico", "Complejidad de uso"],
+            "raise": raise_actions[:3] or ["Durabilidad percibida", "Velocidad de respuesta"],
+            "create": create[:3] or ["Ecosistema digital", "Experiencia de unboxing premium"]
+        }
 
     def _infer_summary(self, filename: str, file_lineage: dict = None) -> str:
         if file_lineage and file_lineage.get("accessed_data"):

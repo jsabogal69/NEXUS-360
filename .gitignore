@@ -13,3 +13,4 @@ agents/reports/*.log
 .env
 server.log
 agents/static/reports/blueprint_*.html
+node_modules

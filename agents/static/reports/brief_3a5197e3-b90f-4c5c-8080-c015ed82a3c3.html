@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Brief: baby monitor ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0f172a; --accent: #3b82f6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: var(--primary); }
+        .brief { max-width: 900px; margin: 0 auto; }
+        .page { background: white; border-radius: 16px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; }
+        .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 20px 30px; position: relative; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); }
+        .content { padding: 20px 30px; }
+        .section { margin-bottom: 20px; }
+        .section-title { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .verdict-card { background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 15px; margin-bottom: 16px; }
+        .verdict-icon { font-size: 2.2rem; }
+        .verdict-status { font-size: 1.3rem; font-weight: 800; color: #d97706; }
+        .verdict-summary { font-size: 0.8rem; color: #475569; margin-top: 3px; }
+        .confidence { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; text-align: center; }
+        .confidence-value { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+        .confidence-label { font-size: 0.55rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        .two-col { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+        .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; }
+        .stat-card { text-align: center; padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; }
+        .stat-value { font-size: 1.4rem; font-weight: 800; }
+        .stat-label { font-size: 0.55rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+        .consumer-quote { background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border-left: 3px solid #f59e0b; padding: 10px 12px; border-radius: 0 6px 6px 0; font-style: italic; font-size: 0.8rem; color: #92400e; margin: 10px 0; }
+        .lightning { background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%); border: 2px solid #fcd34d; border-radius: 8px; padding: 10px 12px; }
+        .lightning-title { font-size: 0.7rem; font-weight: 800; color: #b45309; }
+        .table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .table th { background: #f1f5f9; padding: 8px; text-align: left; font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .table td { padding: 8px; }
+        .page-break { page-break-before: always; break-before: page; }
+        .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .footer-link { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: 600; }
+        @media print { 
+            @page { size: A4 portrait; margin: 8mm; }
+            body { padding: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
+            .brief { max-width: 100%; }
+            .page { box-shadow: none; margin-bottom: 0; border-radius: 0; page-break-inside: avoid; break-inside: avoid; min-height: auto; } 
+            .page:first-of-type { page-break-after: always; break-after: page; }
+            .page-break { page-break-before: always; break-before: page; margin-top: 0; }
+            .footer-link { display: none !important; }
+            .card, .section, .verdict-card { page-break-inside: avoid; break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="brief">
+        <!-- ═══════════════ PAGE 1 ═══════════════ -->
+        <div class="page">
+            <div class="header">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size: 0.6rem; font-weight: 700; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">🎯 Executive Decision Brief</div>
+                        <div style="font-size: 1.3rem; font-weight: 800;">baby monitor ai</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size: 0.65rem; color: #94a3b8;">2026-02-02 15:21:10.099329</div>
+                        <div style="font-size: 0.6rem; color: #64748b;">3 fuentes • Página 1/2</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Verdict -->
+                <div class="verdict-card">
+                    <div class="verdict-icon">⚠️</div>
+                    <div style="flex:1;">
+                        <div class="verdict-status">CAUTION</div>
+                        <div class="verdict-summary">Oportunidad viable con reservas. Requiere validación adicional antes de comprometer capital.</div>
+                    </div>
+                    <div class="confidence">
+                        <div class="confidence-value">95%</div>
+                        <div class="confidence-label">Confianza</div>
+                    </div>
+                    <div style="text-align:center; padding:0 10px;">
+                        <div style="font-size:1.1rem; font-weight:800; color:#8b5cf6;">0.0</div>
+                        <div style="font-size:0.5rem; color:#64748b; font-weight:700;">ODI SCORE</div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 1: THE OPPORTUNITY -->
+                <div class="section">
+                    <div class="section-title">🔥 La Oportunidad: Dolor Real del Consumidor</div>
+                    <div class="two-col">
+                        <div class="card">
+                            
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 Poor battery life</div>
+                    <div style="background:#dc262620; color:#dc2626; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +6.3</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:63.0%; height:100%; background:#dc2626;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 9.5 | Sat: 3.2</span>
+                </div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 Delayed notifications</div>
+                    <div style="background:#dc262620; color:#dc2626; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +5.7</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:57.000000000000014%; height:100%; background:#dc2626;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 9.8 | Sat: 4.1</span>
+                </div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 Privacy concerns/Cloud hacking</div>
+                    <div style="background:#dc262620; color:#dc2626; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +6.7</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:67.0%; height:100%; background:#dc2626;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 9.2 | Sat: 2.5</span>
+                </div>
+            </div>
+                        </div>
+                        <div>
+                            <div class="consumer-quote">😤 "Hartos de falsas alarmas que despiertan a toda la casa."</div>
+                            <div class="consumer-quote" style="background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-color:#3b82f6;">💭 "Queremos tecnología que no envíe videos a servidores externos."</div>
+                            <div class="lightning"><div class="lightning-title">⚡ OPORTUNIDAD RELÁMPAGO (ALTA (9.2/10))</div><div style="font-size:0.75rem; color:#78350f; margin-top:4px;">Gap de privacidad masivo en competidores actuales. Demanda por soluciones No-Clo</div></div>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">baby monitor no wifi</span>
+                    <span style="color:#64748b; margin-left:5px;">(High)</span>
+                </div>
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">best baby monitor 2026</span>
+                    <span style="color:#64748b; margin-left:5px;">(Rising)</span>
+                </div>
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">baby monitor privacy</span>
+                    <span style="color:#64748b; margin-left:5px;">(Medium)</span>
+                </div>
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">monitor bebe sin suscripc</span>
+                    <span style="color:#64748b; margin-left:5px;">(High)</span>
+                </div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 2: MARKET SPACE -->
+                <div class="section">
+                    <div class="section-title">📊 Espacio en el Mercado</div>
+                    <div class="three-col" style="margin-bottom:12px;">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color:#3b82f6;">4</div>
+                            <div class="stat-label">Competidores</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color:#16a34a;">$50.0M</div>
+                            <div class="stat-label">TAM Total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color:#8b5cf6;">$375K</div>
+                            <div class="stat-label">SOM Captureable</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="padding:10px;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Competidor</th>
+                                    <th style="text-align:center;">Rating</th>
+                                    <th style="text-align:center;">Reviews</th>
+                                    <th style="text-align:center;">Precio</th>
+                                    <th>Vulnerabilidad</th>
+                                    <th>Oportunidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.8rem;">1. Nanit Pro 4K</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.8</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">12,500</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$299</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Suscripción obligatoria</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Hardware alto costo</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.8rem;">2. Owlet Cam 2</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.6</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">8,200</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$159</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Dependencia del Cloud</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Privacidad</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.8rem;">3. Eufy SpaceView</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.5</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">15,000</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$129</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Baja resolución</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Calidad Imagen</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.8rem;">4. Lollipop Baby</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.2</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">3,400</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$149</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Montaje frágil</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Durabilidad</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.8rem;">5. Arlo Baby</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.0</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">5,600</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$199</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Software lento</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 UX</td>
+            </tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="two-col" style="margin-top:12px;">
+                        <div class="card">
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📈 MARKET SHARE</div>
+                            
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">Nanit</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:35%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">35%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">Owlet</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:25%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">25%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">Eufy</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:20%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">20%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">Others</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:20%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">20%</span>
+            </div>
+                        </div>
+                        <div class="card">
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📅 ESTACIONALIDAD</div>
+                            <div style="font-size:0.75rem; margin-bottom:4px;"><span style="font-weight:600; color:#3b82f6;">Noviembre</span>: Black Friday (Extreme)</div>
+                            <div style="font-size:0.7rem; color:#64748b; margin-top:6px; font-style:italic;">El mercado de Baby Monitors pica en Q4 por regalos de fin de año y baby showers </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ═══════════════ PAGE 2 ═══════════════ -->
+        <div class="page page-break">
+            <div class="header" style="padding:15px 30px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size: 0.9rem; font-weight: 700;">baby monitor ai — Continuación</div>
+                    <div style="font-size: 0.6rem; color: #94a3b8;">Página 2/2</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- SECTION 3: DIFFERENTIATOR -->
+                <div class="section">
+                    <div class="section-title">✨ Tu Ventaja Diferencial</div>
+                    <div class="card" style="margin-bottom:10px;">
+                        <div style="font-size:0.8rem; color:#334155; line-height:1.5;">Oportunidad quirúrgica en el nicho de monitores de bebé mediante la eliminación del 'Cloud-Tax' y la implementación de IA local. Los márgenes son robustos y el gap de privacidad es el mayor pain-point</div>
+                    </div>
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">💎 PROPUESTA DE VALOR</div>
+                            <div style="display:flex; align-items:center; gap:8px; padding:8px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius:6px; margin-bottom:6px;"><span>✨</span><span style="font-size:0.8rem; color:#1e293b;">Tu Video, Tu Casa: Procesamiento 100% Local sin Nube.</span></div><div style="display:flex; align-items:center; gap:8px; padding:8px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius:6px; margin-bottom:6px;"><span>✨</span><span style="font-size:0.8rem; color:#1e293b;">Precisión Quirúrgica: Identifica humanos vs mascotas al instante.</span></div><div style="display:flex; align-items:center; gap:8px; padding:8px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius:6px; margin-bottom:6px;"><span>✨</span><span style="font-size:0.8rem; color:#1e293b;">Libertad Total: Cero cuotas mensuales de por vida.</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">🎯 ESTRATEGIA ERRC (Blue Ocean)</div>
+                            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#dc2626; margin-bottom:4px;">❌ ELIMINAR</div>
+                    <div style="font-size:0.75rem; color:#7f1d1d;">• Monthly Subscriptions</div><div style="font-size:0.75rem; color:#7f1d1d;">• Cloud Storage Fees</div>
+                </div>
+                <div style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#a16207; margin-bottom:4px;">⬇️ REDUCIR</div>
+                    <div style="font-size:0.75rem; color:#854d0e;">• Lag</div><div style="font-size:0.75rem; color:#854d0e;">• False Positives</div><div style="font-size:0.75rem; color:#854d0e;">• Price</div>
+                </div>
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#1d4ed8; margin-bottom:4px;">⬆️ AUMENTAR</div>
+                    <div style="font-size:0.75rem; color:#1e40af;">• Resolution (4K)</div><div style="font-size:0.75rem; color:#1e40af;">• Local AI Accuracy</div>
+                </div>
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#16a34a; margin-bottom:4px;">✨ CREAR</div>
+                    <div style="font-size:0.75rem; color:#166534;">• Edge-AI Breathing Sensor</div><div style="font-size:0.75rem; color:#166534;">• Privacy-First Branding</div>
+                </div>
+            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 4: RISKS -->
+                <div class="section">
+                    <div class="section-title">⚠️ Radar de Riesgos</div>
+                    <div class="two-col">
+                        <div class="card">
+                            
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:10px; background:#fffbeb; border-radius:8px; margin-bottom:6px;">
+                <span style="font-size:1rem;">🟡</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#d97706; font-size:0.8rem;">Competencia establecida</div>
+                    <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">💡 Diferenciación por innovación</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:10px; background:#f0fdf4; border-radius:8px; margin-bottom:6px;">
+                <span style="font-size:1rem;">🟢</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#16a34a; font-size:0.8rem;">Barreras de entrada</div>
+                    <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">💡 Estrategia de nicho</div>
+                </div>
+            </div>
+                        </div>
+                        <div class="card">
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📋 NOTAS DE COMPLIANCE</div>
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 5: FINANCIALS -->
+                <div class="section">
+                    <div class="section-title">💰 Viabilidad Financiera</div>
+                    <div class="card" style="background:#fef2f2; border-color:#dc262640;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.5rem;">🔴</span>
+                                <div>
+                                    <div style="font-size:0.9rem; font-weight:700; color:#dc2626;">Bajo Margen</div>
+                                    <div style="font-size:0.65rem; color:#64748b;">Estado Financiero General</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:20px; text-align:center;">
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#1e293b;">$30</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">PRECIO</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#dc2626;">0.0%</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">MARGEN</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#3b82f6;">0%</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">ROI</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#1e293b;">12m</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">PAYBACK</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">📊 ESCENARIOS PROYECTADOS</div>
+                        
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+            
+            
+            
+        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 6: NEXT STEPS -->
+                <div class="section">
+                    <div class="two-col">
+                        <div>
+                            <div class="section-title">✅ Próximos Pasos Recomendados</div>
+                            <div class="card">
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">1</span>
+                <span style="font-size:0.8rem; color:#334155;">Profundizar investigación de mercado</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">2</span>
+                <span style="font-size:0.8rem; color:#334155;">Evaluar diferenciadores adicionales</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">3</span>
+                <span style="font-size:0.8rem; color:#334155;">Recalcular márgenes con costos reales</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">4</span>
+                <span style="font-size:0.8rem; color:#334155;">Considerar pivote o nicho alternativo</span>
+            </div></div>
+                        </div>
+                        <div>
+                            <div class="section-title">📚 Fuentes Analizadas</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                📄 Intel_Global_Baby_2026.pd
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                📊 Competitor_Matrix_Raw.csv
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                🔬 Sentiment_Deep_Dive.json
+            </div></div>
+                            <div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;"><div style="font-size:0.6rem; color:#16a34a; font-weight:700;">🎓 Academy of Pediatrics</div><div style="font-size:0.7rem; color:#166534;">Digital noise reduction in baby monitors reduces parental st</div></div><div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;"><div style="font-size:0.6rem; color:#16a34a; font-weight:700;">🎓 Cybersecurity Institute</div><div style="font-size:0.7rem; color:#166534;">Local processing is the 2026 gold standard for 'Smart Home' </div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 7: CONTENT OPPORTUNITIES -->
+                <div class="section">
+                    <div class="section-title">🔥 Oportunidades de Contenido</div>
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">🎬 ESTILO GARYVEE (Alto Impacto)</div>
+                            
+            <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 El SCAM de las suscripciones en monitores de bebé</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 Rant Video 60s | Hook: "Te vendieron un monitor de $300 y TODAVÍ..."</div>
+                <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: Indignación</div>
+            </div>
+            <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 Por qué tu monitor envía videos de tu bebé a China</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 Storytelling/Exposé | Hook: "Tu bebé está en un servidor en Shanghai ..."</div>
+                <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: Miedo/Protección</div>
+            </div>
+            <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 Padres Tech vs Padres Privacidad: Quién gana?</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 Debate POV | Hook: "Tu suegra tiene razón sobre los gadgets..."</div>
+                <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: Conflicto familiar</div>
+            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">📊 ESTILO NEIL PATEL (SEO/Educativo)</div>
+                            
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 Guía completa: Mejores monitores de bebé 2026 sin </div>
+                <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: baby monitor without subscription (Comparison)</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: No existe guía actualizada sin afiliados obvios</div>
+            </div>
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 Cómo configurar un monitor de bebé offline en 10 m</div>
+                <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: offline baby monitor setup (Tutorial)</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: Videos existentes son de 2022</div>
+            </div>
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 Baby Monitor Security: Lo que las marcas no te dic</div>
+                <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: baby monitor security risks (Educational)</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: Contenido técnico pero accesible para padres</div>
+            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 8: MARKET INTELLIGENCE -->
+                <div class="section">
+                    <div class="section-title">🎯 Inteligencia de Mercado Expandida</div>
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">📍 BLANCO ESPACIAL (White Space Topics)</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Monitores para gemelos (doble cuna)</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Integración con sistemas de domótica local</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Alertas personalizables por tipo de ruido</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Modo viaje con batería extendida</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Privacidad HIPAA para datos de bebé</span>
+                            </div>
+                            
+            <div style="background:linear-gradient(135deg, #eff6ff 0%, #fce7f3 100%); border-left:3px solid #8b5cf6; padding:12px; border-radius:0 8px 8px 0;">
+                <div style="font-size:0.65rem; font-weight:700; color:#7c3aed; margin-bottom:4px;">🎭 CULTURAL VIBE</div>
+                <div style="font-size:0.75rem; color:#374151; font-style:italic;">"Comunidad escéptica hacia las marcas 'tech-first' pero entusiasta por soluciones que priorizan privacidad. Tono protector y cauteloso típico de padres primerizos."</div>
+            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">⚠️ LO QUE IGNORAN LOS COMPETIDORES</div>
+                            
+            <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
+                <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ Nanit Pro ignora:</div>
+                <div style="font-size:0.7rem; color:#7f1d1d;">Obligación de suscripción mensual</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—Pagué $300 y aún quieren $10/mes extra"</div>
+            </div>
+            <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
+                <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ Owlet Cam ignora:</div>
+                <div style="font-size:0.7rem; color:#7f1d1d;">Dependencia total del servidor cloud</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—Si se cae su servidor, perdemos el video"</div>
+            </div>
+            <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
+                <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ Eufy SpaceView ignora:</div>
+                <div style="font-size:0.7rem; color:#7f1d1d;">Resolución baja en modo nocturno</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—A las 3am no veo nada claramente"</div>
+            </div>
+                        </div>
+                    </div>
+                    
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+                <div style="background:#000; color:white; padding:8px; border-radius:6px;">
+                    <div style="font-size:0.6rem; font-weight:700;">📱 TIKTOK</div>
+                    <div style="font-size:0.6rem; margin-top:4px;">#BabyMonitorHacks 15M vistas, @TechDadReviews 500K seguidore...</div>
+                </div>
+                <div style="background:#ff4500; color:white; padding:8px; border-radius:6px;">
+                    <div style="font-size:0.6rem; font-weight:700;">🔴 REDDIT</div>
+                    <div style="font-size:0.6rem; margin-top:4px;">r/beyondthebump muy activo con quejas de suscripciones. r/ho...</div>
+                </div>
+                <div style="background:#ff0000; color:white; padding:8px; border-radius:6px;">
+                    <div style="font-size:0.6rem; font-weight:700;">▶️ YOUTUBE</div>
+                    <div style="font-size:0.6rem; margin-top:4px;">'Cómo eliminar suscripción de monitor Nanit' sin respuestas ...</div>
+                </div>
+            </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <div style="font-size: 0.65rem; color: #94a3b8;">NEXUS-360 Intelligence Platform • 2026-02-02 15:21:10.099345</div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button onclick="downloadPDF()" class="footer-link" style="background:#8b5cf6; border:none; cursor:pointer;">
+                        📥 Descargar PDF
+                    </button>
+                    <a href="/dashboard/reports/report_93c09c0b-b960-4315-ac82-c0bd0f049756.html" class="footer-link">📄 Ver Análisis Completo →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDF Generation Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        async function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Generando...';
+            btn.disabled = true;
+            
+            const element = document.querySelector('.brief');
+            const briefTitle = document.title.replace('Executive Brief: ', '').trim();
+            const safeTitle = briefTitle.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_').substring(0, 50);
+            const filename = 'Executive_Brief_' + safeTitle + '.pdf';
+            
+            // Hide buttons during PDF generation
+            const buttons = document.querySelectorAll('.footer-link');
+            buttons.forEach(b => b.style.visibility = 'hidden');
+            
+            // Get each page separately for proper 2-page PDF
+            const pages = document.querySelectorAll('.page');
+            
+            try {
+                const opt = {
+                    margin: [5, 8, 5, 8],
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 1.5,
+                        useCORS: true, 
+                        logging: false,
+                        letterRendering: true,
+                        scrollY: 0,
+                        windowWidth: 900
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { 
+                        mode: 'avoid-all',
+                        before: '.page-break',
+                        avoid: ['tr', '.card', '.section', '.verdict-card']
+                    }
+                };
+                
+                // Generate and download PDF via blob
+                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+                
+                // Force download with correct filename
+                const url = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                btn.innerHTML = '✅ Descargado!';
+                setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+            } catch (error) {
+                console.error('PDF Error:', error);
+                btn.innerHTML = '❌ Error';
+                setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+            } finally {
+                buttons.forEach(b => b.style.visibility = 'visible');
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
