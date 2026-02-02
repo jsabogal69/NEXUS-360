@@ -124,11 +124,13 @@ class Nexus2Scout:
         
         if has_poe_data and poe_products:
             # Usar productos POE (tienen precios reales)
+            logger.info(f"[{self.role}] 🛡️ POE MODE ACTIVATED: Using {len(poe_products)} verified products from CSV/Input.")
             final_top_10 = poe_products
             for p in final_top_10:
                 p["price_source"] = "POE_VERIFIED"
         else:
             # Usar TOP 10 del LLM (análisis cualitativo válido, precios estimados)
+            logger.warning(f"[{self.role}] ⚠️ LLM MODE: No verified POE data found. Using LLM estimates (Risk of hallucination).")
             final_top_10 = llm_top_10
             
         # ═══════════════════════════════════════════════════════════════════

@@ -351,6 +351,7 @@ class Nexus1Harvester:
                     "ingested_at": timestamp_now(),
                     "validation_status": "pending",
                     "ingested_by": self.role,
+                    "folder_id": folder_id,  # CRITICAL: Track source folder for isolation
                     # Include POE context for downstream agents
                     "poe_context": guide_instruction if guide_instruction else None,
                     # X-Ray pricing data (POE REAL DATA)

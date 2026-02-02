@@ -357,9 +357,23 @@ async def step_3_scout(payload: dict):
     product_desc = payload.get("product_description") or ""
     folder_name = data_stats.get("folder_name", "Niche")
     
-    # CRITICAL: Get POE X-Ray data from Harvester result
+    # CRITICAL: Get POE X-Ray data from Harvester result or PARSE from context
     xray_data = payload.get("xray_data") or {}
     
+    # Validation: If missing xray_data but we have raw text that looks like CSV, parse it dynamicallly
+    # This prevents "Step Retry" from losing the CSV data
+    if not xray_data and product_desc and ("asin" in product_desc.lower() or "price" in product_desc.lower()):
+        try:
+             logger.info("[SCOUT-STEP] Attempting to extract POE data from raw context in step 3...")
+             from .shared.data_expert import DataExpert
+             content_bytes = product_desc.encode('utf-8')
+             fname = "step_3_retry.csv"
+             xray_data = DataExpert.extract_pricing_from_bytes(content_bytes, fname)
+             if xray_data.get("has_real_data"):
+                 logger.info(f"[SCOUT-STEP] Successfully recovered {len(xray_data.get('products', []))} products from text.")
+        except Exception as e:
+            logger.warning(f"[SCOUT-STEP] Failed to recover CSV data: {e}")
+
     # Priority: User Description > Folder Name + Filenames
     context_str = product_desc if product_desc else (f"{folder_name} " + " ".join(filenames))
         

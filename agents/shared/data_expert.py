@@ -235,19 +235,19 @@ class DataExpert:
         # 1. Map columns (Expanded)
         col_map = {}
         column_aliases = {
-            "price": ["price", "precio", "average selling price", "asp"],
-            "sales": ["sales", "ventas", "units", "unidades", "monthly sales"],
-            "revenue": ["revenue", "ingresos", "facturación"],
-            "bsr": ["bsr", "rank", "ranking", "best sellers rank"],
-            "asin": ["asin", "product id"],
-            "title": ["title", "título", "product name", "nombre"],
-            "reviews": ["reviews", "reseñas", "ratings", "total ratings", "review count"],
-            "fees": ["fees", "fba fees", "tarifas", "amazon fees"],
-            "active_sellers": ["active sellers", "sellers", "vendedores", "num sellers"],
+            "price": ["price", "precio", "average selling price", "asp", "average_selling_price"],
+            "sales": ["sales", "ventas", "units", "unidades", "monthly sales", "monthly_sales", "est_sales"],
+            "revenue": ["revenue", "ingresos", "facturación", "est_revenue"],
+            "bsr": ["bsr", "rank", "ranking", "best sellers rank", "best_sellers_rank"],
+            "asin": ["asin", "product id", "product_id"],
+            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "description"],
+            "reviews": ["reviews", "reseñas", "ratings", "total ratings", "review count", "review_count"],
+            "fees": ["fees", "fba fees", "tarifas", "amazon fees", "fba_fees"],
+            "active_sellers": ["active sellers", "sellers", "vendedores", "num sellers", "active_sellers"],
             "dimensions": ["dimensions", "dimensiones", "size", "talla"],
-            "launch_date": ["launch date", "fecha lanzamiento", "creation date", "date first available"],
-            "click_share": ["click share", "cuota de clic", "share", "click share %"],
-            "click_count": ["niche click count", "click count", "recuento de clics"]
+            "launch_date": ["launch date", "fecha lanzamiento", "creation date", "date first available", "creation_date"],
+            "click_share": ["click share", "cuota de clic", "share", "click share %", "click_share"],
+            "click_count": ["niche click count", "click count", "recuento de clics", "click_count"]
         }
         
         for field, aliases in column_aliases.items():
