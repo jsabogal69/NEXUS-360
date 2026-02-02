@@ -2182,7 +2182,7 @@ class Nexus7Architect:
                     <span style="color:#64748b; margin-left:5px;">({kw.get("volume", "Med")})</span>
                 </div>'''
         
-        # Competitors Table (expanded)
+        # Competitors Table (expanded with ASIN)
         comp_rows = ""
         for i, c in enumerate(top_competitors[:5], 1):
             rating = c.get("rating", 4.0)
@@ -2190,15 +2190,22 @@ class Nexus7Architect:
             price = c.get("price", 0)
             vuln = c.get("vuln", c.get("weakness", "N/A"))[:30]
             gap = c.get("gap", c.get("opportunity", "N/A"))[:25]
+            # Get ASIN/SKU and full product name from CSV data
+            asin = c.get("asin", c.get("sku", "N/A"))
+            product_name = c.get("title", c.get("name", ""))[:35]  # Full name from CSV
             comp_rows += f'''
             <tr style="border-bottom:1px solid #e2e8f0;">
-                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.8rem;">{i}. {c.get("name", "")[:20]}</td>
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
+                    {i}. {product_name}
+                    <div style="font-size:0.6rem; color:#6366f1; font-weight:400;">{asin}</div>
+                </td>
                 <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ {rating}</td>
                 <td style="padding:8px; text-align:center; font-size:0.75rem;">{reviews:,}</td>
                 <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">${price}</td>
                 <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ {vuln}</td>
                 <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 {gap}</td>
             </tr>'''
+
         
         # Market Share Chart (simplified bars)
         market_bars = ""
