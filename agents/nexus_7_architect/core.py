@@ -1276,51 +1276,69 @@ class Nexus7Architect:
             <div style="text-align:right;"><div style="color:#b91c1c; font-weight:bold;">CONFIDENCIAL</div><div style="font-size:0.8rem; color:#64748b;">GÉNESIS: {timestamp_now().strftime('%d %B, %Y')}</div></div>
         </header>
 
-        <!-- SECTION I: Sources -->
-        <div class="section-container">
-            <h2 class="section-title">I. Auditoría de Fuentes & Trazabilidad <span class="agent-badge">Harvester</span></h2>
-            <div class="source-grid">{source_cards_html}</div>
+        <!-- SECTION: Quick Navigation Index -->
+        <div class="section-container" style="background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding:20px; margin-bottom:30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="font-size:0.7rem; color:#64748b; font-weight:700;">📋 TABLA DE CONTENIDO</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <span style="background:#6366f1; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">I. Veredicto</span>
+                    <span style="background:#3b82f6; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">II. Competencia</span>
+                    <span style="background:#22c55e; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">III. Consumidor</span>
+                    <span style="background:#f59e0b; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">IV. Finanzas</span>
+                    <span style="background:#ef4444; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">V. Riesgos</span>
+                </div>
+            </div>
         </div>
 
-        <!-- SECTION II: Competitive Matrix (PAGE BREAK) -->
+        <!-- SECTION II: Análisis Competitivo (consolidado) -->
         <div class="page-break section-container">
-            <h2 class="section-title">II. Matriz Competitiva (TOP 10) <span class="agent-badge">Scout</span></h2>
-            <table><thead><tr><th>Rank</th><th>Producto</th><th>Rating</th><th>Pros</th><th>Cons</th><th>Brecha</th></tr></thead><tbody>{top_10_rows}</tbody></table>
+            <h2 class="section-title">II. Análisis Competitivo & Brechas <span class="agent-badge">Scout + Strategist</span></h2>
+            <table><thead><tr><th>Rank</th><th>Producto</th><th>Precio</th><th>Rating</th><th>Fortaleza</th><th>Debilidad</th><th>Oportunidad</th></tr></thead><tbody>{top_10_rows}</tbody></table>
         </div>
 
-        <!-- SECTION III: Social & Academic (PAGE BREAK) -->
+        <!-- SECTION III: Insights del Consumidor (consolidado) -->
         <div class="page-break section-container">
-            <h2 class="section-title">III. Social & Academic Audit <span class="agent-badge">Scout</span></h2>
+            <h2 class="section-title">III. Insights del Consumidor <span class="agent-badge">Consumer Intelligence</span></h2>
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">📱 Social Listening & Tendencias</h4>
             {sl_html}
         </div>
 
-        <!-- SECTION IV: Sales & Seasonality (PAGE BREAK) -->
+        <!-- SECTION IV: Unit Economics (consolidado) -->
         <div class="page-break section-container">
-            <h2 class="section-title">IV. Ventas & Estacionalidad <span class="agent-badge">Scout</span></h2>
+            <h2 class="section-title">IV. Unit Economics & Viabilidad <span class="agent-badge">Mathematician</span></h2>
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">📊 Estacionalidad & Demanda</h4>
             {sales_section_html}
         </div>
 
-        <!-- SECTION V: Brechas (PAGE BREAK) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">V. Brechas & Propuestas <span class="agent-badge">Strategist</span></h2>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">{strategist_grid_html}</div>
-        </div>
-
-        <!-- SECTION VI: Finanzas (PAGE BREAK) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">VI. Finanzas & Stress Test <span class="agent-badge">Mathematician</span></h2>
+            <!-- Financial Stress Test -->
+            <h4 style="margin:30px 0 15px 0; color:var(--primary);">💰 Stress Test Financiero</h4>
             {amz_context_html}
             <table><thead><tr><th>Escenario</th><th>MSRP</th><th>Landed</th><th>Net %</th><th>BEQ</th><th>Payback</th><th>Status</th><th>Notas</th></tr></thead><tbody>{math_table_rows}</tbody></table>
         </div>
 
-        <!-- SECTION VII: Senior Partner -->
-        <div class="section-container keep-together">
-            <h2 class="section-title">VII. Informe del Senior Partner <span class="agent-badge">Consultancy</span></h2>
-            <div style="background:#f1f5f9; padding:40px; border-radius:12px; margin-top:20px;">{formatted_summary}</div>
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- APÉNDICE: Fuentes, Metodología & Senior Partner                     -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="page-break section-container">
+            <h2 class="section-title">📎 Apéndice: Fuentes & Metodología <span class="agent-badge">Harvester + Consultancy</span></h2>
+            
+            <!-- Sources Grid -->
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">📁 Fuentes de Datos Analizadas</h4>
+            <div class="source-grid">{source_cards_html}</div>
+            
+            <!-- Senior Partner Summary -->
+            <h4 style="margin:30px 0 15px 0; color:var(--primary);">👔 Informe del Senior Partner</h4>
+            <div style="background:#f1f5f9; padding:40px; border-radius:12px;">{formatted_summary}</div>
+            
+            <!-- Strategic Grid (antes en Brechas) -->
+            <h4 style="margin:30px 0 15px 0; color:var(--primary);">🎯 Propuestas Estratégicas</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">{strategist_grid_html}</div>
         </div>
 
-        <!-- VEREDICTO NEXUS: PROPUESTA CONCRETA -->
-        <div class="page-break" style="margin-top:40px;">
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SECTION I: VEREDICTO EJECUTIVO (Ahora es lo primero)                -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="section-container" style="margin-top:0;">
             <!-- Main Verdict Banner -->
             <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3730a3 100%); color: white; padding: 50px; border-radius: 16px; position:relative; overflow:hidden;">
                 <div style="position:absolute; top:0; right:0; width:200px; height:200px; background:rgba(255,255,255,0.05); border-radius:50%; transform:translate(30%, -30%);"></div>
@@ -1521,93 +1539,87 @@ class Nexus7Architect:
             </div>
         </div>
 
-        <!-- SECTION VIII: Roadmap (PAGE BREAK) -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN V: RIESGOS & COMPLIANCE (Consolidado)                       -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div class="page-break section-container">
-            <h2 class="section-title">VIII. Plan Maestro de Ejecución <span class="agent-badge">Roadmap</span></h2>
-            <div style="margin-top:20px;">{roadmap_html}</div>
-        </div>
-
-        <!-- SECTION IX: Compliance (PAGE BREAK) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">IX. Compliance & Seguridad <span class="agent-badge">Guardian</span></h2>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px; margin-top:20px;">
-            <div>
-                <div style="display:flex; gap:15px; margin-bottom:20px;">
-                    <div style="background:#fee2e2; color:#991b1b; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">NIVEL DE RIESGO: {g_data.get('risk_level', 'MEDIUM')}</div>
-                    <div style="background:#dbeafe; color:#1e40af; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">SCORE DE CUMPLIMIENTO: {g_data.get('compliance_score', 75)}%</div>
-                    <div style="background:#f0fdf4; color:#166534; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">{g_data.get('total_standards', len(audits))} ESTÁNDARES AUDITADOS</div>
-                </div>
-                <table><thead><tr><th>Estándar</th><th>Estatus</th><th>Descripción</th></tr></thead><tbody>{compliance_rows}</tbody></table>
-                <p style="margin-top:15px; font-size:0.8rem; color:#64748b; font-style:italic;">{g_data.get('audit_note', '')}</p>
-            </div>
-            <div style="background:var(--primary); color:white; padding:25px; border-radius:12px; height:fit-content;">
-                <div style="font-size:0.6rem; color:#60a5fa; letter-spacing:2px; margin-bottom:10px;">SECURITY PROTOCOL</div>
-                <h4 style="margin:0 0 10px 0;">{g_data.get('security_protocol')}</h4>
-                <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:15px;">Cifrado de extremo a extremo activo. Auditoría de estándares internacionales aprobada.</p>
-                <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; margin-top:15px;">
-                    <div style="font-size:0.65rem; color:#60a5fa; margin-bottom:5px;">REQUISITOS OBLIGATORIOS</div>
-                    <div style="font-size:1.5rem; font-weight:bold;">{g_data.get('mandatory_count', 0)}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECTION X: Risk Matrix (NEW v2.0) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">X. Matriz de Riesgos <span class="agent-badge">Guardian v2.0</span></h2>
-            <div style="margin-top:20px;">
+            <h2 class="section-title">V. Riesgos, Compliance & Gobernanza <span class="agent-badge">Guardian</span></h2>
+            
+            <!-- Risk Matrix -->
+            <div style="margin-bottom:30px;">
                 {self._render_risk_matrix(g_data)}
             </div>
-        </div>
-
-        <!-- SECTION XI: Análisis de 3 Escenarios (NEW v2.0) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">XI. Proyección de 3 Escenarios <span class="agent-badge">Mathematician v2.0</span></h2>
-            <div style="margin-top:20px;">
-                {self._render_three_scenarios(m_data)}
+            
+            <!-- Compliance Summary -->
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px;">
+                <div>
+                    <div style="display:flex; gap:15px; margin-bottom:20px;">
+                        <div style="background:#fee2e2; color:#991b1b; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">RIESGO: {g_data.get('risk_level', 'MEDIUM')}</div>
+                        <div style="background:#dbeafe; color:#1e40af; padding:8px 15px; border-radius:8px; font-weight:bold; font-size:0.75rem;">COMPLIANCE: {g_data.get('compliance_score', 75)}%</div>
+                    </div>
+                    <table><thead><tr><th>Estándar</th><th>Estatus</th><th>Descripción</th></tr></thead><tbody>{compliance_rows}</tbody></table>
+                </div>
+                <div style="background:var(--primary); color:white; padding:25px; border-radius:12px; height:fit-content;">
+                    <div style="font-size:0.6rem; color:#60a5fa; letter-spacing:2px; margin-bottom:10px;">SECURITY PROTOCOL</div>
+                    <h4 style="margin:0 0 10px 0;">{g_data.get('security_protocol', 'Estándar')}</h4>
+                    <p style="font-size:0.8rem; color:#94a3b8;">Cifrado de extremo a extremo activo.</p>
+                </div>
             </div>
         </div>
 
-        <!-- SECTION XII: Pain Points & USP (NEW v2.0) -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN VI: ESTRATEGIA & ROADMAP (Consolidado)                      -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div class="page-break section-container">
-            <h2 class="section-title">XII. Análisis de Pain Points & USP <span class="agent-badge">Strategist v2.0</span></h2>
-            <div style="margin-top:20px;">
-                {self._render_pain_points(st_data)}
-            </div>
-        </div>
-
-        <!-- SECTION XIII: Price Tiers & Strategy (NEW v3.0 POE) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">XIII. Rangos de Precio & Estrategia <span class="agent-badge">POE v3.0</span></h2>
-            <div style="margin-top:20px;">
+            <h2 class="section-title">VI. Estrategia Comercial & Roadmap <span class="agent-badge">Strategist</span></h2>
+            
+            <!-- Price Tiers -->
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">💰 Rangos de Precio & Sweet Spot</h4>
+            <div style="margin-bottom:30px;">
                 {self._render_price_tiers(price_tiers, price_range_display, price_median_display, prices_list)}
             </div>
-        </div>
-
-        <!-- SECTION XIV: Reviews Analysis (NEW v3.0 POE) -->
-        <div class="page-break section-container">
-            <h2 class="section-title">XIV. Análisis de Reviews & Sentiment <span class="agent-badge">POE v3.0</span></h2>
-            <div style="margin-top:20px;">
-                {self._render_reviews_analysis(reviews_analysis, top_10_list_for_pricing)}
+            
+            <!-- Pain Points & USP -->
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">😤 Pain Points & USP Proposals</h4>
+            <div style="margin-bottom:30px;">
+                {self._render_pain_points(st_data)}
             </div>
+            
+            <!-- Roadmap -->
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">🗺️ Plan de Ejecución</h4>
+            {roadmap_html}
         </div>
 
-        <!-- SECTION XV: Amazon FBA Fees Structure (NEW v3.0 POE) -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN VII: BUYER PERSONAS & CONSUMER DEEP DIVE                    -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div class="page-break section-container">
-            <h2 class="section-title">XV. Estructura de Amazon FBA Fees <span class="agent-badge">POE v3.0</span></h2>
-            <div style="margin-top:20px;">
-                {self._render_amazon_fees(amazon_fees, price_median)}
-            </div>
+            <h2 class="section-title">VII. Buyer Personas Detallados <span class="agent-badge">Consumer Intel</span></h2>
+            
+            <!-- Detailed Personas -->
+            {self._render_detailed_buyer_personas(buyer_personas)}
+            
+            <!-- Reviews Analysis -->
+            <h4 style="margin:30px 0 15px 0; color:var(--primary);">⭐ Análisis de Reviews & Sentiment</h4>
+            {self._render_reviews_analysis(reviews_analysis, top_10_list_for_pricing)}
         </div>
 
-        <!-- SECTION XVI: Buyer Personas Detallados (NEW v3.0 POE) -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN VIII: UNIT ECONOMICS DEEP DIVE                              -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div class="page-break section-container">
-            <h2 class="section-title">XVI. Buyer Personas Detallados <span class="agent-badge">POE v3.0</span></h2>
-            <div style="margin-top:20px;">
-                {self._render_detailed_buyer_personas(buyer_personas)}
-            </div>
+            <h2 class="section-title">VIII. Unit Economics Detallado <span class="agent-badge">Mathematician</span></h2>
+            
+            <!-- Amazon FBA Fees -->
+            <h4 style="margin:0 0 15px 0; color:var(--primary);">📦 Amazon FBA Fees Structure</h4>
+            {self._render_amazon_fees(amazon_fees, price_median)}
+            
+            <!-- 3 Scenarios -->
+            <h4 style="margin:30px 0 15px 0; color:var(--primary);">📊 Proyección de 3 Escenarios</h4>
+            {self._render_three_scenarios(m_data)}
         </div>
 
-        <footer style="margin-top:50px; text-align:center; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:20px;">NEXUS-360 ADVANCED STRATEGY UNIT v3.0 POE | {timestamp_now().strftime('%Y')}</footer>
+        <footer style="margin-top:50px; text-align:center; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:20px;">NEXUS-360 EXECUTIVE DOSSIER v3.1 | Estructura Optimizada | {timestamp_now().strftime('%Y')}</footer>
     </div>
     {script_html}
 </body>
