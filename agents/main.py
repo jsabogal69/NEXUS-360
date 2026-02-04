@@ -218,7 +218,9 @@ async def run_folder_workflow(request: FolderIngestRequest):
 
         # CRITICAL: Pass POE data to Scout (NO DATA INVENTION)
         poe_xray_data = ingestion_result.get("xray_data") if isinstance(ingestion_result, dict) else None
-        findings = await scout.perform_osint_scan(scout_input, poe_data=poe_xray_data, raw_text_context=scout_field_text)
+        search_terms_data = ingestion_result.get("search_terms_data") if isinstance(ingestion_result, dict) else None
+        
+        findings = await scout.perform_osint_scan(scout_input, poe_data=poe_xray_data, search_terms_data=search_terms_data, raw_text_context=scout_field_text)
         scout_url = save_artifact("scout", findings)
 
         integrator = Nexus3Integrator()
@@ -359,6 +361,7 @@ async def step_3_scout(payload: dict):
     
     # CRITICAL: Get POE X-Ray data from Harvester result or PARSE from context
     xray_data = payload.get("xray_data") or {}
+    search_terms_data = payload.get("search_terms_data") or {}
     
     # Validation: If missing xray_data but we have raw text that looks like CSV, parse it dynamicallly
     # This prevents "Step Retry" from losing the CSV data
@@ -390,7 +393,7 @@ async def step_3_scout(payload: dict):
                 d = doc.to_dict()
                 scout_field_text += f"\n--- {d.get('file_name')} ---\n{d.get('raw_content', '')[:1000]}\n"
 
-    findings = await scout.perform_osint_scan(context_str, poe_data=xray_data, raw_text_context=scout_field_text)
+    findings = await scout.perform_osint_scan(context_str, poe_data=xray_data, search_terms_data=search_terms_data, raw_text_context=scout_field_text)
     return {"step": "scout", "data": findings, "status": "success"}
 
 @app.post("/workflow/step/4_integrator")

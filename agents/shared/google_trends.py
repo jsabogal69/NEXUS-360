@@ -188,6 +188,10 @@ def extract_trend_keywords(product_name: str, category_hints: list = None) -> li
     seen = set()
     unique_terms = []
     for term in search_terms:
+        # Type safety: ensure term is a string
+        if isinstance(term, dict):
+            term = term.get("term", term.get("keyword", str(term)))
+        term = str(term) if term else ""
         term_lower = term.lower().strip()
         if term_lower and term_lower not in seen:
             seen.add(term_lower)

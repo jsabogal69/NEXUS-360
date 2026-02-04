@@ -1,0 +1,32 @@
+# PROJECT IDENTITY: NEXUS-360
+## 🎯 Mission
+Sistema de inteligencia artificial que analiza oportunidades de producto en Amazon (usando datos de Helium10/Amazon) para generar dossieres estratégicos de inversión, utilizando una arquitectura de 9 agentes especializados.
+
+---
+
+## 🏗️ Technology Stack
+*   **Backend**: Python (FastAPI framework), incluyendo agentes especializados (Harvester, Scout, Strategist, etc.).
+*   **Frontend**: HTML/JS/CSS (Vanilla) servido estáticamente.
+*   **Database**: Google Firestore & Google Cloud Storage (para manejo de archivos).
+*   **Key Services**: 
+    *   Google Gemini (IA Generativa)
+    *   Google Sheets/Drive API (Ingesta de datos)
+    *   Google Custom Search API / PyTrends (Inteligencia de mercado)
+    *   Helium10/Amazon Data Parsing
+
+---
+
+## 🛡️ Critical Rules & Constraints
+1.  **Project ID**: `nexus-360-suite-c3e6c` (Firebase/GCP Project ID).
+2.  **Secret Management**: NUNCA hardcodear credenciales. Usar archivo `.env` para llaves de API (Gemini, Google Cloud, etc.) y `serviceAccountKey.json` para autenticación de servicios.
+3.  **Data Isolation**: Garantizar aislamiento estricto entre casos de análisis. Limpiar memoria/estado entre ejecuciones para evitar contaminación de datos de diferentes nichos/productos.
+4.  **Deployment**: Dockerizado (`Dockerfile`, `docker-compose.yml`) o despliegue mediante `firebase deploy` para funciones/hosting si aplica.
+5.  **Data Source**: Priorizar SIEMPRE datos reales (POE) sobre estimaciones de IA. Indicar "PENDIENTE" si faltan datos.
+
+---
+
+## 📂 Key Directories
+*   `agents/`: Lógica core del sistema multi-agente (Guardian, Strategist, Harvester, etc.).
+*   `agents/static/`: Archivos del frontend (HTML, CSS, JS).
+*   `agents/shared/`: Utilidades compartidas (Google Trends, logs, conectores de IA).
+*   `docs/` (o raíz): Documentación ejecutiva (`EXECUTIVE_OVERVIEW.md`).

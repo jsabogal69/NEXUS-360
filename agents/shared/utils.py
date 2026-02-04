@@ -8,7 +8,10 @@ from typing import Dict, Any, Optional
 from enum import Enum
 import uuid
 
+import logging
+
 # --- CONFIGURATION ---
+logger = logging.getLogger("SHARED-UTILS")
 PROJECT_ID = "nexus-360-suite" 
 CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "serviceAccountKey.json")
 
@@ -57,7 +60,7 @@ def get_db():
         return firestore.client()
     except Exception as e:
         if not _MOCK_DB_INSTANCE:
-             print(f"[ERROR] Firebase Init Failed: {e}. Falling back to In-Memory MockDB.")
+             logger.error(f"[FIREBASE] Init Failed: {e}. Falling back to In-Memory MockDB.")
              _MOCK_DB_INSTANCE = MockFirestore()
         return _MOCK_DB_INSTANCE
 
@@ -131,7 +134,7 @@ from google.oauth2 import service_account
 def get_drive_service():
     SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
     if not os.path.exists(CREDENTIALS_PATH):
-        print(f"[WARNING] Google Drive Credentials not found at {CREDENTIALS_PATH}")
+        logger.warning(f"[DRIVE] Credentials not found at {CREDENTIALS_PATH}")
         return None
     
     try:
@@ -139,5 +142,5 @@ def get_drive_service():
             CREDENTIALS_PATH, scopes=SCOPES)
         return build('drive', 'v3', credentials=cred)
     except Exception as e:
-        print(f"[ERROR] Google Drive Init Failed: {e}")
+        logger.error(f"[DRIVE] Init Failed: {e}")
         return None

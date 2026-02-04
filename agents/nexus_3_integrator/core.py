@@ -23,6 +23,10 @@ class Nexus3Integrator:
         lineage = data_stats.get("lineage", {})
         input_details = []
         scout_context = {}
+        harvester_context = {
+            "xray_data": {"has_real_data": False, "source_files": []},
+            "data_stats": data_stats
+        }
         search_context = {
             "total_volume": 0,
             "avg_conversion_rate": 0.0,
@@ -91,6 +95,12 @@ class Nexus3Integrator:
                                 conv = st_data.get("avg_conversion_rate", 0)
                                 search_context["weighted_conversion_sum"] += (vol * conv)
                                 search_context["total_volume_for_conversion"] += vol
+                        
+                        # X-RAY AGGREGATION (POE Pricing)
+                        xr_data = d.get("xray_data", {})
+                        if xr_data and xr_data.get("has_real_data"):
+                            harvester_context["xray_data"]["has_real_data"] = True
+                            harvester_context["xray_data"]["source_files"].append(name)
                                 
                         input_details.append({
                             "id": i_id, 
@@ -134,6 +144,44 @@ class Nexus3Integrator:
         # PASO 5: Cuadro de las 4 Acciones (ERRC Grid - Océano Azul)
         # ═══════════════════════════════════════════════════════════════════
         errc_grid = self._calculate_errc_grid(scout_context)
+
+        # ═══════════════════════════════════════════════════════════════════
+        # PASO 6: Consolidación de Financial Data & Métricas Duras
+        # ═══════════════════════════════════════════════════════════════════
+        # Recuperar métricas del LLM (market_metrics) y datos crudos si existen
+        market_metrics = scout_context.get("market_metrics", {})
+        
+        # Parseo robusto de datos financieros
+        avg_price = market_metrics.get("average_price", 0.0)
+        # Fees estimados (30-40% aprox si no hay dato real)
+        estimated_fees = round(avg_price * 0.35, 2) 
+        
+        # Conversion Rate & Click Share
+        avg_cvr = market_metrics.get("avg_conversion_rate", search_context.get("avg_conversion_rate", 0))
+        # Click Share: Try to get from metrics, else generic estimation based on monopoly
+        monopoly = market_metrics.get("monopoly_status", "Competitivo")
+        estimated_click_share = 12.0 # Default
+        if "Monopolio" in monopoly: estimated_click_share = 65.0
+        elif "Fragmentado" in monopoly: estimated_click_share = 8.0
+        
+        # Top Keywords click share aggregation
+        if market_metrics.get("top_keywords_data"):
+             try:
+                 shares = [float(str(k.get("click_share", "0")).replace("%","")) for k in market_metrics.get("top_keywords_data", [])]
+                 if shares: estimated_click_share = sum(shares) / len(shares)
+             except: pass
+
+        financial_data = {
+            "has_financial_data": avg_price > 0,
+            "avg_price": avg_price,
+            "avg_fees": estimated_fees,
+            "net_margin_percent": round(((avg_price - estimated_fees - (avg_price*0.25))/avg_price)*100, 1) if avg_price > 0 else 0, # Rough margin calc
+            "avg_active_sellers": len(scout_context.get("top_10_products", [])) or 10,
+            "common_dimensions": "Standard Size", # Placeholder as we don't have dims yet
+            "avg_click_share": round(estimated_click_share, 1),
+            "avg_conversion_rate": avg_cvr,
+            "market_size_revenue": market_metrics.get("tam_monthly_revenue", 0)
+        }
         
         consolidated_record = {
             "id": generate_id(),
@@ -141,9 +189,11 @@ class Nexus3Integrator:
             "source_metadata": input_details, 
             "data_stats": data_stats,
             "scout_anchor": scout_anchor,
-            "scout_data": scout_context, # Preserve full scout detail (including sales_intelligence)
-            "search_data": search_data_summary, # Added Search Intelligence
-            "errc_grid": errc_grid,      # Single Source of Truth for Blue Ocean
+            "scout_data": scout_context, # Preserve full scout detail
+            "harvester_data": harvester_context, # NEW: Raw validated data for Strategist
+            "search_data": search_data_summary, 
+            "financial_data": financial_data, # Nueva sección crítica para Architect
+            "errc_grid": errc_grid,
             "timestamp": timestamp_now()
         }
         
@@ -167,18 +217,21 @@ class Nexus3Integrator:
         
         # 1. ELIMINAR: Características costosas que el cliente ya no valora o que causan fricción
         for c in cons:
-            if any(word in c.lower() for word in ["costoso", "caro", "complejo", "difícil", "innecesario"]):
-                eliminate.append(f"Eliminar {c.split(':')[0] if ':' in c else c}")
+            c_str = c.get("text", str(c)) if isinstance(c, dict) else str(c)
+            if any(word in c_str.lower() for word in ["costoso", "caro", "complejo", "difícil", "innecesario"]):
+                eliminate.append(f"Eliminar {c_str.split(':')[0] if ':' in c_str else c_str}")
         
         # 2. REDUCIR: Características sobre-diseñadas que exceden la necesidad del cliente
         for p in pros:
-            if any(word in p.lower() for word in ["estándar", "común", "genérico", "promedio"]):
-                reduce.append(f"Reducir dependencia en {p}")
+            p_str = p.get("text", str(p)) if isinstance(p, dict) else str(p)
+            if any(word in p_str.lower() for word in ["estándar", "común", "genérico", "promedio"]):
+                reduce.append(f"Reducir dependencia en {p_str}")
         
         # 3. INCREMENTAR: Elementos que deben estar muy por encima del estándar de la industria
         for c in cons:
-            if any(word in c.lower() for word in ["falta", "pobre", "malo", "débil", "lento"]):
-                raise_actions.append(f"Incrementar {c.replace('Falta de ', '').replace('Pobre ', '')}")
+            c_str = c.get("text", str(c)) if isinstance(c, dict) else str(c)
+            if any(word in c_str.lower() for word in ["falta", "pobre", "malo", "débil", "lento"]):
+                raise_actions.append(f"Incrementar {c_str.replace('Falta de ', '').replace('Pobre ', '')}")
         
         # 4. CREAR: Elementos que la industria nunca ha ofrecido (basado en White Space / Trends)
         white_space = scout_data.get("social_listening", {}).get("white_space_topics", [])

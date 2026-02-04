@@ -311,6 +311,7 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
             "id": generate_id(),
             "parent_ssot_id": ssot_data.get("id"),
             "scout_data": ssot_data.get("scout_data", {}),
+            "financial_data": ssot_data.get("financial_data", {}),
             "strategic_gaps": gaps,
             "timestamp": timestamp_now(),
             "scout_anchor": anchor,

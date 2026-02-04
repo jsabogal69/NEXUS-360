@@ -11,7 +11,7 @@
 
 import logging
 from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
-from ..shared.llm_intel import generate_market_intel
+from ..shared.llm_intel import generate_market_intel, generate_enhanced_mock
 from ..shared.google_trends import get_google_trends_data, extract_trend_keywords
 
 logging.basicConfig(level=logging.INFO)
@@ -33,41 +33,119 @@ class Nexus2Scout:
         self.role = "NEXUS-2 (Scout)"
 
     @report_agent_activity
-    async def perform_osint_scan(self, context_str: str, poe_data: dict = None, raw_text_context: str = None) -> dict:
+    async def perform_osint_scan(self, context_str: str, poe_data: dict = None, search_terms_data: dict = None, raw_text_context: str = None) -> dict:
         """
         Ejecuta análisis de mercado.
         
         Args:
             context_str: Descripción del nicho/producto
-            poe_data: Datos extraídos de archivos POE (X-Ray, Helium10)
-            raw_text_context: Información extraída de documentos (PDF, etc.) para grounding
+            poe_data: Datos extraídos de X-Ray/Helium10 (Productos)
+            search_terms_data: Datos extraídos de Search Terms (Keywords)
+            raw_text_context: Información extraída de documentos (PDF, etc.)
         
         Returns:
-            dict con findings incluyendo TOP 10 y source tracking
+            dict con findings incluyendo TOP 10, source tracking y Hard Data Metrics
         """
         logger.info(f"[{self.role}] Analyzing Market: {context_str}")
         
         # ═══════════════════════════════════════════════════════════════════
-        # PASO 1: Etiquetado de Confianza (🟢 POE vs 🟡 ESTIMADO)
+        # PASO 1: Etiquetado de Confianza y Preparación de "HARD DATA" Context
         # ═══════════════════════════════════════════════════════════════════
         has_poe_data = poe_data is not None and poe_data.get("has_real_data", False)
-        confidence_tag = "🟢 POE (Dato real de Amazon)" if has_poe_data else "🟡 ESTIMADO (Cálculo IA)"
+        
+        # Prepare Hard Data Summary string for LLM Context
+        hard_data_summary = "HARD DATA SUMMARY (FROM UPLOADED FILES):\n"
         
         if has_poe_data:
-            logger.info(f"[{self.role}] ✅ POE DATA DETECTED - {confidence_tag}")
+            confidence_tag = "🟢 POE (Dato real de Amazon)"
             poe_products = poe_data.get("products", [])[:10]
             pricing_source = "POE_VERIFIED"
             data_source_file = poe_data.get("source_file", "Unknown")
+            
+            # --- EXTRACT METRICS FROM POE (X-RAY) ---
+            total_rev = poe_data.get("total_revenue", 0)
+            avg_price = poe_data.get("average_price", 0)
+            avg_bsr = poe_data.get("average_bsr", 0) or 0
+            
+            hard_data_summary += f"- MARKET SIZE: {len(poe_products)} analyzed products.\n"
+            hard_data_summary += f"- FINANCIALS: Total Revenue=${total_rev:,.2f}, Avg Price=${avg_price:.2f}\n"
+            hard_data_summary += f"- BSR: Average Best Seller Rank={avg_bsr}\n"
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # CRITICAL: Pass REAL PRODUCT DATA to LLM for specific analysis
+            # ═══════════════════════════════════════════════════════════════════
+            hard_data_summary += "\n--- REAL COMPETITOR PRODUCTS FROM AMAZON (ANALYZE THESE SPECIFICALLY) ---\n"
+            for i, prod in enumerate(poe_products[:10], 1):
+                name = prod.get("name", prod.get("title", "Unknown"))[:100]
+                asin = prod.get("asin", "N/A")
+                price = prod.get("price", 0)
+                rating = prod.get("rating", 0)
+                reviews = prod.get("reviews", 0)
+                brand = prod.get("brand", "Unknown")
+                bsr = prod.get("bsr", prod.get("rank", "N/A"))
+                
+                hard_data_summary += f"""
+#{i}. {name}
+   - ASIN: {asin}
+   - Brand: {brand}
+   - Price: ${price}
+   - Rating: {rating}★ ({reviews} reviews)
+   - BSR: #{bsr}
+"""
+            hard_data_summary += "\nIMPORTANT: Base your analysis on THESE SPECIFIC products. Identify their REAL pros/cons based on their metrics and typical review patterns for this product type.\n"
+            
         else:
-            logger.info(f"[{self.role}] ℹ️ No POE data - {confidence_tag}")
+            confidence_tag = "🟡 ESTIMADO (Cálculo IA - SIN DATOS REALES)"
             poe_products = []
             pricing_source = "LLM_ESTIMATE"
             data_source_file = None
+            hard_data_summary += "- NO PRODUCT DATA AVAILABLE (Use LLM estimates cautiously)\n"
+
+        # --- EXTRACT METRICS FROM SEARCH TERMS ---
+        if search_terms_data and search_terms_data.get("has_data", False):
+            st_file = search_terms_data.get("source_file", "search_terms.csv")
+            top_kws = search_terms_data.get("top_keywords", [])[:5]
+            
+            hard_data_summary += f"\n- SEARCH TERMS SOURCE: {st_file}\n"
+            
+            # Calculate aggregate metrics if possible
+            total_sv = sum(int(k.get("search_volume", 0)) for k in top_kws)
+            avg_click_share = 0
+            count_cs = 0
+            
+            kw_lines = []
+            for kw in top_kws:
+                term = kw.get("term", "unknown")
+                sv = kw.get("search_volume", 0)
+                cs = kw.get("click_share", "N/A")
+                conv = kw.get("conversion_rate", "N/A")
+                kw_lines.append(f"  * '{term}': Vol={sv}, ClickShare={cs}, Conv={conv}")
+                
+                # Try to parse click share for avg
+                try:
+                    if isinstance(cs, str) and "%" in cs:
+                        val = float(cs.replace("%", ""))
+                        avg_click_share += val
+                        count_cs += 1
+                    elif isinstance(cs, (int, float)):
+                        avg_click_share += float(cs)
+                        count_cs += 1
+                except: pass
+            
+            avg_cs_str = f"{avg_click_share/count_cs:.1f}%" if count_cs > 0 else "N/A"
+            
+            hard_data_summary += f"- KEYWORD METRICS: Top 5 Vol={total_sv}, Avg Click Share={avg_cs_str}\n"
+            hard_data_summary += "  Top Keywords:\n" + "\n".join(kw_lines)
+        else:
+            hard_data_summary += "\n- NO SEARCH TERM DATA AVAILABLE.\n"
+
+        logger.info(f"[{self.role}] Context prepared with Hard Data:\n{hard_data_summary}")
+
+        # Combine Raw Context with Hard Data Summary
+        final_context_block = (raw_text_context or "") + "\n\n" + hard_data_summary
         
         # ═══════════════════════════════════════════════════════════════════
         # PASO 2: LLM para análisis de mercado y TOP 10
-        # El TOP 10 es válido para: nombres, pros, cons, gaps, brechas
-        # Los PRECIOS se marcan según la fuente (POE vs LLM)
         # ═══════════════════════════════════════════════════════════════════
         logger.info(f"[{self.role}] Executing market analysis via LLM...")
         
@@ -79,10 +157,12 @@ class Nexus2Scout:
         scholar_audit = []
         content_opportunities = {}
         sales_intelligence = {}
+        market_metrics = {}
         google_trends_raw = {}
         
         try:
-            llm_data = generate_market_intel(context_str, additional_context=raw_text_context)
+            # Pass our enriched context
+            llm_data = generate_market_intel(context_str, additional_context=final_context_block)
             
             # TOP 10 del LLM - válido para análisis cualitativo
             llm_top_10 = llm_data.get("top_10_products", [])
@@ -96,15 +176,40 @@ class Nexus2Scout:
                     product["price_source"] = "POE_VERIFIED"
                     product["price_disclaimer"] = "📁 POE"
             
-            # Datos cualitativos (siempre del LLM - esto es análisis, no invención)
+            # 3. Validation & Fallback for Social Listening
+            # If LLM returned empty social data, force heuristic fallback
             social = llm_data.get("social_listening", {})
+            if not social or not social.get("pain_keywords"):
+                logger.warning(f"[{self.role}] ⚠️ LLM returned empty social data. Activating Heuristic Fallback.")
+                fallback_data = generate_enhanced_mock(context_str)
+                social = fallback_data.get("social_listening", {})
+                llm_data["social_listening"] = social # Update main dict
+                
+                # Also fill other possibly missing fields
+                if not llm_data.get("content_opportunities"):
+                    llm_data["content_opportunities"] = fallback_data.get("content_opportunities", {})
+                if not llm_data.get("trends"):
+                     llm_data["trends"] = fallback_data.get("trends", [])
+
             trends = llm_data.get("trends", [])
             keywords = llm_data.get("keywords", [])
+            
+            # New Hard Data Metrics from LLM
+            market_metrics = llm_data.get("market_metrics", {})
             
             # ═══════════════════════════════════════════════════════════════════
             # v2.1: REAL GOOGLE TRENDS INTEGRATION
             # ═══════════════════════════════════════════════════════════════════
-            trend_keywords = extract_trend_keywords(context_str, keywords)
+            # Extract keyword strings from dict format (keywords are [{term:..., volume:...}, ...])
+            keyword_strings = []
+            for kw in keywords:
+                if isinstance(kw, dict):
+                    keyword_strings.append(kw.get("term", ""))
+                elif isinstance(kw, str):
+                    keyword_strings.append(kw)
+            keyword_strings = [k for k in keyword_strings if k]  # Remove empty
+            
+            trend_keywords = extract_trend_keywords(context_str, keyword_strings)
             logger.info(f"[{self.role}] Fetching real-time Google Trends for: {trend_keywords}")
             google_trends_raw = get_google_trends_data(trend_keywords)
             
@@ -113,8 +218,34 @@ class Nexus2Scout:
             content_opportunities = llm_data.get("content_opportunities", {})
             sales_intelligence = llm_data.get("sales_intelligence", {})
             
+            # POE v3.0: Nuevos campos detallados
+            buyer_personas = llm_data.get("buyer_personas", [])
+            reviews_analysis = llm_data.get("reviews_analysis", {})
+            price_tiers = llm_data.get("price_tiers", {})
+            amazon_fees_structure = llm_data.get("amazon_fees_structure", {})
+            
         except Exception as e:
             logger.error(f"[{self.role}] LLM analysis failed: {e}")
+            # ═══════════════════════════════════════════════════════════════════
+            # CRITICAL FIX: Activate Heuristic Fallback on LLM Failure
+            # ═══════════════════════════════════════════════════════════════════
+            logger.warning(f"[{self.role}] 🚨 Activating FULL Heuristic Fallback due to LLM failure.")
+            fallback_data = generate_enhanced_mock(context_str)
+            social = fallback_data.get("social_listening", {})
+            trends = fallback_data.get("trends", [])
+            keywords = fallback_data.get("keywords", [])
+            market_metrics = fallback_data.get("market_metrics", {})
+            sentiment_summary = fallback_data.get("sentiment_summary", "Análisis pendiente.")
+            scholar_audit = fallback_data.get("scholar_audit", [])
+            content_opportunities = fallback_data.get("content_opportunities", {})
+            sales_intelligence = fallback_data.get("sales_intelligence", {})
+            google_trends_raw = {}
+            
+            # POE v3.0: Fallback vacío para nuevos campos
+            buyer_personas = []
+            reviews_analysis = {}
+            price_tiers = {}
+            amazon_fees_structure = {}
         
         # ═══════════════════════════════════════════════════════════════════
         # PASO 3: Decidir qué TOP 10 usar
@@ -126,8 +257,79 @@ class Nexus2Scout:
             # Usar productos POE (tienen precios reales)
             logger.info(f"[{self.role}] 🛡️ POE MODE ACTIVATED: Using {len(poe_products)} verified products from CSV/Input.")
             final_top_10 = poe_products
-            for p in final_top_10:
+            
+            # Enriquecimiento Heurístico para evitar "N/A"
+            # Enriquecimiento Semántico (Semantic Distributor)
+            # Combinamos la verdad numérica del POE con la profundidad cualitativa del LLM
+            
+            social_pros = social.get("pros", [])
+            social_cons = social.get("cons", [])
+            social_pain = social.get("pain_keywords", [])
+            
+            for i, p in enumerate(final_top_10):
                 p["price_source"] = "POE_VERIFIED"
+                rating = float(p.get("rating", 0))
+                reviews = int(p.get("reviews", 0))
+                price = float(p.get("price", 0))
+                bsr = int(p.get("bsr", 0)) or int(p.get("rank", 0))
+                name = p.get("name", "")[:30]
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # ENHANCED SEMANTIC DISTRIBUTOR v2.0 - Data-Driven Insights
+                # ═══════════════════════════════════════════════════════════════════
+                
+                # 1. ADVANTAGE (PROS) - Basado en métricas reales
+                if rating >= 4.7 and reviews >= 1000:
+                    p["adv"] = f"Rating {rating}★ + {reviews:,} reseñas: LÍDER VALIDADO del mercado"
+                elif rating >= 4.5 and reviews >= 500:
+                    p["adv"] = f"Alta satisfacción ({rating}★) con base sólida de {reviews:,} reviews"
+                elif bsr and bsr <= 500:
+                    p["adv"] = f"BSR #{bsr:,}: Demanda extremadamente alta confirmada"
+                elif bsr and bsr <= 2000:
+                    p["adv"] = f"BSR #{bsr:,}: Alta rotación de ventas"
+                elif price < 20 and rating >= 4.0:
+                    p["adv"] = f"Best Value: ${price:.2f} con {rating}★ = Excelente calidad/precio"
+                elif reviews >= 3000:
+                    p["adv"] = f"Dominación social: {reviews:,} reseñas (social proof masivo)"
+                elif social_pros:
+                    p["adv"] = social_pros[i % len(social_pros)]
+                else:
+                    p["adv"] = f"Posicionado en mercado (Rating: {rating}★)"
+
+                # 2. VULNERABILITY (CONS) - Basado en debilidades detectables
+                if rating < 3.5:
+                    p["vuln"] = f"⚠️ Rating CRÍTICO {rating}★: Producto en riesgo de deslistado"
+                elif rating < 4.0 and reviews > 500:
+                    p["vuln"] = f"Rating {rating}★ con {reviews:,} reviews: Problemas sistémicos de calidad"
+                elif rating < 4.3 and social_pain:
+                    pk = social_pain[i % len(social_pain)]
+                    kw = pk.get('keyword', 'calidad') if isinstance(pk, dict) else str(pk)
+                    p["vuln"] = f"Pain Point detectado: '{kw}' (Rating {rating}★)"
+                elif reviews < 50 and bsr and bsr > 10000:
+                    p["vuln"] = f"Riesgo: Solo {reviews} reviews + BSR #{bsr:,} = Producto nuevo/no validado"
+                elif reviews < 100:
+                    p["vuln"] = f"Falta validación social: Solo {reviews} reseñas"
+                elif price > 40 and rating < 4.3:
+                    p["vuln"] = f"Precio premium (${price:.2f}) sin rating premium ({rating}★)"
+                elif social_cons:
+                    p["vuln"] = social_cons[i % len(social_cons)]
+                else:
+                    p["vuln"] = f"Competencia intensa en rango ${price:.0f}"
+
+                # 3. STRATEGIC GAP - Oportunidades específicas
+                if rating < 4.0 and reviews > 1000:
+                    p["gap"] = f"🎯 DISRUPTOR: Líder débil ({rating}★) con {reviews:,} ventas = Mercado listo para mejor calidad"
+                elif rating >= 4.7 and reviews < 200:
+                    p["gap"] = f"🚀 ESCALAR: Producto excelente ({rating}★) pero invisible ({reviews} reviews) = Oportunidad de marketing"
+                elif price > 35 and rating < 4.2:
+                    p["gap"] = f"⚔️ ATTACK: Precio ${price:.2f} injustificado con {rating}★ = Entrada por valor"
+                elif bsr and bsr > 50000:
+                    p["gap"] = f"📈 NICHO: BSR #{bsr:,} = Segmento desatendido, poca competencia"
+                elif reviews > 5000 and rating >= 4.5:
+                    p["gap"] = f"🛡️ DIFERENCIACIÓN: Líder fuerte, atacar con innovación/nicho específico"
+                else:
+                    p["gap"] = f"Oportunidad de Branding & Storytelling diferenciado"
+                    
         else:
             # Usar TOP 10 del LLM (análisis cualitativo válido, precios estimados)
             logger.warning(f"[{self.role}] ⚠️ LLM MODE: No verified POE data found. Using LLM estimates (Risk of hallucination).")
@@ -207,6 +409,14 @@ class Nexus2Scout:
             "google_trends_raw": google_trends_raw,
             
             # ═══════════════════════════════════════════════════════════════════
+            # POE v3.0: Nuevos campos detallados
+            # ═══════════════════════════════════════════════════════════════════
+            "buyer_personas": buyer_personas,
+            "reviews_analysis": reviews_analysis,
+            "price_tiers": price_tiers,
+            "amazon_fees_structure": amazon_fees_structure,
+            
+            # ═══════════════════════════════════════════════════════════════════
             # PASO 5: Detección de 'Lightning Bolt Scaling'
             # ═══════════════════════════════════════════════════════════════════
             "lightning_bolt_opportunity": self._detect_lightning_scaling(social),
@@ -229,7 +439,7 @@ class Nexus2Scout:
         Detecta si el interés social crece >20% mientras la oferta es vieja.
         """
         is_trending = any(word in str(social_data).lower() for word in ["viral", "crecimiento", "tendencia", "bolado", "hot"])
-        velocity = social_data.get("tiktok_trends", "")
+        velocity = str(social_data.get("tiktok_trends", ""))
         
         if is_trending and ("vistas" in velocity.lower() or "millones" in velocity.lower()):
             return {

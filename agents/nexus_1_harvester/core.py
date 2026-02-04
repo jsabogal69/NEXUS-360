@@ -363,17 +363,25 @@ class Nexus1Harvester:
                 if doc_id:
                     ingested_ids.append(doc_id)
             
-            # Aggregate X-Ray data from all files
-            aggregated_xray = {"has_real_data": False, "products": [], "source_files": []}
-            aggregated_search = {"has_real_data": False, "total_volume": 0, "avg_conversion": 0, "source_files": []}
+            # Aggregate X-Ray data from all files (Pick the best/first valid one for now)
+            final_xray_data = None
+            final_search_data = None
             
-            for f_name, lineage in file_lineage.items():
-                if lineage.get("is_xray"):
-                    aggregated_xray["has_real_data"] = True
-                    aggregated_xray["source_files"].append(f_name)
-                if lineage.get("is_search_terms"):
-                    aggregated_search["has_real_data"] = True
-                    aggregated_search["source_files"].append(f_name)
+            # Re-fetch the saved documents to get the full data for return
+            if self.db and ingested_ids:
+                 for doc_id in ingested_ids:
+                     doc = self.db.collection("raw_inputs").document(doc_id).get()
+                     if doc.exists:
+                         d = doc.to_dict()
+                         # Check for X-Ray
+                         if d.get("xray_pricing") and not final_xray_data:
+                             final_xray_data = d.get("xray_pricing")
+                         # Check for Search Terms
+                         if d.get("search_terms_data") and not final_search_data:
+                             final_search_data = d.get("search_terms_data")
+            
+            # Fallback if DB not available (use local variables from loop, though less robust here if multiple files)
+            # The previous loop saved them to DB. We need to pass them up.
             
             return {
                 "ids": ingested_ids,
@@ -381,8 +389,8 @@ class Nexus1Harvester:
                 "mode": "REAL_DRIVE",
                 "message": f"Ingesta Experta de {len(files)} archivos completada.",
                 "poe_guide": poe_guide_summary,
-                "xray_data": aggregated_xray,
-                "search_data": aggregated_search,
+                "xray_data": final_xray_data,
+                "search_terms_data": final_search_data,
                 "data_stats": {
                     "total_files": len(files),
                     "folder_name": folder_name,

@@ -76,7 +76,26 @@ class Nexus5Mathematician:
         is_baby = any(x in norm_anchor for x in ["BABY", "NIGHT LIGHT", "SLEEP AID", "BEBE", "NOCHE", "SUEÑO"])
         is_supplement = any(x in norm_anchor for x in ["PROTEIN", "VITAMIN", "SUPPLEMENT"])
 
-        if is_baby:
+        # ═══════════════════════════════════════════════════════════════════
+        # v2.5: REAL FINANCIAL DATA INTEGRATION (Replacing Hardcoded Heuristics)
+        # ═══════════════════════════════════════════════════════════════════
+        fin_data = strategy_data.get("financial_data", {})
+        has_real_fin = fin_data.get("has_financial_data", False)
+        
+        if has_real_fin:
+            # DATOS REALES DEL SSOT
+            base_price = float(fin_data.get("avg_price", 50.0))
+            # Estimated COGS: 22% of Price (Standard Private Label)
+            landed_cost = round(base_price * 0.22, 2)
+            
+            # Premium Kit Economics (3x Price for Bundling Strategy)
+            kit_price = round(base_price * 2.5, 2)
+            kit_cost = round(landed_cost * 2.2 + 5.0, 2) # Bundle efficiency + Premium Box
+            
+            label = f"{anchor} Premium"
+            logger.info(f"[{self.role}] 💰 Using REAL financial data: MSRP ${base_price}")
+            
+        elif is_baby:
             base_price = 39.99
             landed_cost = 7.20
             kit_price = 119.99

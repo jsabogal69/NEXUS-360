@@ -26,6 +26,7 @@ Este documento detalla el rol, las responsabilidades y el impacto de cada agente
     *   **Sección III (Social Listening):** Escanea r/Reddit, TikTok, Google Search, X (Twitter), Meta (Facebook/Instagram) y comunidades expertas para detectar "Critical Pain Points" reales, tendencias emergentes y brechas de satisfacción.
     *   **Sección IV (Ventas & Estacionalidad):** Correlaciona cuotas de mercado con picos de oportunidad estacionales como Prime Day (Julio) y Back to School (Septiembre).
     *   **The Scholar Audit:** Busca validación científica y académica (IEEE, Nature, Journal of Applied Physics) para asegurar que la propuesta tecnológica sea irrefutable y de vanguardia.
+    *   **POE Verified Priority:** Prioriza automáticamente datos verificados de X-Ray/Helium10 sobre estimaciones de IA.
 
 ---
 
@@ -57,7 +58,7 @@ Este documento detalla el rol, las responsabilidades y el impacto de cada agente
 
 *   **Misión:** Modelado financiero multivariable y Unit Economics de Crisis.
 *   **Rol en el Informe:** 
-    *   **Sección VI (Matriz Financiera):** Calcula márgenes netos, costos Landed y puntos de equilibrio con rigor multivariable.
+    *   **Sección VI (Matriz Financiera):** Calcula márgenes netos, costos Landed y puntos de equilibrio con rigor multivariable usando **Gemini 3.0 Code Execution**.
     *   **Protocolo de Stress Test:** Ejecuta simulaciones de "Peor Escenario" proyectando la resiliencia ante un aumento del 40% en los PPC Bids o fluctuaciones críticas en el COGS, identificando el margen de seguridad ante la volatilidad del CAC.
     *   **Modelado de Escenarios:** Simula niveles de inversión (Base, Premium, Ecosistema) para determinar el Payback y Break-even óptimo en canales Amazon, DTC y B2B.
     *   **Amazon IQ:** Calibra milimétricamente costos de FBA, Referral Fees y PPC, estableciendo el umbral de retorno decreciente para proteger la utilidad neta.
@@ -94,6 +95,17 @@ Este documento detalla el rol, las responsabilidades y el impacto de cada agente
     *   **Protección de Datos:** Garantiza que no haya fugas de información sensible y asegura el protocolo EYES ONLY.
     *   **Compliance Audit:** Verifica que las recomendaciones cumplan con estándares internacionales como USB-IF, Nivel VI de eficiencia energética y seguridad industrial.
     *   **Control de Calidad Final:** Audita que el plan maestro sea ejecutable y no comprometa la reputación de la marca, mitigando riesgos legales antes del lanzamiento.
+
+---
+
+### ⚖️ Agente 9: Technical Auditor (El Vigilante Técnico)
+**Nombre Clave:** Nexus-9-Auditor
+
+*   **Misión:** Integridad de código, seguridad de datos y "Zero Hallucination Policy".
+*   **Rol en el Sistema:**
+    *   **Code Integrity:** Escanea el código estáticamente en busca de patrones inseguros, bloqueos síncronos o manejo de excepciones pobre.
+    *   **Data Integrity:** Valida que cada punto de datos tenga una fuente trazable (Archivo POE) y alerta si se están usando estimaciones de IA sin declarar.
+    *   **Secret Guardian:** Asegura que no existan claves de API o secretos expuestos en el código fuente.
 
 ---
 **NEXUS-360 ADVANCED STRATEGY UNIT**

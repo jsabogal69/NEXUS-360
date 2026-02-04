@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Brief: "Análisis del Nicho: Back Board Post Surgery Lipos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0f172a; --accent: #3b82f6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: var(--primary); -webkit-font-smoothing: antialiased; }
+        
+        /* Container setup for A4 at 96dpi (approx 794px) */
+        .brief { width: 794px; margin: 0 auto; background: none; }
+        
+        .page { 
+            width: 794px;
+            min-height: 1122px; /* A4 Height */
+            background: white; 
+            border-radius: 0; 
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+            margin-bottom: 30px; 
+            position: relative;
+        }
+        
+        .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 20px 30px; position: relative; }
+        .header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); }
+        
+        .content { padding: 25px 30px; }
+        
+        /* Layout Utilities */
+        .section { margin-bottom: 25px; page-break-inside: avoid; }
+        .section-title { font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; }
+        .two-col { display: grid; grid-template-columns: 1.25fr 1fr; gap: 25px; }
+        .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        
+        /* Components */
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; page-break-inside: avoid; }
+        
+        .verdict-card { background: #fffbeb; border: 2px solid #fde68a; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); page-break-inside: avoid; }
+        .verdict-icon { font-size: 2.5rem; }
+        .verdict-status { font-size: 1.5rem; font-weight: 800; color: #d97706; letter-spacing: -0.5px; }
+        .verdict-summary { font-size: 0.85rem; color: #475569; margin-top: 4px; line-height: 1.4; }
+        
+        .confidence { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 18px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .confidence-value { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+        .confidence-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        
+        .stat-card { text-align: center; padding: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); page-break-inside: avoid; }
+        .stat-value { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
+        .stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-top: 4px; }
+    
+        .consumer-quote { background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; font-style: italic; font-size: 0.85rem; color: #92400e; margin: 12px 0; line-height: 1.5; page-break-inside: avoid; }
+        .lightning { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: 12px; padding: 14px; margin-top: 15px; page-break-inside: avoid; }
+        .lightning-title { font-size: 0.75rem; font-weight: 800; color: #ea580c; display: flex; align-items: center; gap: 6px; }
+        
+        .table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
+        .table th { background: #f8fafc; padding: 10px; text-align: left; font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+        .table td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .table tr:last-child td { border-bottom: none; }
+        
+        .page-break { page-break-before: always; }
+        
+        .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; height: 60px; }
+        .footer-link { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3); }
+        .footer-link:hover { transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.4); }
+
+        /* Print Override */
+        @media print { 
+            body { padding: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
+            .brief { width: 100%; margin: 0; box-shadow: none; }
+            .page { 
+                box-shadow: none; 
+                margin: 0; 
+                border: none;
+                border-radius: 0;
+                width: 100%; 
+                min-height: 297mm; 
+                height: 297mm;
+                page-break-after: always;
+            }
+            .page:last-child { page-break-after: avoid; }
+            .footer-link { display: none !important; }
+            ::-webkit-scrollbar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="brief">
+        <!-- ═══════════════ PAGE 1 ═══════════════ -->
+        <div class="page">
+            <div class="header">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size: 0.6rem; font-weight: 700; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">🎯 Executive Decision Brief</div>
+                        <div style="font-size: 1.3rem; font-weight: 800;">"Análisis del Nicho: Back Board Post Surgery Lipos</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size: 0.65rem; color: #94a3b8;">2026-02-04 12:49:03.932409</div>
+                        <div style="font-size: 0.6rem; color: #64748b;">7 fuentes • Página 1/2</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Verdict -->
+                <div class="verdict-card">
+                    <div class="verdict-icon">⚠️</div>
+                    <div style="flex:1;">
+                        <div class="verdict-status">CAUTION</div>
+                        <div class="verdict-summary">Oportunidad viable con reservas. Requiere validación adicional antes de comprometer capital.</div>
+                    </div>
+                    <div class="confidence">
+                        <div class="confidence-value">95%</div>
+                        <div class="confidence-label">Confianza</div>
+                    </div>
+                    <div style="text-align:center; padding:0 10px;">
+                        <div style="font-size:1.1rem; font-weight:800; color:#8b5cf6;">8.2</div>
+                        <div style="font-size:0.5rem; color:#64748b; font-weight:700;">ODI SCORE</div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 1: THE OPPORTUNITY -->
+                <div class="section">
+                    <div class="section-title">🔥 La Oportunidad: Dolor Real del Consumidor</div>
+                    <div class="two-col">
+                        <div class="card">
+                            
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 tabla lipo espalda no soporta</div>
+                    <div style="background:#f59e0b20; color:#f59e0b; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +4.0</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:40%; height:100%; background:#f59e0b;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 8 | Sat: 4</span>
+                </div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 back board lipo vs faja</div>
+                    <div style="background:#f59e0b20; color:#f59e0b; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +4.0</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:40%; height:100%; background:#f59e0b;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 8 | Sat: 4</span>
+                </div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 alternativa a tabla post lipo</div>
+                    <div style="background:#f59e0b20; color:#f59e0b; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +4.0</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:40%; height:100%; background:#f59e0b;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 8 | Sat: 4</span>
+                </div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 tabla lipo espalda talla incorrecta</div>
+                    <div style="background:#f59e0b20; color:#f59e0b; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +4.0</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:40%; height:100%; background:#f59e0b;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 8 | Sat: 4</span>
+                </div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 como limpiar tabla lipo espalda</div>
+                    <div style="background:#f59e0b20; color:#f59e0b; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +4.0</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="width:40%; height:100%; background:#f59e0b;"></div>
+                    </div>
+                    <span style="font-size:0.65rem; color:#64748b;">Imp: 8 | Sat: 4</span>
+                </div>
+            </div>
+                        </div>
+                        <div>
+                            <div class="consumer-quote">😤 "Les frustra la falta de durabilidad y soporte adecuado. "La tabla se deformó después de usarla solo una semana, no me sirvió de nada.""</div>
+                            <div class="consumer-quote" style="background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-color:#3b82f6;">💭 "Sueñan con una tabla que sea cómoda, discreta, que proporcione soporte adecuado y que no se deforme con el uso. Una tabla personalizada según su tipo de cuerpo."</div>
+                            <div class="lightning"><div class="lightning-title">⚡ OPORTUNIDAD RELÁMPAGO (ALTA (>25% interés social))</div><div style="font-size:0.75rem; color:#78350f; margin-top:4px;">Interés en TikTok/IG subiendo rápido vs oferta estática en Amazon.</div></div>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">tabla lipo espalda no sop</span>
+                    <span style="color:#64748b; margin-left:5px;">(Medio)</span>
+                </div>
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">back board lipo vs faja</span>
+                    <span style="color:#64748b; margin-left:5px;">(Alto)</span>
+                </div>
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">alternativa a tabla post </span>
+                    <span style="color:#64748b; margin-left:5px;">(Medio)</span>
+                </div>
+                <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
+                    <span style="font-weight:600; color:#1e40af;">tabla lipo espalda talla </span>
+                    <span style="color:#64748b; margin-left:5px;">(Medio)</span>
+                </div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 2: MARKET SPACE -->
+                <div class="section">
+                    <div class="section-title">📊 Espacio en el Mercado</div>
+                    <div class="three-col" style="margin-bottom:12px;">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color:#3b82f6;">5</div>
+                            <div class="stat-label">Competidores</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color:#16a34a;">$50.0M</div>
+                            <div class="stat-label">TAM Total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color:#8b5cf6;">$375K</div>
+                            <div class="stat-label">SOM Captureable</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="padding:10px;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Competidor</th>
+                                    <th style="text-align:center;">Rating</th>
+                                    <th style="text-align:center;">Reviews</th>
+                                    <th style="text-align:center;">Precio</th>
+                                    <th>Vulnerabilidad</th>
+                                    <th>Oportunidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
+                    1. M&D Back Lipo Board Post Surgery Liposuction 360 Tablas Post Operatorias pa
+                    <div style="font-size:0.6rem; color:#6366f1; font-weight:400;">B01CTPMR4K</div>
+                </td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.4</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">3,716</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$35.99</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Competencia con productos de b</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Oportunidad de Branding &</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
+                    2. ($) Snatched Body Ab Board Post Surgery Liposuction Tummy Tuck Compression 
+                    <div style="font-size:0.6rem; color:#6366f1; font-weight:400;">B0BPZQCVJW</div>
+                </td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.3</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">79</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$39.99</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Falta validación social: Solo </td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Oportunidad de Branding &</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
+                    3. ($) TRIBUTO Colombian Lumbar Royal Back Board for Faja - Provides Post-Surg
+                    <div style="font-size:0.6rem; color:#6366f1; font-weight:400;">B09TVW3X72</div>
+                </td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.1</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">14</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$45</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Pain Point detectado: 'alterna</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 ⚔️ ATTACK: Precio $45.00 </td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
+                    4. M&D Back Lipo Board Post Surgery Liposuction 360 Tablas Post Operatorias pa
+                    <div style="font-size:0.6rem; color:#6366f1; font-weight:400;">B01CTPMR4K</div>
+                </td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.4</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">3,716</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$35.99</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Dificultad para encontrar prod</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Oportunidad de Branding &</td>
+            </tr>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+                <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
+                    5. Lipo Foam Back Board Post Surgery Liposuction Surgery Board Lipo Backboard 
+                    <div style="font-size:0.6rem; color:#6366f1; font-weight:400;">B08XLKK5G9</div>
+                </td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">⭐ 4.1</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem;">1,537</td>
+                <td style="padding:8px; text-align:center; font-size:0.75rem; font-weight:600;">$14.99</td>
+                <td style="padding:8px; font-size:0.7rem; color:#dc2626;">⚠️ Pain Point detectado: 'como li</td>
+                <td style="padding:8px; font-size:0.7rem; color:#16a34a;">🎯 Oportunidad de Branding &</td>
+            </tr></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="two-col" style="margin-top:12px;">
+                        <div class="card">
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📈 MARKET SHARE</div>
+                            
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">M&D</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:27%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">27%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">($)</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:0%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">0%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">($)</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:0%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">0%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">M&D</span>
+                <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
+                    <div style="width:27%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#1e293b; width:35px;">27%</span>
+            </div>
+                        </div>
+                        <div class="card">
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📅 ESTACIONALIDAD</div>
+                            <div style="font-size:0.75rem; margin-bottom:4px;"><span style="font-weight:600; color:#3b82f6;">Noviembre</span>: Black Friday (High)</div><div style="font-size:0.75rem; margin-bottom:4px;"><span style="font-weight:600; color:#3b82f6;">Diciembre</span>: Navidad (High)</div>
+                            <div style="font-size:0.7rem; color:#64748b; margin-top:6px; font-style:italic;">Aprovechar los picos de demanda en noviembre y diciembre para aumentar las venta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ═══════════════ PAGE 2 ═══════════════ -->
+        <div class="page page-break">
+            <div class="header" style="padding:15px 30px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="font-size: 0.9rem; font-weight: 700;">"Análisis del Nicho: Back Board Post Surgery Lipos — Continuación</div>
+                    <div style="font-size: 0.6rem; color: #94a3b8;">Página 2/2</div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- SECTION 3: DIFFERENTIATOR -->
+                <div class="section">
+                    <div class="section-title">✨ Tu Ventaja Diferencial</div>
+                    <div class="card" style="margin-bottom:10px;">
+                        <div style="font-size:0.8rem; color:#334155; line-height:1.5;">Socio, tras una inmersión forense en los 7 archivos de inteligencia y un escaneo OSINT, mi síntesis es definitiva: **El mercado de tablas post-lipo está dominado por productos genéricos y de baja cali</div>
+                    </div>
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">💎 PROPUESTA DE VALOR</div>
+                            <div style="display:flex; align-items:center; gap:8px; padding:8px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius:6px; margin-bottom:6px;"><span>✨</span><span style="font-size:0.8rem; color:#1e293b;">✅ ADIÓS A FALTA DE CALIDAD: Diseñado específicamente para resolver la frustración #1 detectada en el nicho.</span></div><div style="display:flex; align-items:center; gap:8px; padding:8px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius:6px; margin-bottom:6px;"><span>✨</span><span style="font-size:0.8rem; color:#1e293b;">🚀 EL TRABAJO HECHO: No vendemos specs, vendemos el resultado que tu vida necesita hoy.</span></div><div style="display:flex; align-items:center; gap:8px; padding:8px; background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius:6px; margin-bottom:6px;"><span>✨</span><span style="font-size:0.8rem; color:#1e293b;">💎 CALIDAD NEXUS: Calibrado con inteligencia de mercado para exceder los estándares del Top 10.</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">🎯 ESTRATEGIA ERRC (Blue Ocean)</div>
+                            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#dc2626; margin-bottom:4px;">❌ ELIMINAR</div>
+                    <div style="font-size:0.75rem; color:#7f1d1d;">• Redundancias técnicas</div><div style="font-size:0.75rem; color:#7f1d1d;">• Embalaje excesivo</div>
+                </div>
+                <div style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#a16207; margin-bottom:4px;">⬇️ REDUCIR</div>
+                    <div style="font-size:0.75rem; color:#854d0e;">• Marketing genérico</div><div style="font-size:0.75rem; color:#854d0e;">• Complejidad de uso</div>
+                </div>
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#1d4ed8; margin-bottom:4px;">⬆️ AUMENTAR</div>
+                    <div style="font-size:0.75rem; color:#1e40af;">• Incrementar confianza en la publicidad y los claims de las marcas.</div><div style="font-size:0.75rem; color:#1e40af;">• Incrementar Problemas con las tallas y la falta de variedad.</div>
+                </div>
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px;">
+                    <div style="font-size:0.65rem; font-weight:800; color:#16a34a; margin-bottom:4px;">✨ CREAR</div>
+                    <div style="font-size:0.75rem; color:#166534;">• Crear solución de Consejos para dormir cómodamente con la tabla puesta.</div><div style="font-size:0.75rem; color:#166534;">• Crear solución de Ejercicios suaves que se pueden hacer con la tabla.</div><div style="font-size:0.75rem; color:#166534;">• Crear solución de Cómo elegir la talla correcta según tu tipo de cuerpo.</div>
+                </div>
+            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 4: RISKS -->
+                <div class="section">
+                    <div class="section-title">⚠️ Radar de Riesgos</div>
+                    <div class="two-col">
+                        <div class="card">
+                            
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:10px; background:#fffbeb; border-radius:8px; margin-bottom:6px;">
+                <span style="font-size:1rem;">🟡</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#d97706; font-size:0.8rem;">Competencia establecida</div>
+                    <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">💡 Diferenciación por innovación</div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:10px; background:#f0fdf4; border-radius:8px; margin-bottom:6px;">
+                <span style="font-size:1rem;">🟢</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600; color:#16a34a; font-size:0.8rem;">Barreras de entrada</div>
+                    <div style="font-size:0.7rem; color:#64748b; margin-top:2px;">💡 Estrategia de nicho</div>
+                </div>
+            </div>
+                        </div>
+                        <div class="card">
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📋 NOTAS DE COMPLIANCE</div>
+                            <div style="font-size:0.75rem; color:#334155; padding:4px 0; border-bottom:1px dashed #e2e8f0;">• FDA (Food and Drug Administration) - Medical Device Classifi</div><div style="font-size:0.75rem; color:#334155; padding:4px 0; border-bottom:1px dashed #e2e8f0;">• CPSIA (Consumer Product Safety Improvement Act)</div><div style="font-size:0.75rem; color:#334155; padding:4px 0; border-bottom:1px dashed #e2e8f0;">• ISO 13485 (Medical Devices - Quality Management Systems)</div>
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 5: FINANCIALS -->
+                <div class="section">
+                    <div class="section-title">💰 Viabilidad Financiera</div>
+                    <div class="card" style="background:#fffbeb; border-color:#d9770640;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.5rem;">⚠️</span>
+                                <div>
+                                    <div style="font-size:0.9rem; font-weight:700; color:#d97706;">Aceptable</div>
+                                    <div style="font-size:0.65rem; color:#64748b;">Estado Financiero General</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:20px; text-align:center;">
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#1e293b;">$0</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">PRECIO</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#d97706;">18.3%</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">MARGEN</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#3b82f6;">220%</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">ROI</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:1.1rem; font-weight:800; color:#1e293b;">12m</div>
+                                    <div style="font-size:0.55rem; color:#64748b;">PAYBACK</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">📊 ESCENARIOS PROYECTADOS</div>
+                        
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+            
+            <div style="background:#f59e0b10; border:1px solid #f59e0b40; border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:1.2rem;">🐢</div>
+                <div style="font-size:0.7rem; font-weight:700; color:#f59e0b; margin:4px 0;">Conservador</div>
+                <div style="font-size:0.9rem; font-weight:800; color:#1e293b;">$5K/mes</div>
+                <div style="font-size:0.65rem; color:#64748b;">Profit: $630 | 105 uds</div>
+            </div>
+            
+            <div style="background:#3b82f610; border:1px solid #3b82f640; border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:1.2rem;">📊</div>
+                <div style="font-size:0.7rem; font-weight:700; color:#3b82f6; margin:4px 0;">Base</div>
+                <div style="font-size:0.9rem; font-weight:800; color:#1e293b;">$8K/mes</div>
+                <div style="font-size:0.65rem; color:#64748b;">Profit: $1K | 150 uds</div>
+            </div>
+            
+            <div style="background:#16a34a10; border:1px solid #16a34a40; border-radius:10px; padding:12px; text-align:center;">
+                <div style="font-size:1.2rem;">🚀</div>
+                <div style="font-size:0.7rem; font-weight:700; color:#16a34a; margin:4px 0;">Optimista</div>
+                <div style="font-size:0.9rem; font-weight:800; color:#1e293b;">$10K/mes</div>
+                <div style="font-size:0.65rem; color:#64748b;">Profit: $3K | 195 uds</div>
+            </div>
+        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 6: NEXT STEPS -->
+                <div class="section">
+                    <div class="two-col">
+                        <div>
+                            <div class="section-title">✅ Próximos Pasos Recomendados</div>
+                            <div class="card">
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">1</span>
+                <span style="font-size:0.8rem; color:#334155;">Profundizar investigación de mercado</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">2</span>
+                <span style="font-size:0.8rem; color:#334155;">Evaluar diferenciadores adicionales</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">3</span>
+                <span style="font-size:0.8rem; color:#334155;">Recalcular márgenes con costos reales</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px dashed #e2e8f0;">
+                <span style="background:#0f172a; color:white; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700;">4</span>
+                <span style="font-size:0.8rem; color:#334155;">Considerar pivote o nicho alternativo</span>
+            </div></div>
+                        </div>
+                        <div>
+                            <div class="section-title">📚 Fuentes Analizadas</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                🔬 GUIA CONTENIDO POE - Mini
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                🔬 ESTUDIO DE OPORTUNIDAD - 
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                🔬 ESTUDIO DE OPORTUNIDAD - 
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; padding:4px 8px; background:#f8fafc; border-radius:4px; font-size:0.65rem; color:#64748b;">
+                🔬 Helium_10_Xray_2026-02-03
+            </div></div>
+                            <div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;"><div style="font-size:0.6rem; color:#16a34a; font-weight:700;">🎓 PubMed Central - 'Effect of Co</div><div style="font-size:0.7rem; color:#166534;">El estudio indica que las prendas de compresión, como las ta</div></div><div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;"><div style="font-size:0.6rem; color:#16a34a; font-weight:700;">🎓 American Society of Plastic Su</div><div style="font-size:0.7rem; color:#166534;">La ASPS recomienda el uso de prendas de compresión después d</div></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 7: CONTENT OPPORTUNITIES -->
+                <div class="section">
+                    <div class="section-title">🔥 Oportunidades de Contenido</div>
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">🎬 ESTILO GARYVEE (Alto Impacto)</div>
+                            
+            <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 Testimonios crudos y auténticos de pacientes post-</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 Video corto para TikTok e Instagram Reels | Hook: "Soy paciente post-lipo y esto es lo que ..."</div>
+                <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: Autenticidad y transparencia.</div>
+            </div>
+            <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 En vivo respondiendo preguntas de la comunidad sob</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 Live session en Instagram y Facebook | Hook: "Pregúntale a una enfermera: todo lo que ..."</div>
+                <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: Confianza y cercanía.</div>
+            </div>
+            <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 Detrás de cámaras mostrando el proceso de diseño y</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 Serie de videos en YouTube | Hook: "Así creamos la tabla post-lipo perfecta:..."</div>
+                <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: Curiosidad e innovación.</div>
+            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">📊 ESTILO NEIL PATEL (SEO/Educativo)</div>
+                            
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 Guía completa para elegir la tabla post-lipo perfe</div>
+                <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: tabla post lipo ideal (Informacional)</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: No existe una guía detallada que considere las nec</div>
+            </div>
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 Comparativa detallada de las mejores tablas post-l</div>
+                <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: mejores tablas post lipo (Comparativo)</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: Faltan comparativas objetivas y transparentes que </div>
+            </div>
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 Tutorial paso a paso sobre cómo usar la tabla post</div>
+                <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: como usar tabla post lipo (Informacional)</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: No hay tutoriales claros y concisos que expliquen </div>
+            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SECTION 8: MARKET INTELLIGENCE -->
+                <div class="section">
+                    <div class="section-title">🎯 Inteligencia de Mercado Expandida</div>
+                    <div class="two-col">
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">📍 BLANCO ESPACIAL (White Space Topics)</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Consejos para dormir cómodamente con la tabla puesta.</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Ejercicios suaves que se pueden hacer con la tabla.</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Cómo elegir la talla correcta según tu tipo de cuerpo.</span>
+            <span style="background:#fef3c7; color:#92400e; padding:5px 10px; border-radius:12px; font-size:0.7rem; font-weight:600; margin:3px; display:inline-block;">🔍 Cómo prevenir la formación de seromas.</span>
+                            </div>
+                            
+            <div style="background:linear-gradient(135deg, #eff6ff 0%, #fce7f3 100%); border-left:3px solid #8b5cf6; padding:12px; border-radius:0 8px 8px 0;">
+                <div style="font-size:0.65rem; font-weight:700; color:#7c3aed; margin-bottom:4px;">🎭 CULTURAL VIBE</div>
+                <div style="font-size:0.75rem; color:#374151; font-style:italic;">"La comunidad es escéptica y busca productos que realmente cumplan con lo prometido. Están cansados de la publicidad engañosa."</div>
+            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:8px;">⚠️ LO QUE IGNORAN LOS COMPETIDORES</div>
+                            
+            <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
+                <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ M&D ignora:</div>
+                <div style="font-size:0.7rem; color:#7f1d1d;">Falta de variedad de tallas</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—“Compré la talla más grande y aun así me queda muy ajustada."</div>
+            </div>
+            <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
+                <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ Snatched Body ignora:</div>
+                <div style="font-size:0.7rem; color:#7f1d1d;">Poca información sobre materiales</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—“No sé de qué está hecha esta tabla, no encuentro la informa"</div>
+            </div>
+            <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
+                <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ TRIBUTO ignora:</div>
+                <div style="font-size:0.7rem; color:#7f1d1d;">Falta de testimonios y contenido educativo</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—“Me gustaría ver cómo otras personas usan este producto y si"</div>
+            </div>
+                        </div>
+                    </div>
+                    
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+                <div style="background:#000; color:white; padding:8px; border-radius:6px;">
+                    <div style="font-size:0.6rem; font-weight:700;">📱 TIKTOK</div>
+                    <div style="font-size:0.6rem; margin-top:4px;">Hashtags como #lipoboard #postlipo #bblrecovery tienen miles...</div>
+                </div>
+                <div style="background:#ff4500; color:white; padding:8px; border-radius:6px;">
+                    <div style="font-size:0.6rem; font-weight:700;">🔴 REDDIT</div>
+                    <div style="font-size:0.6rem; margin-top:4px;">Subreddits como r/plasticsurgery y r/lipo discuten sobre la ...</div>
+                </div>
+                <div style="background:#ff0000; color:white; padding:8px; border-radius:6px;">
+                    <div style="font-size:0.6rem; font-weight:700;">▶️ YOUTUBE</div>
+                    <div style="font-size:0.6rem; margin-top:4px;">Preguntas como "¿Cómo dormir con la tabla de lipo?" y "¿Qué ...</div>
+                </div>
+            </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <div style="font-size: 0.65rem; color: #94a3b8;">NEXUS-360 Intelligence Platform • 2026-02-04 12:49:03.933861</div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button onclick="downloadPDF()" class="footer-link" style="background:#8b5cf6; border:none; cursor:pointer;">
+                        📥 Descargar PDF
+                    </button>
+                    <a href="/dashboard/reports/report_e1e6a0b4-954a-42d2-a3b1-e0b2da403c73.html" class="footer-link">📄 Ver Análisis Completo →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDF Generation Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        async function downloadPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Generando...';
+            btn.disabled = true;
+            
+            const element = document.querySelector('.brief');
+            const briefTitle = document.title.replace('Executive Brief: ', '').trim();
+            const safeTitle = briefTitle.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_').substring(0, 50);
+            const filename = 'Executive_Brief_' + safeTitle + '.pdf';
+            
+            // Hide buttons during PDF generation
+            const buttons = document.querySelectorAll('.footer-link');
+            buttons.forEach(b => b.style.visibility = 'hidden');
+            
+            try {
+                const opt = {
+                    margin: 0,
+                    filename: filename,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2,
+                        useCORS: true, 
+                        logging: false,
+                        letterRendering: true,
+                        scrollY: 0
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true
+                    },
+                    pagebreak: { 
+                        mode: ['css', 'legacy'],
+                        before: '.page-break'
+                    }
+                };
+                
+                await html2pdf().set(opt).from(element).save();
+                
+                btn.innerHTML = '✅ Descargado!';
+                setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+            } catch (error) {
+                console.error('PDF Error:', error);
+                btn.innerHTML = '❌ Error';
+                setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+            } finally {
+                buttons.forEach(b => b.style.visibility = 'visible');
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

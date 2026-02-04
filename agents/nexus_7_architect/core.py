@@ -65,6 +65,30 @@ class Nexus7Architect:
             
             logger.info(f"[Architect] Using simulated trends data with {len(gt_series)} keyword series.")
 
+        # ═══════════════════════════════════════════════════════════════════
+        # POE ENHANCEMENT v3.0: Extract new detailed sections
+        # ═══════════════════════════════════════════════════════════════════
+        buyer_personas = s_data.get("buyer_personas", [])
+        reviews_analysis = s_data.get("reviews_analysis", {})
+        price_tiers = s_data.get("price_tiers", {})
+        amazon_fees = s_data.get("amazon_fees_structure", {})
+        
+        # Calculate price range from top_10 if not in price_tiers
+        top_10_list_for_pricing = s_data.get("top_10_products", [])
+        prices_list = [p.get("price", 0) for p in top_10_list_for_pricing if p.get("price", 0) > 0]
+        
+        if prices_list:
+            price_min = min(prices_list)
+            price_max = max(prices_list)
+            price_median = sorted(prices_list)[len(prices_list)//2]
+            price_range_display = f"${price_min:.2f} - ${price_max:.2f}"
+            price_median_display = f"${price_median:.2f}"
+        else:
+            price_min, price_max, price_median = 0, 0, 0
+            price_range_display = "N/A"
+            price_median_display = "N/A"
+
+
         raw_summary = p_data.get("executive_summary", "Sin resumen disponible.")
         summary = ""
         parts = raw_summary.split("**")
@@ -79,9 +103,17 @@ class Nexus7Architect:
         has_lamp = any(x in str(sources).upper() for x in ["LAMP", "ILUMINACION", "LAMPARA"])
         has_baby = any(x in str(sources).upper() for x in ["BABY", "NIGHT LIGHT", "SLEEP AID", "BEBE", "NOCHE", "SUEÑO"])
         
-        niche_title = "Dossier de Inteligencia: Iluminación & Ergonomía Premium" if has_lamp else \
-                      ("Dossier de Inteligencia: Electrónica GaN" if has_electronics else \
-                      ("Dossier de Inteligencia: Baby Sleep & Comfort Tech" if has_baby else "Dossier de Viabilidad Estratégica"))
+        # Dynamic Title Generation based on Product Anchor
+        anchor_raw = s_data.get("product_anchor") or s_data.get("scout_anchor") or i_data.get("scout_anchor")
+        if not anchor_raw:
+             # Try keywords as fallback
+             kws = s_data.get("keywords", [])
+             if kws:
+                 anchor_raw = kws[0].get("term") if isinstance(kws[0], dict) else str(kws[0])
+        
+        final_anchor = anchor_raw if anchor_raw else "Producto Analizado"
+        
+        niche_title = f"Dossier de Viabilidad: {final_anchor}"
 
         # Section I: Source Cards
         source_metadata = i_data.get("source_metadata", [])
@@ -151,10 +183,11 @@ class Nexus7Architect:
             
             top_10_rows += f"""
             <tr>
-                <td style="text-align:center; font-weight:bold; color:var(--accent); font-size:1.2rem;">#{p['rank']}</td>
-                <td style="min-width:180px;">
-                    <strong style="color:var(--primary); font-size:0.95rem;">{p['name']}</strong>
-                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                <td style="text-align:center; font-weight:bold; color:var(--accent); font-size:1.2rem;">#{p.get('rank', 'N/A')}</td>
+                <td style="min-width:220px;">
+                    <strong style="color:var(--primary); font-size:0.95rem;">{p.get('name', 'Product Name N/A')[:80]}</strong>
+                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; align-items:center;">
+                        <span style="background:#1e3a8a; color:white; padding:3px 8px; border-radius:4px; font-size:0.65rem; font-weight:700; font-family:monospace;">{p.get('asin', 'N/A')}</span>
                         <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px; font-size:0.7rem; font-weight:600;">${price:.2f}</span>
                         <span style="color:{price_color}; font-size:0.65rem; font-weight:700;">{price_tier}</span>
                     </div>
@@ -1023,7 +1056,7 @@ class Nexus7Architect:
         for p in comps[:10]:
             bench_html += f"""
             <div style="background:white; border:1px solid #e2e8f0; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <div style="font-weight:700; font-size:0.75rem; color:#334155;">#{p['rank']} {p['name']}</div>
+                <div style="font-weight:700; font-size:0.75rem; color:#334155;">#{p.get('rank', 'N/A')} {p.get('name', 'Competitor')}</div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <div style="font-size:0.75rem; color:#64748b;">${p['fba_breakdown']['total_logistics']}</div>
                     <div style="font-size:0.7rem; font-weight:900; color:{p['tier_color']}; background:{p['tier_color']}20; padding:2px 6px; border-radius:3px;">{p['fba_impact_pct']}%</div>
@@ -1542,7 +1575,39 @@ class Nexus7Architect:
             </div>
         </div>
 
-        <footer style="margin-top:50px; text-align:center; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:20px;">NEXUS-360 ADVANCED STRATEGY UNIT v2.0 | {timestamp_now().strftime('%Y')}</footer>
+        <!-- SECTION XIII: Price Tiers & Strategy (NEW v3.0 POE) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">XIII. Rangos de Precio & Estrategia <span class="agent-badge">POE v3.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_price_tiers(price_tiers, price_range_display, price_median_display, prices_list)}
+            </div>
+        </div>
+
+        <!-- SECTION XIV: Reviews Analysis (NEW v3.0 POE) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">XIV. Análisis de Reviews & Sentiment <span class="agent-badge">POE v3.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_reviews_analysis(reviews_analysis, top_10_list_for_pricing)}
+            </div>
+        </div>
+
+        <!-- SECTION XV: Amazon FBA Fees Structure (NEW v3.0 POE) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">XV. Estructura de Amazon FBA Fees <span class="agent-badge">POE v3.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_amazon_fees(amazon_fees, price_median)}
+            </div>
+        </div>
+
+        <!-- SECTION XVI: Buyer Personas Detallados (NEW v3.0 POE) -->
+        <div class="page-break section-container">
+            <h2 class="section-title">XVI. Buyer Personas Detallados <span class="agent-badge">POE v3.0</span></h2>
+            <div style="margin-top:20px;">
+                {self._render_detailed_buyer_personas(buyer_personas)}
+            </div>
+        </div>
+
+        <footer style="margin-top:50px; text-align:center; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:20px;">NEXUS-360 ADVANCED STRATEGY UNIT v3.0 POE | {timestamp_now().strftime('%Y')}</footer>
     </div>
     {script_html}
 </body>
@@ -1767,6 +1832,433 @@ class Nexus7Architect:
             {usp_cards}
         </div>
         {gap_banner}'''
+
+    def _render_price_tiers(self, price_tiers: dict, price_range: str, price_median: str, prices_list: list) -> str:
+        """Render Price Tiers & Strategy section for POE v3.0."""
+        budget_tier = price_tiers.get("budget_tier", {})
+        mid_tier = price_tiers.get("mid_range_tier", {})
+        premium_tier = price_tiers.get("premium_tier", {})
+        sweet_spot = price_tiers.get("sweet_spot_price", 0)
+        sweet_spot_rationale = price_tiers.get("sweet_spot_rationale", "Punto óptimo de valor percibido")
+        
+        # Calculate market distribution if we have prices
+        budget_count = mid_count = premium_count = 0
+        if prices_list:
+            for p in prices_list:
+                if p <= 20: budget_count += 1
+                elif p <= 50: mid_count += 1
+                else: premium_count += 1
+            total = len(prices_list)
+            budget_pct = int((budget_count / total) * 100) if total > 0 else 0
+            mid_pct = int((mid_count / total) * 100) if total > 0 else 0
+            premium_pct = int((premium_count / total) * 100) if total > 0 else 0
+        else:
+            budget_pct, mid_pct, premium_pct = 30, 50, 20  # Default distribution
+        
+        return f'''
+        <!-- Price Range Summary -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px; margin-bottom:25px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; margin-bottom:8px;">📊 RANGO TOTAL</div>
+                <div style="font-size:1.3rem; font-weight:900; color:#1e293b;">{price_range}</div>
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; margin-bottom:8px;">📍 MEDIANA</div>
+                <div style="font-size:1.3rem; font-weight:900; color:#3b82f6;">{price_median}</div>
+            </div>
+            <div style="background:#f0fdf4; border:1px solid #22c55e; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#166534; font-weight:800; text-transform:uppercase; margin-bottom:8px;">🎯 SWEET SPOT</div>
+                <div style="font-size:1.3rem; font-weight:900; color:#22c55e;">${sweet_spot:.2f}</div>
+            </div>
+            <div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#92400e; font-weight:800; text-transform:uppercase; margin-bottom:8px;">📈 PRODUCTOS</div>
+                <div style="font-size:1.3rem; font-weight:900; color:#f59e0b;">{len(prices_list)}</div>
+            </div>
+        </div>
+        
+        <!-- Three Tier Cards -->
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:25px;">
+            <!-- Budget Tier -->
+            <div style="background:linear-gradient(180deg, #fef3c7 0%, #fde68a 100%); border:2px solid #f59e0b; border-radius:16px; padding:25px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span style="font-size:1.5rem;">💰</span>
+                    <span style="background:#f59e0b; color:white; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:800;">{budget_pct}% del mercado</span>
+                </div>
+                <h4 style="margin:0 0 10px 0; color:#92400e; font-size:1.1rem;">BUDGET TIER</h4>
+                <div style="font-size:1.4rem; font-weight:900; color:#92400e; margin-bottom:10px;">{budget_tier.get("price_range", "$10-$20")}</div>
+                <p style="font-size:0.8rem; color:#78350f; line-height:1.5; margin-bottom:10px;">{budget_tier.get("typical_features", "Funcionalidad básica, materiales económicos")}</p>
+                <div style="background:rgba(255,255,255,0.7); padding:10px; border-radius:8px;">
+                    <div style="font-size:0.65rem; color:#92400e; font-weight:700; margin-bottom:4px;">TARGET:</div>
+                    <div style="font-size:0.75rem; color:#78350f;">{budget_tier.get("target_audience", "Sensibles al precio")}</div>
+                </div>
+            </div>
+            
+            <!-- Mid-Range Tier (Highlighted) -->
+            <div style="background:linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%); border:3px solid #3b82f6; border-radius:16px; padding:25px; position:relative;">
+                <div style="position:absolute; top:-10px; right:20px; background:#3b82f6; color:white; padding:4px 12px; border-radius:20px; font-size:0.65rem; font-weight:800;">⭐ RECOMENDADO</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span style="font-size:1.5rem;">🏆</span>
+                    <span style="background:#3b82f6; color:white; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:800;">{mid_pct}% del mercado</span>
+                </div>
+                <h4 style="margin:0 0 10px 0; color:#1d4ed8; font-size:1.1rem;">MID-RANGE TIER</h4>
+                <div style="font-size:1.4rem; font-weight:900; color:#1d4ed8; margin-bottom:10px;">{mid_tier.get("price_range", "$20-$50")}</div>
+                <p style="font-size:0.8rem; color:#1e40af; line-height:1.5; margin-bottom:10px;">{mid_tier.get("typical_features", "Balance calidad/precio óptimo")}</p>
+                <div style="background:rgba(255,255,255,0.7); padding:10px; border-radius:8px;">
+                    <div style="font-size:0.65rem; color:#1d4ed8; font-weight:700; margin-bottom:4px;">TARGET:</div>
+                    <div style="font-size:0.75rem; color:#1e40af;">{mid_tier.get("target_audience", "Mayoría del mercado")}</div>
+                </div>
+            </div>
+            
+            <!-- Premium Tier -->
+            <div style="background:linear-gradient(180deg, #fae8ff 0%, #f5d0fe 100%); border:2px solid #d946ef; border-radius:16px; padding:25px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span style="font-size:1.5rem;">💎</span>
+                    <span style="background:#d946ef; color:white; padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:800;">{premium_pct}% del mercado</span>
+                </div>
+                <h4 style="margin:0 0 10px 0; color:#a21caf; font-size:1.1rem;">PREMIUM TIER</h4>
+                <div style="font-size:1.4rem; font-weight:900; color:#a21caf; margin-bottom:10px;">{premium_tier.get("price_range", "$50-$100+")}</div>
+                <p style="font-size:0.8rem; color:#86198f; line-height:1.5; margin-bottom:10px;">{premium_tier.get("typical_features", "Materiales premium, garantía extendida")}</p>
+                <div style="background:rgba(255,255,255,0.7); padding:10px; border-radius:8px;">
+                    <div style="font-size:0.65rem; color:#a21caf; font-weight:700; margin-bottom:4px;">TARGET:</div>
+                    <div style="font-size:0.75rem; color:#86198f;">{premium_tier.get("target_audience", "Quality-first buyers")}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sweet Spot Strategy -->
+        <div style="background:#f0fdf4; border:2px solid #22c55e; border-radius:16px; padding:25px;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="background:#22c55e; color:white; padding:15px 20px; border-radius:12px; font-size:1.3rem;">🎯</div>
+                <div>
+                    <div style="font-size:0.7rem; color:#166534; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">ESTRATEGIA DE PRICING RECOMENDADA</div>
+                    <div style="font-size:1.1rem; font-weight:700; color:#15803d; line-height:1.5;">{sweet_spot_rationale}</div>
+                </div>
+            </div>
+        </div>
+        '''
+
+    def _render_reviews_analysis(self, reviews_analysis: dict, products: list) -> str:
+        """Render Reviews Analysis section for POE v3.0."""
+        rating_dist = reviews_analysis.get("rating_distribution", {})
+        top_praises = reviews_analysis.get("top_praises", [])
+        top_complaints = reviews_analysis.get("top_complaints", [])
+        recurring_themes = reviews_analysis.get("recurring_themes", [])
+        reviews_velocity = reviews_analysis.get("reviews_velocity", "N/A")
+        
+        # Calculate total reviews from products
+        total_reviews = sum(p.get("reviews", 0) for p in products)
+        avg_rating = sum(p.get("rating", 0) for p in products if p.get("rating", 0) > 0) / max(len([p for p in products if p.get("rating", 0) > 0]), 1)
+        
+        # Default distribution if not available
+        if not rating_dist:
+            rating_dist = {"5_star_pct": 65, "4_star_pct": 20, "3_star_pct": 8, "2_star_pct": 4, "1_star_pct": 3}
+        
+        # Build praises HTML
+        praises_html = ""
+        for praise in top_praises[:5]:
+            praises_html += f'''
+            <div style="background:#f0fdf4; border-left:4px solid #22c55e; padding:12px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+                <div style="font-weight:700; color:#166534; margin-bottom:4px;">✅ {praise.get("theme", "N/A")}</div>
+                <div style="font-size:0.8rem; color:#15803d; font-style:italic;">"{praise.get("example_quote", "")}"</div>
+                <div style="font-size:0.65rem; color:#4ade80; margin-top:4px;">{praise.get("frequency", "Común")}</div>
+            </div>
+            '''
+        
+        # Build complaints HTML
+        complaints_html = ""
+        for complaint in top_complaints[:5]:
+            complaints_html += f'''
+            <div style="background:#fef2f2; border-left:4px solid #dc2626; padding:12px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+                <div style="font-weight:700; color:#991b1b; margin-bottom:4px;">⚠️ {complaint.get("theme", "N/A")}</div>
+                <div style="font-size:0.8rem; color:#dc2626; font-style:italic;">"{complaint.get("example_quote", "")}"</div>
+                <div style="background:#dcfce7; color:#166534; padding:4px 8px; border-radius:6px; display:inline-block; margin-top:8px; font-size:0.7rem; font-weight:600;">💡 {complaint.get("opportunity", "Oportunidad de mejora")}</div>
+            </div>
+            '''
+        
+        # Fallback content if no data
+        if not praises_html:
+            praises_html = '<div style="color:#64748b; font-style:italic;">Ejecutar análisis con datos POE para ver elogios frecuentes</div>'
+        if not complaints_html:
+            complaints_html = '<div style="color:#64748b; font-style:italic;">Ejecutar análisis con datos POE para ver quejas frecuentes</div>'
+        
+        return f'''
+        <!-- Reviews Summary Stats -->
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-bottom:25px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; margin-bottom:8px;">📊 TOTAL REVIEWS</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#1e293b;">{total_reviews:,}</div>
+            </div>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#64748b; font-weight:800; text-transform:uppercase; margin-bottom:8px;">⭐ RATING PROMEDIO</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#f59e0b;">{avg_rating:.1f}</div>
+            </div>
+            <div style="background:#f0fdf4; border:1px solid #22c55e; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#166534; font-weight:800; text-transform:uppercase; margin-bottom:8px;">👍 5★ REVIEWS</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#22c55e;">{rating_dist.get("5_star_pct", 0)}%</div>
+            </div>
+            <div style="background:#fef2f2; border:1px solid #dc2626; border-radius:12px; padding:20px; text-align:center;">
+                <div style="font-size:0.65rem; color:#991b1b; font-weight:800; text-transform:uppercase; margin-bottom:8px;">👎 1★ REVIEWS</div>
+                <div style="font-size:1.5rem; font-weight:900; color:#dc2626;">{rating_dist.get("1_star_pct", 0)}%</div>
+            </div>
+        </div>
+        
+        <!-- Rating Distribution Bar -->
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:25px;">
+            <h4 style="margin:0 0 15px 0; color:#1e293b;">📈 Distribución de Ratings</h4>
+            <div style="display:flex; height:30px; border-radius:8px; overflow:hidden; margin-bottom:10px;">
+                <div style="background:#22c55e; width:{rating_dist.get('5_star_pct', 0)}%; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.7rem;">5★</div>
+                <div style="background:#84cc16; width:{rating_dist.get('4_star_pct', 0)}%; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.7rem;">4★</div>
+                <div style="background:#f59e0b; width:{rating_dist.get('3_star_pct', 0)}%; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.7rem;">3★</div>
+                <div style="background:#f97316; width:{rating_dist.get('2_star_pct', 0)}%; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.7rem;">2★</div>
+                <div style="background:#dc2626; width:{rating_dist.get('1_star_pct', 0)}%; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.7rem;">1★</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#64748b;">
+                <span>🚀 Velocidad de Reviews: <strong>{reviews_velocity}</strong></span>
+                <span>Temas recurrentes: {", ".join(recurring_themes[:4]) if recurring_themes else "Analizar con datos POE"}</span>
+            </div>
+        </div>
+        
+        <!-- Praises vs Complaints Grid -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
+            <div>
+                <h4 style="margin:0 0 15px 0; color:#166534;">✅ TOP 5 ELOGIOS (Lo que aman los clientes)</h4>
+                {praises_html}
+            </div>
+            <div>
+                <h4 style="margin:0 0 15px 0; color:#991b1b;">⚠️ TOP 5 QUEJAS (Oportunidades de mejora)</h4>
+                {complaints_html}
+            </div>
+        </div>
+        '''
+
+    def _render_amazon_fees(self, amazon_fees: dict, price_median: float) -> str:
+        """Render Amazon FBA Fees Structure section for POE v3.0."""
+        referral_fee_pct = amazon_fees.get("referral_fee_pct", 15)
+        referral_category = amazon_fees.get("referral_fee_category", "Standard")
+        fba_fee = amazon_fees.get("estimated_fba_fee", 4.50)
+        storage_fee = amazon_fees.get("estimated_storage_monthly", 0.75)
+        product_weight = amazon_fees.get("typical_product_weight", "1-2 lbs")
+        dimensions = amazon_fees.get("typical_dimensions", "Standard size")
+        total_fees_pct = amazon_fees.get("total_fees_pct_of_price", 25)
+        net_margin_estimate = amazon_fees.get("net_margin_estimate", "15-25%")
+        fee_tips = amazon_fees.get("fee_optimization_tips", [])
+        
+        # Calculate fees based on median price
+        if price_median > 0:
+            referral_fee_usd = round(price_median * (referral_fee_pct / 100), 2)
+            total_fees_usd = round(referral_fee_usd + fba_fee + storage_fee, 2)
+            net_after_fees = round(price_median - total_fees_usd, 2)
+            net_margin_actual = round((net_after_fees / price_median) * 100, 1) if price_median > 0 else 0
+        else:
+            referral_fee_usd = total_fees_usd = net_after_fees = net_margin_actual = 0
+        
+        # Fee optimization tips HTML
+        tips_html = ""
+        for i, tip in enumerate(fee_tips[:5]):
+            tips_html += f'<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><span style="background:#3b82f6; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700;">{i+1}</span><span style="font-size:0.85rem; color:#1e293b;">{tip}</span></div>'
+        
+        if not tips_html:
+            tips_html = '''
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><span style="background:#3b82f6; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700;">1</span><span style="font-size:0.85rem; color:#1e293b;">Optimizar dimensiones del empaque para reducir tarifas dimensionales</span></div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><span style="background:#3b82f6; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700;">2</span><span style="font-size:0.85rem; color:#1e293b;">Evitar categoría Oversize manteniendo peso < 1 lb si possible</span></div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><span style="background:#3b82f6; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700;">3</span><span style="font-size:0.85rem; color:#1e293b;">Monitorear IPI Score para evitar límites de almacenamiento</span></div>
+            '''
+        
+        return f'''
+        <!-- FBA Fee Breakdown -->
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:25px; margin-bottom:25px;">
+            <!-- Main Fee Card -->
+            <div style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius:16px; padding:30px; color:white;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div>
+                        <div style="font-size:0.65rem; color:#94a3b8; font-weight:800; text-transform:uppercase; letter-spacing:1px;">💰 ESTRUCTURA DE AMAZON FBA FEES</div>
+                        <div style="font-size:0.8rem; color:#60a5fa; margin-top:4px;">Categoría: {referral_category}</div>
+                    </div>
+                    <div style="background:#f59e0b; padding:8px 16px; border-radius:8px; font-weight:800;">ESTIMADO IA</div>
+                </div>
+                
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-bottom:25px;">
+                    <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:12px; text-align:center;">
+                        <div style="font-size:0.6rem; color:#94a3b8; margin-bottom:5px;">REFERRAL FEE</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#f97316;">{referral_fee_pct}%</div>
+                        <div style="font-size:0.75rem; color:#fbbf24;">${referral_fee_usd}</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:12px; text-align:center;">
+                        <div style="font-size:0.6rem; color:#94a3b8; margin-bottom:5px;">FBA PICK & PACK</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#3b82f6;">${fba_fee:.2f}</div>
+                        <div style="font-size:0.75rem; color:#60a5fa;">Por unidad</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:12px; text-align:center;">
+                        <div style="font-size:0.6rem; color:#94a3b8; margin-bottom:5px;">STORAGE/MO</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#a78bfa;">${storage_fee:.2f}</div>
+                        <div style="font-size:0.75rem; color:#c4b5fd;">Mensual</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.1); padding:15px; border-radius:12px; text-align:center;">
+                        <div style="font-size:0.6rem; color:#94a3b8; margin-bottom:5px;">TOTAL FEES</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#dc2626;">${total_fees_usd:.2f}</div>
+                        <div style="font-size:0.75rem; color:#f87171;">{total_fees_pct}% del precio</div>
+                    </div>
+                </div>
+                
+                <!-- Net Margin Bar -->
+                <div style="margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-size:0.8rem; color:#94a3b8;">Desglose de Precio (basado en mediana ${price_median:.2f})</span>
+                        <span style="font-size:0.8rem; color:#22c55e; font-weight:700;">Net: ${net_after_fees:.2f} ({net_margin_actual}%)</span>
+                    </div>
+                    <div style="display:flex; height:20px; border-radius:10px; overflow:hidden;">
+                        <div style="background:#22c55e; width:{net_margin_actual}%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:white; font-weight:700;">NET</div>
+                        <div style="background:#f97316; width:{referral_fee_pct}%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:white; font-weight:700;">REF</div>
+                        <div style="background:#3b82f6; width:{int((fba_fee / price_median) * 100) if price_median > 0 else 15}%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:white; font-weight:700;">FBA</div>
+                        <div style="background:#a78bfa; flex:1; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:white; font-weight:700;">COGS</div>
+                    </div>
+                </div>
+                
+                <!-- Product Specs -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.1);">
+                    <div>
+                        <div style="font-size:0.6rem; color:#94a3b8;">📦 Peso Típico</div>
+                        <div style="font-size:0.9rem; font-weight:700;">{product_weight}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.6rem; color:#94a3b8;">📐 Dimensiones Típicas</div>
+                        <div style="font-size:0.9rem; font-weight:700;">{dimensions}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tips Card -->
+            <div style="background:#eff6ff; border:2px solid #3b82f6; border-radius:16px; padding:25px;">
+                <h4 style="margin:0 0 20px 0; color:#1d4ed8; font-size:1rem;">💡 Tips de Optimización de Fees</h4>
+                {tips_html}
+                <div style="background:#dbeafe; padding:12px; border-radius:8px; margin-top:15px;">
+                    <div style="font-size:0.7rem; color:#1d4ed8; font-weight:700;">📊 MARGEN NETO ESTIMADO</div>
+                    <div style="font-size:1.3rem; font-weight:900; color:#166534;">{net_margin_estimate}</div>
+                    <div style="font-size:0.7rem; color:#64748b;">Después de COGS y todos los fees de Amazon</div>
+                </div>
+            </div>
+        </div>
+        '''
+
+    def _render_detailed_buyer_personas(self, buyer_personas: list) -> str:
+        """Render Detailed Buyer Personas section for POE v3.0."""
+        if not buyer_personas:
+            # Default personas if none provided
+            buyer_personas = [
+                {
+                    "name": "El Profesional Exigente",
+                    "demographics": {"age_range": "30-45", "gender": "Equilibrado", "location": "Urbano, USA", "occupation": "Manager/Profesional", "income_level": "$75K-$150K"},
+                    "psychographics": {"motivations": "Busca eficiencia y calidad", "values": "Durabilidad, garantía, reputación de marca", "lifestyle": "Ritmo acelerado, poco tiempo libre", "pain_points": ["Productos que fallan rápido", "Servicio al cliente deficiente", "Tiempo perdido en devoluciones"]},
+                    "buying_behavior": {"research_sources": ["Amazon reviews", "YouTube reviews", "Reddit"], "decision_criteria": ["Reviews de 1★", "Garantía", "Marca reconocida", "Durabilidad"], "purchase_frequency": "Cada 1-2 años", "price_sensitivity": "Media-Baja"},
+                    "representative_quote": "Prefiero pagar más y no tener que volver a comprar en 6 meses."
+                },
+                {
+                    "name": "El Cazador de Ofertas",
+                    "demographics": {"age_range": "25-35", "gender": "Equilibrado", "location": "Suburbano", "occupation": "Empleado / Freelancer", "income_level": "$40K-$70K"},
+                    "psychographics": {"motivations": "Maximizar valor por dinero", "values": "Precio, reviews positivos, funcionalidad básica", "lifestyle": "Consciente de presupuesto, práctico", "pain_points": ["Productos muy caros", "Features innecesarios", "Costos ocultos"]},
+                    "buying_behavior": {"research_sources": ["Amazon", "Comparadores de precio", "Cupones"], "decision_criteria": ["Precio", "Rating 4★+", "Prime shipping", "Descuentos"], "purchase_frequency": "Cuando encuentra oferta", "price_sensitivity": "Alta"},
+                    "representative_quote": "¿Por qué pagar el doble si hace lo mismo?"
+                },
+                {
+                    "name": "El Early Adopter Tech",
+                    "demographics": {"age_range": "22-35", "gender": "Mayormente masculino", "location": "Urbano", "occupation": "Tech/Startup", "income_level": "$60K-$120K"},
+                    "psychographics": {"motivations": "Estar a la vanguardia, innovación", "values": "Tecnología de punta, diseño, exclusividad", "lifestyle": "Digital native, influencer en su círculo", "pain_points": ["Productos obsoletos", "Diseño anticuado", "Falta de innovación"]},
+                    "buying_behavior": {"research_sources": ["Tech blogs", "YouTube", "Twitter/X", "Product Hunt"], "decision_criteria": ["Innovación", "Diseño", "Reviews de expertos", "Conectividad"], "purchase_frequency": "Frecuente, busca lo nuevo", "price_sensitivity": "Baja para tech"},
+                    "representative_quote": "Si tiene algo nuevo que los demás no tienen, lo quiero."
+                }
+            ]
+        
+        personas_html = ""
+        colors = [
+            ("#6366f1", "#eff6ff", "#4f46e5"),  # Indigo
+            ("#22c55e", "#f0fdf4", "#16a34a"),  # Green
+            ("#f59e0b", "#fef3c7", "#d97706"),  # Amber
+        ]
+        icons = ["👩‍💼", "🛒", "🚀"]
+        
+        for i, persona in enumerate(buyer_personas[:3]):
+            color_main, color_bg, color_dark = colors[i % len(colors)]
+            icon = icons[i % len(icons)]
+            
+            demographics = persona.get("demographics", {})
+            psychographics = persona.get("psychographics", {})
+            buying_behavior = persona.get("buying_behavior", {})
+            
+            # Build pain points chips
+            pain_chips = ""
+            for pain in psychographics.get("pain_points", [])[:3]:
+                pain_chips += f'<span style="background:{color_bg}; color:{color_dark}; padding:4px 10px; border-radius:20px; font-size:0.7rem; margin-right:5px; display:inline-block; margin-bottom:5px;">⚠️ {pain}</span>'
+            
+            # Build decision criteria chips
+            criteria_chips = ""
+            for criteria in buying_behavior.get("decision_criteria", [])[:4]:
+                criteria_chips += f'<span style="background:{color_bg}; border:1px solid {color_main}33; color:{color_dark}; padding:4px 10px; border-radius:20px; font-size:0.65rem; margin-right:5px; display:inline-block; margin-bottom:5px;">✓ {criteria}</span>'
+            
+            # Build research sources
+            research_sources = ", ".join(buying_behavior.get("research_sources", [])[:4])
+            
+            personas_html += f'''
+            <div style="background:white; border:2px solid {color_main}33; border-radius:16px; padding:25px; margin-bottom:20px; position:relative; overflow:hidden;">
+                <!-- Decorative background -->
+                <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:{color_main}08; border-radius:50%;"></div>
+                
+                <!-- Header -->
+                <div style="display:flex; gap:20px; align-items:flex-start; margin-bottom:20px;">
+                    <div style="width:70px; height:70px; background:linear-gradient(135deg, {color_main}, {color_dark}); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; flex-shrink:0;">{icon}</div>
+                    <div style="flex:1;">
+                        <h3 style="margin:0 0 5px 0; color:{color_dark}; font-size:1.3rem;">{persona.get("name", f"Persona {i+1}")}</h3>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <span style="background:{color_bg}; color:{color_dark}; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:600;">📅 {demographics.get("age_range", "25-45")}</span>
+                            <span style="background:{color_bg}; color:{color_dark}; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:600;">👤 {demographics.get("gender", "Equilibrado")}</span>
+                            <span style="background:{color_bg}; color:{color_dark}; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:600;">💰 {demographics.get("income_level", "Variable")}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quote -->
+                <div style="background:{color_bg}; border-left:4px solid {color_main}; padding:15px; border-radius:0 12px 12px 0; margin-bottom:20px;">
+                    <div style="font-size:1rem; color:{color_dark}; font-style:italic; line-height:1.5;">"{persona.get("representative_quote", "")}"</div>
+                </div>
+                
+                <!-- Two Column Layout -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <!-- Left: Psychographics -->
+                    <div>
+                        <h4 style="margin:0 0 10px 0; color:#1e293b; font-size:0.85rem;">🧠 Psicografía</h4>
+                        <div style="font-size:0.8rem; color:#475569; line-height:1.6; margin-bottom:10px;">
+                            <strong>Motivaciones:</strong> {psychographics.get("motivations", "N/A")}
+                        </div>
+                        <div style="font-size:0.8rem; color:#475569; line-height:1.6; margin-bottom:10px;">
+                            <strong>Valora:</strong> {psychographics.get("values", "N/A")}
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div style="font-size:0.7rem; color:#64748b; font-weight:700; margin-bottom:6px;">PAIN POINTS:</div>
+                            {pain_chips}
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Buying Behavior -->
+                    <div>
+                        <h4 style="margin:0 0 10px 0; color:#1e293b; font-size:0.85rem;">🛒 Comportamiento de Compra</h4>
+                        <div style="font-size:0.8rem; color:#475569; line-height:1.6; margin-bottom:5px;">
+                            <strong>Investiga en:</strong> {research_sources}
+                        </div>
+                        <div style="font-size:0.8rem; color:#475569; line-height:1.6; margin-bottom:5px;">
+                            <strong>Frecuencia:</strong> {buying_behavior.get("purchase_frequency", "Variable")}
+                        </div>
+                        <div style="font-size:0.8rem; color:#475569; line-height:1.6; margin-bottom:10px;">
+                            <strong>Sensibilidad al precio:</strong> {buying_behavior.get("price_sensitivity", "Media")}
+                        </div>
+                        <div style="margin-top:12px;">
+                            <div style="font-size:0.7rem; color:#64748b; font-weight:700; margin-bottom:6px;">CRITERIOS DE DECISIÓN:</div>
+                            {criteria_chips}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            '''
+        
+        return personas_html
 
     # ═══════════════════════════════════════════════════════════════════════════
     # EXECUTIVE BRIEF: 1-Page Decision Canvas
@@ -2376,45 +2868,81 @@ class Nexus7Architect:
     <style>
         :root {{ --primary: #0f172a; --accent: #3b82f6; }}
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: var(--primary); }}
-        .brief {{ width: 794px; max-width: 794px; margin: 0 auto; }}
-        .page {{ background: white; border-radius: 16px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; }}
+        body {{ font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; color: var(--primary); -webkit-font-smoothing: antialiased; }}
+        
+        /* Container setup for A4 at 96dpi (approx 794px) */
+        .brief {{ width: 794px; margin: 0 auto; background: none; }}
+        
+        .page {{ 
+            width: 794px;
+            min-height: 1122px; /* A4 Height */
+            background: white; 
+            border-radius: 0; 
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+            margin-bottom: 30px; 
+            position: relative;
+        }}
+        
         .header {{ background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 20px 30px; position: relative; }}
         .header::after {{ content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); }}
-        .content {{ padding: 20px 30px; }}
-        .section {{ margin-bottom: 20px; }}
-        .section-title {{ font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }}
-        .verdict-card {{ background: {verdict["bg"]}; border: 2px solid {verdict["border"]}; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 15px; margin-bottom: 16px; }}
-        .verdict-icon {{ font-size: 2.2rem; }}
-        .verdict-status {{ font-size: 1.3rem; font-weight: 800; color: {verdict["color"]}; }}
-        .verdict-summary {{ font-size: 0.8rem; color: #475569; margin-top: 3px; }}
-        .confidence {{ background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 14px; text-align: center; }}
-        .confidence-value {{ font-size: 1.2rem; font-weight: 800; color: var(--accent); }}
-        .confidence-label {{ font-size: 0.55rem; color: #64748b; text-transform: uppercase; font-weight: 700; }}
-        .two-col {{ display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }}
-        .three-col {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }}
-        .card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; }}
-        .stat-card {{ text-align: center; padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 10px; }}
-        .stat-value {{ font-size: 1.4rem; font-weight: 800; }}
-        .stat-label {{ font-size: 0.55rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-top: 2px; }}
-        .consumer-quote {{ background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border-left: 3px solid #f59e0b; padding: 10px 12px; border-radius: 0 6px 6px 0; font-style: italic; font-size: 0.8rem; color: #92400e; margin: 10px 0; }}
-        .lightning {{ background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%); border: 2px solid #fcd34d; border-radius: 8px; padding: 10px 12px; }}
-        .lightning-title {{ font-size: 0.7rem; font-weight: 800; color: #b45309; }}
-        .table {{ width: 100%; border-collapse: collapse; font-size: 0.75rem; }}
-        .table th {{ background: #f1f5f9; padding: 8px; text-align: left; font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }}
-        .table td {{ padding: 8px; }}
-        .page-break {{ page-break-before: always; break-before: page; }}
-        .footer {{ background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 12px 30px; display: flex; justify-content: space-between; align-items: center; }}
-        .footer-link {{ display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 0.75rem; font-weight: 600; }}
+        
+        .content {{ padding: 25px 30px; }}
+        
+        /* Layout Utilities */
+        .section {{ margin-bottom: 25px; page-break-inside: avoid; }}
+        .section-title {{ font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; }}
+        .two-col {{ display: grid; grid-template-columns: 1.25fr 1fr; gap: 25px; }}
+        .three-col {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }}
+        
+        /* Components */
+        .card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; page-break-inside: avoid; }}
+        
+        .verdict-card {{ background: {verdict["bg"]}; border: 2px solid {verdict["border"]}; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); page-break-inside: avoid; }}
+        .verdict-icon {{ font-size: 2.5rem; }}
+        .verdict-status {{ font-size: 1.5rem; font-weight: 800; color: {verdict["color"]}; letter-spacing: -0.5px; }}
+        .verdict-summary {{ font-size: 0.85rem; color: #475569; margin-top: 4px; line-height: 1.4; }}
+        
+        .confidence {{ background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 18px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }}
+        .confidence-value {{ font-size: 1.4rem; font-weight: 800; color: var(--accent); }}
+        .confidence-label {{ font-size: 0.6rem; color: #64748b; text-transform: uppercase; font-weight: 700; }}
+        
+        .stat-card {{ text-align: center; padding: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); page-break-inside: avoid; }}
+        .stat-value {{ font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }}
+        .stat-label {{ font-size: 0.6rem; color: #64748b; text-transform: uppercase; font-weight: 700; margin-top: 4px; }}
+    
+        .consumer-quote {{ background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; font-style: italic; font-size: 0.85rem; color: #92400e; margin: 12px 0; line-height: 1.5; page-break-inside: avoid; }}
+        .lightning {{ background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-radius: 12px; padding: 14px; margin-top: 15px; page-break-inside: avoid; }}
+        .lightning-title {{ font-size: 0.75rem; font-weight: 800; color: #ea580c; display: flex; align-items: center; gap: 6px; }}
+        
+        .table {{ width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }}
+        .table th {{ background: #f8fafc; padding: 10px; text-align: left; font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }}
+        .table td {{ padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }}
+        .table tr:last-child td {{ border-bottom: none; }}
+        
+        .page-break {{ page-break-before: always; }}
+        
+        .footer {{ background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; height: 60px; }}
+        .footer-link {{ display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3); }}
+        .footer-link:hover {{ transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.4); }}
+
+        /* Print Override */
         @media print {{ 
-            @page {{ size: A4 portrait; margin: 8mm; }}
             body {{ padding: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }} 
-            .brief {{ max-width: 100%; }}
-            .page {{ box-shadow: none; margin-bottom: 0; border-radius: 0; page-break-inside: avoid; break-inside: avoid; min-height: auto; }} 
-            .page:first-of-type {{ page-break-after: always; break-after: page; }}
-            .page-break {{ page-break-before: always; break-before: page; margin-top: 0; }}
+            .brief {{ width: 100%; margin: 0; box-shadow: none; }}
+            .page {{ 
+                box-shadow: none; 
+                margin: 0; 
+                border: none;
+                border-radius: 0;
+                width: 100%; 
+                min-height: 297mm; 
+                height: 297mm;
+                page-break-after: always;
+            }}
+            .page:last-child {{ page-break-after: avoid; }}
             .footer-link {{ display: none !important; }}
-            .card, .section, .verdict-card {{ page-break-inside: avoid; break-inside: avoid; }}
+            ::-webkit-scrollbar {{ display: none; }}
         }}
     </style>
 </head>
@@ -2650,7 +3178,7 @@ class Nexus7Architect:
             <div class="footer">
                 <div style="font-size: 0.65rem; color: #94a3b8;">NEXUS-360 Intelligence Platform • {timestamp_now()}</div>
                 <div style="display:flex; gap:10px; align-items:center;">
-                    <button onclick="downloadPDF()" class="footer-link" style="background:#8b5cf6; border:none; cursor:pointer;">
+                    <button id="pdfDownloadBtn" onclick="downloadPDF()" class="footer-link" style="background:#8b5cf6; border:none; cursor:pointer;">
                         📥 Descargar PDF
                     </button>
                     <a href="/dashboard/reports/report_{full_report_id or 'index'}.html" class="footer-link">📄 Ver Análisis Completo →</a>
@@ -2663,37 +3191,35 @@ class Nexus7Architect:
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         async function downloadPDF() {{
-            const btn = event.target;
+            const btn = document.querySelector('#pdfDownloadBtn');
+            if (!btn) return;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ Generando...';
+            btn.innerHTML = '⏳ Generando PDF...';
             btn.disabled = true;
+            btn.style.opacity = '0.7';
             
             const element = document.querySelector('.brief');
             const briefTitle = document.title.replace('Executive Brief: ', '').trim();
-            const safeTitle = briefTitle.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\\s+/g, '_').substring(0, 50);
-            const filename = 'Executive_Brief_' + safeTitle + '.pdf';
+            // Sanitize title: remove special chars, replace spaces with underscores
+            const safeTitle = briefTitle.replace(/[^a-zA-Z0-9 ]/g, '').replace(/ +/g, '_').substring(0, 50) || 'Reporte';
+            const timestamp = new Date().toISOString().slice(0,10);
+            const filename = 'Executive_Brief_' + safeTitle + '_' + timestamp + '.pdf';
             
             // Hide buttons during PDF generation
             const buttons = document.querySelectorAll('.footer-link');
             buttons.forEach(b => b.style.visibility = 'hidden');
             
-            // Get each page separately for proper 2-page PDF
-            const pages = document.querySelectorAll('.page');
-            
             try {{
                 const opt = {{
-                    margin: [5, 5, 5, 5],
+                    margin: 0,
                     filename: filename,
-                    image: {{ type: 'jpeg', quality: 0.95 }},
+                    image: {{ type: 'jpeg', quality: 0.98 }},
                     html2canvas: {{ 
-                        scale: 1.5,
+                        scale: 2,
                         useCORS: true, 
                         logging: false,
                         letterRendering: true,
-                        scrollY: 0,
-                        windowWidth: 794,
-                        width: 794,
-                        height: element.scrollHeight
+                        scrollY: 0
                     }},
                     jsPDF: {{ 
                         unit: 'mm', 
@@ -2702,34 +3228,24 @@ class Nexus7Architect:
                         compress: true
                     }},
                     pagebreak: {{ 
-                        mode: ['avoid-all', 'css', 'legacy'],
-                        before: '.page-break',
-                        avoid: ['tr', '.card', '.section', '.verdict-card', '.stat-card']
+                        mode: ['css', 'legacy'],
+                        before: '.page-break'
                     }}
                 }};
                 
-                // Generate and download PDF via blob
-                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-                
-                // Force download with correct filename
-                const url = URL.createObjectURL(pdfBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                await html2pdf().set(opt).from(element).save();
                 
                 btn.innerHTML = '✅ Descargado!';
                 setTimeout(() => {{ btn.innerHTML = originalText; }}, 2000);
             }} catch (error) {{
                 console.error('PDF Error:', error);
-                btn.innerHTML = '❌ Error';
-                setTimeout(() => {{ btn.innerHTML = originalText; }}, 2000);
+                btn.innerHTML = '❌ Error - Usa Ctrl+P';
+                alert('Error al generar PDF automáticamente. Usa Ctrl+P (o Cmd+P en Mac) para imprimir a PDF.');
+                setTimeout(() => {{ btn.innerHTML = originalText; }}, 3000);
             }} finally {{
                 buttons.forEach(b => b.style.visibility = 'visible');
                 btn.disabled = false;
+                btn.style.opacity = '1';
             }}
         }}
     </script>

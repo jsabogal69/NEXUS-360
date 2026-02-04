@@ -113,35 +113,111 @@ class DataExpert:
 
     @staticmethod
     def process_csv(content_bytes):
-        """Processes CSV with encoding and separator detection."""
-        # Try common separators
-        for sep in [',', ';', '\t', '|']:
-            try:
-                df = pd.read_csv(io.BytesIO(content_bytes), sep=sep, nrows=5)
-                if len(df.columns) > 1:
-                    # Found the separator
-                    df = pd.read_csv(io.BytesIO(content_bytes), sep=sep)
+        """
+        Robust CSV processing using a 'Sniffer' approach.
+        Detects separator and header row by scanning line-by-line.
+        """
+        try:
+            content_str = content_bytes.decode('utf-8', errors='ignore')
+            lines = content_str.splitlines()
+            
+            if not lines:
+                return pd.DataFrame()
+
+            # Keywords to identify the header row
+            header_keywords = ["asin", "product", "price", "precio", "sales", "ventas", "rank", "bsr", "revenue", "ingresos", "title", "titulo"]
+            
+            best_sep = ','
+            header_row_idx = 0
+            max_score = 0
+            
+            # Scan first 30 lines to find the header
+            for i, line in enumerate(lines[:30]):
+                line_lower = line.lower()
+                
+                # Check possible separators
+                for sep in [',', '\t', ';', '|']:
+                    # Count columns with this separator
+                    parts = line_lower.split(sep)
+                    if len(parts) < 2: continue
+                    
+                    # Score based on keyword matches in this row
+                    # We check if the split parts contain our keywords
+                    matches = sum(1 for part in parts if any(kw in part.strip() for kw in header_keywords))
+                    
+                    # If we find strong matches, this is likely our winner
+                    if matches > max_score:
+                        max_score = matches
+                        best_sep = sep
+                        header_row_idx = i
+            
+            if max_score >= 1:
+                logger.info(f"[DATA-EXPERT] 🕵️ Sniffer found header at row {header_row_idx} with sep='{best_sep}' (Score: {max_score})")
+                
+                # Use engine='python' for robustness against bad lines elsewhere
+                # skip_blank_lines=True is default but explicit is good
+                try:
+                    df = pd.read_csv(
+                        io.StringIO(content_str), 
+                        sep=best_sep, 
+                        skiprows=header_row_idx, 
+                        engine='python',
+                        on_bad_lines='warn' # Warn but don't crash on subsequent bad lines
+                    )
                     return DataExpert.clean_dataframe(df)
-            except:
-                continue
-        # Default
-        return pd.read_csv(io.BytesIO(content_bytes))
+                except Exception as e:
+                    logger.warning(f"[DATA-EXPERT] Sniffer read failed: {e}. Falling back to default.")
+            
+            # Fallback for standard clean CSVs
+            return pd.read_csv(io.StringIO(content_str))
+
+        except Exception as e:
+            logger.error(f"[DATA-EXPERT] CSV Sniffer Failed: {e}")
+            return pd.DataFrame()
+
+    @staticmethod
+    def _find_header_row(df_raw, search_keywords):
+        # Kept for Excel support - same logic as before or simplified
+        for i in range(min(20, len(df_raw))):
+            row_vals = df_raw.iloc[i].astype(str).str.lower().tolist()
+            matches = sum(1 for kw in search_keywords if any(kw in val for val in row_vals))
+            if matches >= 2:
+                new_columns = df_raw.iloc[i].tolist()
+                new_df = df_raw.iloc[i+1:].copy()
+                new_df.columns = new_columns
+                return new_df
+        return df_raw
 
     @staticmethod
     def process_excel(content_bytes):
-        """Processes Excel files."""
-        df = pd.read_excel(io.BytesIO(content_bytes))
-        return DataExpert.clean_dataframe(df)
+        """Processes Excel files with smart header detection."""
+        try:
+            header_keywords = ["asin", "product", "price", "precio", "sales", "ventas", "rank", "bsr"]
+            
+            # Read first without header
+            df = pd.read_excel(io.BytesIO(content_bytes), header=None)
+            
+            # Apply Header Hunter
+            df = DataExpert._find_header_row(df, header_keywords)
+            
+            return DataExpert.clean_dataframe(df)
+        except Exception as e:
+             logger.error(f"[DATA-EXPERT] Excel Processing Failed: {e}")
+             return pd.DataFrame()
 
     @staticmethod
     def process_pdf(content_bytes):
         """Expertly extracts text from PDF."""
         import PyPDF2
-        reader = PyPDF2.PdfReader(io.BytesIO(content_bytes))
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() + "\n"
-        return text
+        try:
+            reader = PyPDF2.PdfReader(io.BytesIO(content_bytes))
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
+            return text
+        except Exception as e:
+            logger.error(f"PDF Error: {e}")
+            return ""
 
     @staticmethod
     def process_docx(content_bytes):
@@ -235,19 +311,20 @@ class DataExpert:
         # 1. Map columns (Expanded)
         col_map = {}
         column_aliases = {
-            "price": ["price", "precio", "average selling price", "asp", "average_selling_price"],
-            "sales": ["sales", "ventas", "units", "unidades", "monthly sales", "monthly_sales", "est_sales"],
-            "revenue": ["revenue", "ingresos", "facturación", "est_revenue"],
-            "bsr": ["bsr", "rank", "ranking", "best sellers rank", "best_sellers_rank"],
-            "asin": ["asin", "product id", "product_id"],
-            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "description"],
-            "reviews": ["reviews", "reseñas", "ratings", "total ratings", "review count", "review_count"],
-            "fees": ["fees", "fba fees", "tarifas", "amazon fees", "fba_fees"],
-            "active_sellers": ["active sellers", "sellers", "vendedores", "num sellers", "active_sellers"],
-            "dimensions": ["dimensions", "dimensiones", "size", "talla"],
-            "launch_date": ["launch date", "fecha lanzamiento", "creation date", "date first available", "creation_date"],
-            "click_share": ["click share", "cuota de clic", "share", "click share %", "click_share"],
-            "click_count": ["niche click count", "click count", "recuento de clics", "click_count"]
+            "price": ["price", "precio", "average selling price", "asp", "average_selling_price", "price_usd", "valor"],
+            "sales": ["sales", "ventas", "units", "unidades", "monthly sales", "monthly_sales", "est_sales", "est. sales", "unit sales", "sales (30 days)"],
+            "revenue": ["revenue", "ingresos", "facturación", "est_revenue", "est. revenue", "revenue (30 days)"],
+            "bsr": ["bsr", "rank", "ranking", "best sellers rank", "best_sellers_rank", "sales rank"],
+            "asin": ["asin", "product id", "product_id", "id"],
+            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "description", "item name"],
+            "reviews": ["reviews", "reseñas", "total ratings", "review count", "review_count", "rating count"],
+            "rating_score": ["rating", "score", "stars", "puntuación", "estrellas", "average rating", "avg rating"],
+            "fees": ["fees", "fba fees", "tarifas", "amazon fees", "fba_fees", "fulfillment fee"],
+            "active_sellers": ["active sellers", "sellers", "vendedores", "num sellers", "active_sellers", "seller count"],
+            "dimensions": ["dimensions", "dimensiones", "size", "talla", "product dimensions"],
+            "launch_date": ["launch date", "fecha lanzamiento", "creation date", "date first available", "creation_date", "published date"],
+            "click_share": ["click share", "cuota de clic", "share", "click share %", "click_share", "click share percentage"],
+            "click_count": ["niche click count", "click count", "recuento de clics", "click_count", "clicks"]
         }
         
         for field, aliases in column_aliases.items():
@@ -281,17 +358,20 @@ class DataExpert:
                 product = {
                     "asin": asin,
                     "title": str(row.get(col_map.get("title", ""), f"Product {idx}"))[:150],
+                    "name": str(row.get(col_map.get("title", ""), f"Product {idx}"))[:150], # Alias for Architect compatibility (uses 'name')
                     "price": round(price_val, 2),
                     "sales": sales_val,
                     "revenue": round(DataExpert.normalize_number(row.get(col_map.get("revenue", ""), 0)), 2),
                     "bsr": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))),
                     "reviews": int(DataExpert.normalize_number(row.get(col_map.get("reviews", ""), 0))),
+                    "rating": round(DataExpert.normalize_number(row.get(col_map.get("rating_score", ""), 0)), 1),
                     # Extended Intelligence
                     "fees": round(DataExpert.normalize_number(row.get(col_map.get("fees", ""), 0)), 2),
                     "active_sellers": int(DataExpert.normalize_number(row.get(col_map.get("active_sellers", ""), 1))),
                     "dimensions": str(row.get(col_map.get("dimensions", ""), "N/A")),
                     "launch_date": str(row.get(col_map.get("launch_date", ""), "N/A")),
-                    "click_share": DataExpert.normalize_number(row.get(col_map.get("click_share", ""), 0))
+                    "click_share": DataExpert.normalize_number(row.get(col_map.get("click_share", ""), 0)),
+                    "rank": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))) # Alias for Architect compatibility
                 }
                 
                 if product["price"] > 0 or product["sales"] > 0 or product["click_share"] > 0:
