@@ -8,6 +8,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/serviceAccountKey.json
 
 # Install Dependencies
 COPY requirements.txt .
@@ -16,6 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy Application Code
 COPY agents/ ./agents/
 COPY nexus-rules.md .
+COPY serviceAccountKey.json .
+COPY .env .
 
 # Expose Port (Optional, Cloud Run ignores this but good for local)
 EXPOSE 8080

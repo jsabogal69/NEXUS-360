@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local env/secrets
+.env
+serviceAccountKey.json
+server.log
+
+# Dev tools
+.git/
+.agent/
+.vscode/
+.idea/
+tests/
+
+# OS files
+.DS_Store
+
+# Docker (not needed for hosting)
+Dockerfile
+docker-compose.yml
+
+# Reports artifacts (generated at runtime)
+agents/reports/
+agents/static/reports/report_*.html
+agents/static/reports/artifact_*.json
+agents/static/reports/blueprint_*.html

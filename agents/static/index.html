@@ -716,13 +716,41 @@
             }
         }
 
-        async function callStep(endpoint, body) {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            return await res.json();
+        async function callStep(endpoint, body, retries = 1) {
+            for (let attempt = 0; attempt <= retries; attempt++) {
+                try {
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const contentType = res.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        const text = await res.text();
+                        console.error(`Non-JSON response from ${endpoint}:`, text.substring(0, 200));
+                        if (attempt < retries) {
+                            console.log(`Retrying ${endpoint} (cold start?)...`);
+                            await new Promise(r => setTimeout(r, 3000));
+                            continue;
+                        }
+                        throw new Error(`El servidor devolvió una respuesta inesperada (${res.status}). Posible arranque en frío de Cloud Run. Intente de nuevo.`);
+                    }
+
+                    const data = await res.json();
+                    if (!res.ok && data.detail) {
+                        throw new Error(data.detail);
+                    }
+                    return data;
+                } catch (e) {
+                    if (attempt < retries && e.message.includes('Failed to fetch')) {
+                        console.log(`Network error on ${endpoint}, retrying...`);
+                        await new Promise(r => setTimeout(r, 3000));
+                        continue;
+                    }
+                    throw e;
+                }
+            }
         }
 
         function log(panel, msg, type) {

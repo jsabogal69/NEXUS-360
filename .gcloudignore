@@ -1,0 +1,51 @@
+# .gcloudignore — Controls what gets uploaded to Cloud Build
+# Unlike .gitignore, we NEED serviceAccountKey.json and .env in the build context
+
+# Dependencies (NOT needed in build — pip install handles this)
+node_modules/
+venv/
+.venv/
+package-lock.json
+package.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Git
+.git/
+
+# Dev tools
+.agent/
+.vscode/
+.idea/
+tests/
+
+# OS files
+.DS_Store
+
+# Firebase (not needed for Cloud Run build)
+.firebase/
+.firebaserc
+firebase.json
+firestore.rules
+.firebaseignore
+
+# Stale gcloud directory (40MB)
+gcloud\ auth\ login/
+gcloud auth login/
+
+# Logs
+server.log
+
+# Reports (generated at runtime)
+agents/reports/
+agents/static/reports/
+
+# Docker compose (not needed in cloud build)
+docker-compose.yml
+
+# Docs
+*.md
+!nexus-rules.md
+

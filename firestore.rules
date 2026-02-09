@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reports collection — read by anyone, write only from backend (service account)
+    match /reports/{reportId} {
+      allow read: if true;
+      allow write: if false; // Only backend service account writes
+    }
+
+    // Pipeline artifacts — read by anyone, write only from backend
+    match /pipeline_artifacts/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Catch-all deny for unmatched paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
