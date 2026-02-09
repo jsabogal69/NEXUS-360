@@ -3278,6 +3278,7 @@ class Nexus7Architect:
         return {
             "brief_id": brief_id,
             "brief_path": brief_path,
+            "pdf_url": brief_path,  # Added to satisfy main.py expectation
             "verdict": verdict["status"],
             "confidence": confidence,
             "full_report_id": full_report_id

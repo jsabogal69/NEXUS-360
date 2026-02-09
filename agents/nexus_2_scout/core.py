@@ -387,49 +387,64 @@ class Nexus2Scout:
         # PASO 4: Construir findings CON TRANSPARENCIA
         # ═══════════════════════════════════════════════════════════════════
         
-        findings = {
-            "id": generate_id(),
-            "product_anchor": context_str[:50],
-            "scout_anchor": context_str[:50],
-            
-            # TOP 10 con source tracking
-            "top_10_products": final_top_10,
-            "pricing_source": pricing_source,
-            "data_source_file": data_source_file,
-            "has_poe_data": has_poe_data,
-            
-            # Datos cualitativos del LLM (análisis, no invención)
-            "social_listening": social,
-            "trends": trends,
-            "keywords": keywords,
-            "sales_intelligence": sales_intelligence,
-            "scholar_audit": scholar_audit,
-            "sentiment_summary": sentiment_summary,
-            "content_opportunities": content_opportunities,
-            "google_trends_raw": google_trends_raw,
-            
-            # ═══════════════════════════════════════════════════════════════════
-            # POE v3.0: Nuevos campos detallados
-            # ═══════════════════════════════════════════════════════════════════
-            "buyer_personas": buyer_personas,
-            "reviews_analysis": reviews_analysis,
-            "price_tiers": price_tiers,
-            "amazon_fees_structure": amazon_fees_structure,
-            
-            # ═══════════════════════════════════════════════════════════════════
-            # PASO 5: Detección de 'Lightning Bolt Scaling'
-            # ═══════════════════════════════════════════════════════════════════
-            "lightning_bolt_opportunity": self._detect_lightning_scaling(social),
-            "confidence_tag": confidence_tag,
-            
-            # Metadata
-            "timestamp": timestamp_now(),
-            "data_integrity": {
-                "top_10_source": pricing_source,
-                "qualitative_source": "LLM_ANALYSIS",
-                "price_disclaimer": "⚡ Precios estimados por IA" if not has_poe_data else "📁 Precios de archivos POE"
+        try:
+            findings = {
+                "id": generate_id(),
+                "product_anchor": context_str[:50],
+                "scout_anchor": context_str[:50],
+                
+                # TOP 10 con source tracking
+                "top_10_products": final_top_10,
+                "pricing_source": pricing_source,
+                "data_source_file": data_source_file,
+                "has_poe_data": has_poe_data,
+                
+                # Datos cualitativos del LLM (análisis, no invención)
+                "social_listening": social,
+                "trends": trends,
+                "keywords": keywords,
+                "sales_intelligence": sales_intelligence,
+                "scholar_audit": scholar_audit,
+                "sentiment_summary": sentiment_summary,
+                "content_opportunities": content_opportunities,
+                "google_trends_raw": google_trends_raw,
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # POE v3.0: Nuevos campos detallados
+                # ═══════════════════════════════════════════════════════════════════
+                "buyer_personas": buyer_personas,
+                "reviews_analysis": reviews_analysis,
+                "price_tiers": price_tiers,
+                "amazon_fees_structure": amazon_fees_structure,
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # PASO 5: Detección de 'Lightning Bolt Scaling'
+                # ═══════════════════════════════════════════════════════════════════
+                "lightning_bolt_opportunity": self._detect_lightning_scaling(social),
+                "confidence_tag": confidence_tag,
+                
+                # Metadata
+                "timestamp": timestamp_now(),
+                "data_integrity": {
+                    "top_10_source": pricing_source,
+                    "qualitative_source": "LLM_ANALYSIS",
+                    "price_disclaimer": "⚡ Precios estimados por IA" if not has_poe_data else "📁 Precios de archivos POE"
+                }
             }
-        }
+        except Exception as e:
+            logger.error(f"[SCOUT-CRITICAL] Failed to construct findings: {e}")
+            findings = {
+                "id": generate_id(),
+                "product_anchor": context_str[:50],
+                "scout_anchor": "FALLBACK - ERROR",
+                "social_listening": social or {},
+                "top_10_products": final_top_10 or [],
+                "trends": trends or [],
+                "keywords": [],
+                "sales_intelligence": {},
+                "timestamp": timestamp_now(),
+                "error": str(e)
+            }
         
         self._save_findings(findings)
         return findings

@@ -648,8 +648,10 @@
 
             document.getElementById('result-container').innerHTML = `
                 <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px;">
-                    <a href="${aRes.data.pdf_url}" target="_blank" class="artifact-link" style="margin-top:0; background:var(--obs-lime); color:#14532d;">VER REPORTE CLIENTE</a>
-                    <a href="${insRes.data.blueprint_url}" target="_blank" class="artifact-link" style="margin-top:0; background:#334155;">VER BLUEPRINT INTERNO (AUDITORÍA)</a>
+                    <a href="${aRes.data.pdf_url || '#'}" target="_blank" class="artifact-link" 
+                       onclick="if(!'${aRes.data.pdf_url}' || '${aRes.data.pdf_url}'==='undefined') { alert('Reporte no disponible'); return false; }"
+                       style="margin-top:0; background:var(--obs-lime); color:#14532d; opacity:${aRes.data.pdf_url ? 1 : 0.5}">VER REPORTE CLIENTE</a>
+                    <a href="${insRes.data.blueprint_url || '#'}" target="_blank" class="artifact-link" style="margin-top:0; background:#334155;">VER BLUEPRINT INTERNO (AUDITORÍA)</a>
                     <button onclick="generateExecutiveBrief()" class="artifact-link" style="margin-top:0; background:#8b5cf6; color:white; border:none; cursor:pointer;">
                         📊 GENERAR EXECUTIVE BRIEF
                     </button>
@@ -700,8 +702,9 @@
                     // Add the new link to results
                     resultContainer.innerHTML += `
                         <div style="margin-top:15px; text-align:center;">
-                            <a href="${response.data.brief_path}" target="_blank" 
-                               style="display:inline-block; background:linear-gradient(135deg, #8b5cf6, #6366f1); color:white; padding:12px 24px; border-radius:12px; text-decoration:none; font-weight:700; box-shadow:0 4px 15px rgba(139,92,246,0.3);">
+                            <a href="${response.data.brief_path || '#'}" target="_blank" 
+                               onclick="if(!'${response.data.brief_path}' || '${response.data.brief_path}'==='undefined') { alert('Brief no disponible'); return false; }"
+                               style="display:inline-block; background:linear-gradient(135deg, #8b5cf6, #6366f1); color:white; padding:12px 24px; border-radius:12px; text-decoration:none; font-weight:700; box-shadow:0 4px 15px rgba(139,92,246,0.3); opacity:${response.data.brief_path ? 1 : 0.5}">
                                 📄 VER EXECUTIVE BRIEF (2 PÁGINAS) →
                             </a>
                         </div>`;
@@ -817,9 +820,12 @@
                         };
                         window.lastReportId = data.report_id || data.final_report_url?.match(/report_([^\.]+)/)?.[1];
 
+                        const finalUrl = data.final_report_url || '#';
+                        const linkAttr = finalUrl !== '#' ? `href="${finalUrl}" target="_blank"` : `href="#" onclick="alert('Reporte no generado correctamente. Verifique los logs.'); return false;" style="opacity:0.5; cursor:not-allowed;"`;
+
                         resultContainer.innerHTML = `
                         <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px;">
-                            <a href="${data.final_report_url}" target="_blank" class="artifact-link" style="margin-top:0; background:var(--obs-lime); color:#14532d;">VER REPORTE INTEGRADO</a>
+                            <a ${linkAttr} class="artifact-link" style="margin-top:0; background:var(--obs-lime); color:#14532d;">VER REPORTE INTEGRADO</a>
                             ${data.artifacts?.inspector ? `<a href="${data.artifacts.inspector}" target="_blank" class="artifact-link" style="margin-top:0; background:#334155;">VER BLUEPRINT INTERNO</a>` : ''}
                             <button onclick="generateExecutiveBrief()" class="artifact-link" style="margin-top:0; background:#8b5cf6; color:white; border:none; cursor:pointer;">
                                 📊 GENERAR EXECUTIVE BRIEF
@@ -892,7 +898,9 @@
                     });
 
                     setTimeout(() => {
-                        resultContainer.innerHTML = `<a href="${data.final_report_url}" target="_blank" class="artifact-link">PRODUCCIÓN FINALIZADA: VER REPORTE</a>`;
+                        const finalUrl = data.final_report_url || '#';
+                        const linkAttr = finalUrl !== '#' ? `href="${finalUrl}" target="_blank"` : `href="#" onclick="alert('Reporte no generado correctamente'); return false;" style="opacity:0.5; cursor:not-allowed;"`;
+                        resultContainer.innerHTML = `<a ${linkAttr} class="artifact-link">PRODUCCIÓN FINALIZADA: VER REPORTE</a>`;
                     }, steps.length * 800 + 400);
 
                 } else {
@@ -936,8 +944,9 @@
                                         📅 ${dateStr} &nbsp;|&nbsp; ID: ${report.id.substring(0, 8)}...
                                     </div>
                                 </div>
-                                <a href="${report.report_url}" target="_blank" 
-                                   style="background:var(--obs-lime); color:#14532d; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.75rem; font-weight:600;">
+                                <a href="${report.report_url || '#'}" target="_blank" 
+                                   onclick="if(!'${report.report_url}' || '${report.report_url}'==='undefined' || '${report.report_url}'==='null') { alert('Reporte no disponible'); return false; }"
+                                   style="background:var(--obs-lime); color:#14532d; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.75rem; font-weight:600; opacity: ${report.report_url ? 1 : 0.5}">
                                     Ver Reporte →
                                 </a>
                             </div>

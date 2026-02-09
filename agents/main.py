@@ -6,6 +6,10 @@ from typing import Optional, List
 import logging
 import os
 from .shared.data_expert import DataExpert
+from dotenv import load_dotenv
+
+# Load env vars globally
+load_dotenv()
 
 # Import Agents
 from .nexus_1_harvester.core import Nexus1Harvester
@@ -179,7 +183,9 @@ async def run_folder_workflow(request: FolderIngestRequest):
             ingestion_msg = ""
         
         if not ingested_ids:
-            return {"status": "error", "message": "No files found or ingestion failed."}
+            error_detail = ingestion_msg or "No files found or ingestion failed."
+            logger.error(f"Harvester returned no IDs. Mode: {ingestion_mode}, Msg: {error_detail}")
+            raise HTTPException(status_code=400, detail=f"Ingesta fallida: {error_detail}")
         
         # Save Harvester Artifact
         harvester_url = save_artifact("harvester", {
@@ -221,6 +227,7 @@ async def run_folder_workflow(request: FolderIngestRequest):
         search_terms_data = ingestion_result.get("search_terms_data") if isinstance(ingestion_result, dict) else None
         
         findings = await scout.perform_osint_scan(scout_input, poe_data=poe_xray_data, search_terms_data=search_terms_data, raw_text_context=scout_field_text)
+        logger.info(f"DEBUG: Scout Findings Keys: {list(findings.keys())}")
         scout_url = save_artifact("scout", findings)
 
         integrator = Nexus3Integrator()
@@ -302,6 +309,8 @@ async def run_folder_workflow(request: FolderIngestRequest):
         }
 
 
+    except HTTPException:
+        raise  # Let HTTPException pass through with original status code
     except Exception as e:
         logger.error(f"Folder Workflow Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

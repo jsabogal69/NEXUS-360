@@ -11,9 +11,19 @@ import uuid
 import logging
 
 # --- CONFIGURATION ---
+from dotenv import load_dotenv
+load_dotenv()
+
 logger = logging.getLogger("SHARED-UTILS")
 PROJECT_ID = "nexus-360-suite" 
-CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "serviceAccountKey.json")
+
+# Robust Path Resolution
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DEFAULT_CRED_PATH = os.path.join(BASE_DIR, "serviceAccountKey.json")
+CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", DEFAULT_CRED_PATH)
+
+logger.info(f"[SHARED-UTILS] Resolved Credentials Path: {CREDENTIALS_PATH}")
+logger.info(f"[SHARED-UTILS] CWD: {os.getcwd()}")
 
 # --- FIREBASE INIT ---
 # --- MOCK FIRESTORE FOR DEV ---
@@ -133,14 +143,17 @@ from google.oauth2 import service_account
 
 def get_drive_service():
     SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+    logger.info(f"[DRIVE] Attempting to init Drive Service with path: {CREDENTIALS_PATH}")
     if not os.path.exists(CREDENTIALS_PATH):
-        logger.warning(f"[DRIVE] Credentials not found at {CREDENTIALS_PATH}")
+        logger.warning(f"[DRIVE] Credentials file NOT FOUND at {CREDENTIALS_PATH}")
         return None
     
     try:
         cred = service_account.Credentials.from_service_account_file(
             CREDENTIALS_PATH, scopes=SCOPES)
-        return build('drive', 'v3', credentials=cred)
+        service = build('drive', 'v3', credentials=cred)
+        logger.info("[DRIVE] Service created successfully.")
+        return service
     except Exception as e:
-        logger.error(f"[DRIVE] Init Failed: {e}")
+        logger.error(f"[DRIVE] Init Failed: {e}", exc_info=True)
         return None

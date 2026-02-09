@@ -24,5 +24,9 @@ echo "✅ Server starting..."
 echo "👉 Application URL: http://127.0.0.1:8000/dashboard/"
 echo "   (Press Ctrl+C to stop)"
 
+# Force load .env variables
+export $(grep -v '^#' .env | xargs)
+
 # Run uvicorn with hot reload
+# Using nohup to prevent Hangup if terminal closes, but normally direct run is fine for local
 uvicorn agents.main:app --reload --host 127.0.0.1 --port 8000

@@ -162,7 +162,11 @@ class Nexus1Harvester:
             service = get_drive_service()
         
         if not service:
-            error_msg = "AUTENTICACIÓN FALLIDA: No se proporcionó un Token de Usuario válido."
+            logger.error(f"[{self.role}] CRITICAL: Failed to initialize Google Drive Service.")
+            logger.error(f"[{self.role}] CREDENTIALS_PATH env var: {os.getenv('GOOGLE_APPLICATION_CREDENTIALS')}")
+            logger.error(f"[{self.role}] serviceAccountKey.json exists? {os.path.exists('serviceAccountKey.json')}")
+            
+            error_msg = "AUTENTICACIÓN FALLIDA: No se pudo conectar con Google Drive. Verifique logs."
             return {"ids": [], "mode": "ERROR", "message": error_msg}
 
         try:
@@ -407,8 +411,9 @@ class Nexus1Harvester:
             }
             
         except Exception as e:
-            logger.error(f"[{self.role}] Folder Ingestion Failed: {e}")
-            return {"ids": [], "mode": "ERROR", "message": f"Fallo al acceder a Drive: {str(e)}"}
+            error_str = str(e)
+            logger.error(f"[{self.role}] Folder Ingestion Failed: {error_str}")
+            return {"ids": [], "mode": "ERROR", "message": f"Error de Google Drive: {error_str[:300]}"}
 
     def _save_to_raw_inputs(self, data: dict) -> str:
         if not self.db: return data["id"]
