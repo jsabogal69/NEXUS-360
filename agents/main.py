@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -19,7 +20,7 @@ from .nexus_4_strategist.core import Nexus4Strategist
 from .nexus_5_mathematician.core import Nexus5Mathematician
 from .nexus_6_senior_partner.core import Nexus6SeniorPartner
 from .nexus_7_architect.core import Nexus7Architect
-from .nexus_8_guardian.core import Nexus8Guardian
+from .nexus_10_guardian.core import Nexus10Guardian
 from .nexus_8_archivist.core import Nexus8Archivist
 from .nexus_9_inspector.core import Nexus9Inspector
 
@@ -28,6 +29,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-GATEWAY")
 
 app = FastAPI(title="NEXUS-360 API", version="1.0.0")
+
+# CORS: Allow direct calls from Firebase Hosting to Cloud Run
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://nexus-360-suite-c3e6c.web.app",
+        "https://nexus-360-suite-c3e6c.firebaseapp.com",
+        "http://localhost:8000",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Mount Static Files (Frontend)
 static_path = os.path.join(os.path.dirname(__file__), "static")
@@ -198,7 +213,7 @@ async def run_folder_workflow(request: FolderIngestRequest):
         # In real life, this might trigger 8 instances or a consolidated analysis
         
         # 2. Guardian Validation (Batch)
-        guardian = Nexus8Guardian()
+        guardian = Nexus10Guardian()
         validation_results = []
         for doc_id in ingested_ids:
             res = await guardian.validate_input(doc_id, {"raw_content": "batch_processing"})
@@ -350,7 +365,7 @@ async def step_1_harvester(request: FolderIngestRequest):
 async def step_2_guardian(payload: dict):
     """Executes ONLY the Guardian Step (Batch Validation)"""
     ingested_ids = payload.get("data", {}).get("ids", [])
-    guardian = Nexus8Guardian()
+    guardian = Nexus10Guardian()
     results = []
     for doc_id in ingested_ids:
         is_valid = await guardian.validate_input(doc_id, {"raw_content": "batch"})
@@ -512,7 +527,7 @@ async def run_full_cycle(request: IngestRequest):
             raise HTTPException(status_code=500, detail="Ignition Failed during Harvester step")
 
         # 2. GUARDIAN (Validate Input)
-        guardian = Nexus8Guardian()
+        guardian = Nexus10Guardian()
         # Mock payload construction
         is_valid = await guardian.validate_input(input_id, {"raw_content": request.content_text})
         if not is_valid:

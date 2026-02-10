@@ -4,13 +4,13 @@ import logging
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("NEXUS-8")
+logger = logging.getLogger("NEXUS-10")
 
-class Nexus8Guardian:
+class Nexus10Guardian:
     task_description = "Validate input data schema and compliance"
     def __init__(self):
         self.db = get_db()
-        self.role = "NEXUS-8 (The Guardian)"
+        self.role = "NEXUS-10 (The Guardian)"
 
     @report_agent_activity
     async def validate_input(self, input_id: str, content: dict) -> bool:
@@ -307,5 +307,5 @@ class Nexus8Guardian:
 
 # Entry point for testing
 if __name__ == "__main__":
-    guardian = Nexus8Guardian()
+    guardian = Nexus10Guardian()
     logger.info(f"{guardian.role} Online.")

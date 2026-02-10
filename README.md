@@ -40,7 +40,7 @@ curl -X POST "http://127.0.0.1:8000/workflow/full_cycle" \
 ## Project Structure
 - `agents/`: Source code for all agents.
   - `nexus_1_harvester`: Ingestion.
-  - `nexus_8_guardian`: Validation.
+  - `nexus_10_guardian`: Validation.
   - ... (and so on)
 - `nexus-rules.md`: Operational protocols.
 

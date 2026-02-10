@@ -15,3 +15,5 @@ server.log
 agents/static/reports/blueprint_*.html
 node_modules
 gcloud auth login/
+.cursorrules
+.gemini/

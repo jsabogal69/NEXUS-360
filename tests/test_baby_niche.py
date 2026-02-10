@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from agents.nexus_1_harvester.core import Nexus1Harvester
-from agents.nexus_8_guardian.core import Nexus8Guardian
+from agents.nexus_10_guardian.core import Nexus10Guardian
 from agents.nexus_2_scout.core import Nexus2Scout
 from agents.nexus_3_integrator.core import Nexus3Integrator
 from agents.nexus_4_strategist.core import Nexus4Strategist

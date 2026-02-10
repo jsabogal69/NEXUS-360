@@ -1,13 +1,13 @@
 import asyncio
 import os
 import sys
-from agents.nexus_8_guardian.core import Nexus8Guardian
+from agents.nexus_10_guardian.core import Nexus10Guardian
 
 # Ensure agents package is importable
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 async def test_dynamic_audit():
-    guardian = Nexus8Guardian()
+    guardian = Nexus10Guardian()
     
     # Test case 1: 65W GaN Charger (Electronics)
     print("\n--- Testing 65W GaN Charger ---")
