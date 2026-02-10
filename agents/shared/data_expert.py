@@ -316,9 +316,9 @@ class DataExpert:
             "revenue": ["revenue", "ingresos", "facturación", "est_revenue", "est. revenue", "revenue (30 days)"],
             "bsr": ["bsr", "rank", "ranking", "best sellers rank", "best_sellers_rank", "sales rank"],
             "asin": ["asin", "product id", "product_id", "id"],
-            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "description", "item name"],
-            "reviews": ["reviews", "reseñas", "total ratings", "review count", "review_count", "rating count"],
-            "rating_score": ["rating", "score", "stars", "puntuación", "estrellas", "average rating", "avg rating"],
+            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "description", "item name", "name", "listing name", "listing_name", "item", "product title", "product_title"],
+            "reviews": ["reviews", "reseñas", "total ratings", "review count", "review_count", "rating count", "rating_count", "number of ratings", "total_ratings", "reviews count", "customer reviews"],
+            "rating_score": ["star rating", "star_rating", "avg_rating", "average_rating", "avg rating", "average rating", "rating", "score", "stars", "puntuación", "estrellas"],
             "fees": ["fees", "fba fees", "tarifas", "amazon fees", "fba_fees", "fulfillment fee"],
             "active_sellers": ["active sellers", "sellers", "vendedores", "num sellers", "active_sellers", "seller count"],
             "dimensions": ["dimensions", "dimensiones", "size", "talla", "product dimensions"],
@@ -327,12 +327,37 @@ class DataExpert:
             "click_count": ["niche click count", "click count", "recuento de clics", "click_count", "clicks"]
         }
         
+        # Normalize aliases the same way clean_dataframe normalizes columns:
+        # spaces and special chars → underscores, lowercase
+        def _normalize(s):
+            return re.sub(r'[^a-zA-Z0-9_]', '_', s.strip().lower())
+        
+        # Two-pass matching: exact first, then substring
+        # Pass 1: Exact matches (prevents 'name' from matching 'brand_name')
         for field, aliases in column_aliases.items():
+            if field in col_map:
+                continue
             for col in df.columns:
-                col_lower = str(col).lower().strip()
-                if any(alias in col_lower for alias in aliases):
+                col_norm = _normalize(str(col))
+                if any(col_norm == _normalize(alias) for alias in aliases):
                     col_map[field] = col
                     break
+        
+        # Pass 2: Substring matches (for remaining unmapped fields)
+        mapped_cols = set(col_map.values())
+        for field, aliases in column_aliases.items():
+            if field in col_map:
+                continue
+            for col in df.columns:
+                if col in mapped_cols:
+                    continue  # Skip columns already assigned
+                col_norm = _normalize(str(col))
+                if any(_normalize(alias) in col_norm for alias in aliases):
+                    col_map[field] = col
+                    break
+        
+        logger.info(f"[DATA-EXPERT] Column mapping for {filename}: {col_map}")
+        logger.info(f"[DATA-EXPERT] Available columns: {list(df.columns)}")
         
         # Validation: Needs at least Price or Sales or Click Count to be useful
         if "price" not in col_map and "sales" not in col_map and "click_count" not in col_map:
