@@ -54,10 +54,19 @@ class MockCollection:
         return DocRef(self.storage, self.name, doc_id)
 
 class MockFirestore:
-    _storage = {}
+    def __init__(self):
+        self._storage = {}  # Instance-level: each new MockFirestore starts CLEAN
     def collection(self, name): return MockCollection(self._storage, name)
 
 _MOCK_DB_INSTANCE = None
+
+def clear_mock_db():
+    """Reset the in-memory MockDB singleton. MUST be called at the start of every pipeline run."""
+    global _MOCK_DB_INSTANCE
+    if isinstance(_MOCK_DB_INSTANCE, MockFirestore):
+        _MOCK_DB_INSTANCE = MockFirestore()  # Fresh instance with empty _storage
+        logger.info("[MOCK-DB] 🧹 In-memory database CLEARED — fresh analysis starts now")
+    # If using real Firestore, no action needed (data is isolated by document IDs)
 
 def get_db():
     global _MOCK_DB_INSTANCE

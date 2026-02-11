@@ -94,6 +94,42 @@ class Nexus2Scout:
 """
             hard_data_summary += "\nIMPORTANT: Base your analysis on THESE SPECIFIC products. Identify their REAL pros/cons based on their metrics and typical review patterns for this product type.\n"
             
+            # ── NICHE ANALYTICS CONTEXT (from DataExpert Pandas engine) ──
+            niche_analytics = poe_data.get("niche_analytics", {})
+            if niche_analytics:
+                hard_data_summary += "\n--- ADVANCED NICHE ANALYTICS (Data-Driven via Pandas) ---\n"
+                
+                # Demographics
+                demo = niche_analytics.get("demographics", {})
+                if demo:
+                    dom_seg = demo.get("dominant_segment", "N/A")
+                    cls_rate = demo.get("classification_rate", 0)
+                    segs = demo.get("segments", {})
+                    seg_str = ", ".join([f"{k}: {v.get('pct', 0)}%" for k, v in segs.items() if k != "Unspecified"])
+                    hard_data_summary += f"- DEMOGRAPHICS: Dominant={dom_seg} | Classified={cls_rate}% | Breakdown: {seg_str}\n"
+                
+                # Brand Concentration
+                bc = niche_analytics.get("brand_concentration", {})
+                if bc:
+                    hard_data_summary += f"- BRAND CONCENTRATION: HHI={bc.get('hhi_index', 0)} ({bc.get('hhi_label', 'N/A')}), {bc.get('unique_brands', 0)} unique brands, Top: {bc.get('top_brand', 'N/A')} ({bc.get('top_brand_share', 0)}%)\n"
+                
+                # Revenue Pareto
+                rp = niche_analytics.get("revenue_pareto", {})
+                if rp:
+                    hard_data_summary += f"- REVENUE DISTRIBUTION: {rp.get('interpretation', 'N/A')} (Concentration: {rp.get('concentration', 'N/A')})\n"
+                
+                # Price Analytics
+                pa = niche_analytics.get("price", {})
+                if pa:
+                    hard_data_summary += f"- PRICE ANALYTICS: Sweet Spot={pa.get('sweet_spot', 'N/A')}, Std Dev=${pa.get('std', 0)}, Range=${pa.get('min', 0)}-${pa.get('max', 0)}\n"
+                
+                # Review Velocity
+                rv = niche_analytics.get("review_velocity", {})
+                if rv:
+                    hard_data_summary += f"- REVIEW VELOCITY: Median={rv.get('p50', 0)}/mo, P75={rv.get('p75', 0)}/mo, P90={rv.get('p90', 0)}/mo\n"
+                
+                hard_data_summary += "\nUse these analytics to provide data-backed strategic recommendations.\n"
+            
         else:
             confidence_tag = "🟡 ESTIMADO (Cálculo IA - SIN DATOS REALES)"
             poe_products = []
@@ -102,7 +138,7 @@ class Nexus2Scout:
             hard_data_summary += "- NO PRODUCT DATA AVAILABLE (Use LLM estimates cautiously)\n"
 
         # --- EXTRACT METRICS FROM SEARCH TERMS ---
-        if search_terms_data and search_terms_data.get("has_data", False):
+        if search_terms_data and search_terms_data.get("has_search_data", False):
             st_file = search_terms_data.get("source_file", "search_terms.csv")
             top_kws = search_terms_data.get("top_keywords", [])[:5]
             
@@ -273,62 +309,103 @@ class Nexus2Scout:
                 price = float(p.get("price", 0))
                 bsr = int(p.get("bsr", 0)) or int(p.get("rank", 0))
                 name = p.get("name", "")[:30]
+                # NEW Helium 10 fields
+                brand = p.get("brand", "N/A")
+                seller_country = str(p.get("seller_country", "N/A")).upper()
+                fulfillment = str(p.get("fulfillment", "N/A")).upper()
+                rev_velocity = int(p.get("review_velocity", 0))
+                seller_age = int(p.get("seller_age_months", 0))
+                sponsored = str(p.get("sponsored", "No"))
+                images = int(p.get("images_count", 0))
+                recent_purch = int(p.get("recent_purchases", 0))
+                sales = int(p.get("sales", 0))
                 
                 # ═══════════════════════════════════════════════════════════════════
-                # ENHANCED SEMANTIC DISTRIBUTOR v2.0 - Data-Driven Insights
+                # ENHANCED SEMANTIC DISTRIBUTOR v3.0 - Full Helium 10 Intelligence
                 # ═══════════════════════════════════════════════════════════════════
                 
-                # 1. ADVANTAGE (PROS) - Basado en métricas reales
+                # 1. ADVANTAGE (PROS) - Basado en métricas reales + H10 extended
                 if rating >= 4.7 and reviews >= 1000:
-                    p["adv"] = f"Rating {rating}★ + {reviews:,} reseñas: LÍDER VALIDADO del mercado"
+                    velocity_note = f" | Momentum: {rev_velocity} rev/mes" if rev_velocity > 100 else ""
+                    p["adv"] = f"Rating {rating}★ + {reviews:,} reseñas: LÍDER VALIDADO{velocity_note}"
+                elif rev_velocity >= 200 and rating >= 4.5:
+                    p["adv"] = f"🚀 Momentum explosivo: {rev_velocity} reviews/mes + {rating}★ = Crecimiento viral"
+                elif recent_purch >= 5000 and rating >= 4.5:
+                    p["adv"] = f"🔥 {recent_purch:,} compras recientes + {rating}★ = Producto trending"
                 elif rating >= 4.5 and reviews >= 500:
-                    p["adv"] = f"Alta satisfacción ({rating}★) con base sólida de {reviews:,} reviews"
+                    p["adv"] = f"Alta satisfacción ({rating}★) con {reviews:,} reviews | {brand}"
                 elif bsr and bsr <= 500:
-                    p["adv"] = f"BSR #{bsr:,}: Demanda extremadamente alta confirmada"
+                    p["adv"] = f"BSR #{bsr:,}: Demanda extremadamente alta | {fulfillment}"
                 elif bsr and bsr <= 2000:
-                    p["adv"] = f"BSR #{bsr:,}: Alta rotación de ventas"
+                    amz_note = " (Amazon como seller)" if "AMZ" in seller_country or "AMAZON" in str(p.get("seller_name", "")).upper() else ""
+                    p["adv"] = f"BSR #{bsr:,}: Alta rotación{amz_note}"
                 elif price < 20 and rating >= 4.0:
-                    p["adv"] = f"Best Value: ${price:.2f} con {rating}★ = Excelente calidad/precio"
+                    p["adv"] = f"Best Value: ${price:.2f} con {rating}★ | {brand}"
                 elif reviews >= 3000:
                     p["adv"] = f"Dominación social: {reviews:,} reseñas (social proof masivo)"
+                elif seller_age >= 60 and rating >= 4.3:
+                    p["adv"] = f"Veterano ({seller_age} meses) con {rating}★: Posicionamiento estable"
+                elif sponsored and sponsored not in ("No", "N/A", "", "nan"):
+                    p["adv"] = f"Inversión PPC activa ({sponsored}) = Budget de marketing confirmado"
                 elif social_pros:
                     p["adv"] = social_pros[i % len(social_pros)]
                 else:
-                    p["adv"] = f"Posicionado en mercado (Rating: {rating}★)"
+                    p["adv"] = f"Posicionado: {brand} | Rating {rating}★ | {fulfillment}"
 
-                # 2. VULNERABILITY (CONS) - Basado en debilidades detectables
+                # 2. VULNERABILITY (CONS) - Detecta debilidades con H10 intel
                 if rating < 3.5:
                     p["vuln"] = f"⚠️ Rating CRÍTICO {rating}★: Producto en riesgo de deslistado"
+                elif "CN" in seller_country and rating < 4.3:
+                    p["vuln"] = f"🇨🇳 Seller China + Rating {rating}★: Calidad inconsistente, reviews a riesgo"
                 elif rating < 4.0 and reviews > 500:
                     p["vuln"] = f"Rating {rating}★ con {reviews:,} reviews: Problemas sistémicos de calidad"
+                elif images < 5 and reviews < 500:
+                    p["vuln"] = f"📸 Solo {images} imágenes + {reviews} reviews: Listing sub-optimizado"
                 elif rating < 4.3 and social_pain:
                     pk = social_pain[i % len(social_pain)]
                     kw = pk.get('keyword', 'calidad') if isinstance(pk, dict) else str(pk)
-                    p["vuln"] = f"Pain Point detectado: '{kw}' (Rating {rating}★)"
+                    p["vuln"] = f"Pain Point: '{kw}' (Rating {rating}★)"
+                elif sponsored and sponsored not in ("No", "N/A", "", "nan") and rating < 4.5:
+                    p["vuln"] = f"💸 Dependencia PPC ({sponsored}) + {rating}★: Orgánico débil"
                 elif reviews < 50 and bsr and bsr > 10000:
-                    p["vuln"] = f"Riesgo: Solo {reviews} reviews + BSR #{bsr:,} = Producto nuevo/no validado"
+                    p["vuln"] = f"Riesgo: Solo {reviews} reviews + BSR #{bsr:,} = No validado"
                 elif reviews < 100:
-                    p["vuln"] = f"Falta validación social: Solo {reviews} reseñas"
+                    p["vuln"] = f"Falta validación: Solo {reviews} reseñas | Seller age: {seller_age}mo"
                 elif price > 40 and rating < 4.3:
                     p["vuln"] = f"Precio premium (${price:.2f}) sin rating premium ({rating}★)"
+                elif seller_age < 12 and reviews < 300:
+                    p["vuln"] = f"🆕 Seller nuevo ({seller_age} meses) con {reviews} reviews: No consolidado"
                 elif social_cons:
                     p["vuln"] = social_cons[i % len(social_cons)]
                 else:
-                    p["vuln"] = f"Competencia intensa en rango ${price:.0f}"
+                    p["vuln"] = f"Competencia intensa en rango ${price:.0f} | {seller_country}"
 
-                # 3. STRATEGIC GAP - Oportunidades específicas
+                # 3. STRATEGIC GAP - Oportunidades con H10 deep intel
                 if rating < 4.0 and reviews > 1000:
-                    p["gap"] = f"🎯 DISRUPTOR: Líder débil ({rating}★) con {reviews:,} ventas = Mercado listo para mejor calidad"
+                    p["gap"] = f"🎯 DISRUPTOR: Líder débil ({rating}★) con {reviews:,} ventas = Mejor calidad gana"
+                elif "CN" in seller_country and rating < 4.5 and sales > 1000:
+                    p["gap"] = f"🇺🇸 ATTACK: Seller CN ({rating}★, {sales:,} ventas) → Entrar con marca US + calidad"
+                elif seller_age < 18 and sales > 2000:
+                    p["gap"] = f"⚡ FAST MOVER: Seller nuevo ({seller_age}mo) con {sales:,} ventas → Mercado crece rápido"
                 elif rating >= 4.7 and reviews < 200:
-                    p["gap"] = f"🚀 ESCALAR: Producto excelente ({rating}★) pero invisible ({reviews} reviews) = Oportunidad de marketing"
+                    p["gap"] = f"🚀 ESCALAR: Excelente ({rating}★) pero invisible ({reviews} reviews) → PPC + marketing"
                 elif price > 35 and rating < 4.2:
-                    p["gap"] = f"⚔️ ATTACK: Precio ${price:.2f} injustificado con {rating}★ = Entrada por valor"
+                    p["gap"] = f"⚔️ ATTACK: ${price:.2f} injustificado con {rating}★ → Entrada por valor"
+                elif images < 6 and rating >= 4.0:
+                    p["gap"] = f"📸 LISTING: Solo {images} fotos con {rating}★ → Superarlo con media profesional"
                 elif bsr and bsr > 50000:
-                    p["gap"] = f"📈 NICHO: BSR #{bsr:,} = Segmento desatendido, poca competencia"
+                    p["gap"] = f"📈 NICHO: BSR #{bsr:,} = Segmento desatendido"
+                elif fulfillment == "FBM" and sales > 500:
+                    p["gap"] = f"📦 FBA ADVANTAGE: Competidor en FBM ({sales:,} ventas) → Ganar con Prime/FBA"
+                elif p.get("age_segment") == "Unspecified" and sales > 500:
+                    p["gap"] = f"🎯 SEGMENTACIÓN: {sales:,} ventas sin target demográfico claro → Posicionar por edad"
+                elif p.get("age_segment") and p.get("age_segment") != "Unspecified" and price > 30 and p.get("age_segment") in ("Preschool", "Toddler"):
+                    p["gap"] = f"💰 MISMATCH: ${price:.2f} en {p['age_segment']} → Padres buscan valor, entrar con precio competitivo"
                 elif reviews > 5000 and rating >= 4.5:
-                    p["gap"] = f"🛡️ DIFERENCIACIÓN: Líder fuerte, atacar con innovación/nicho específico"
+                    p["gap"] = f"🛡️ DIFERENCIACIÓN: Líder fuerte → Innovación o nicho específico"
                 else:
-                    p["gap"] = f"Oportunidad de Branding & Storytelling diferenciado"
+                    seg_note = f" | Target: {p.get('age_segment', 'N/A')}" if p.get('age_segment', 'Unspecified') != 'Unspecified' else ''
+                    p["gap"] = f"Branding & Storytelling diferenciado vs {brand}{seg_note}"
                     
         else:
             # Usar TOP 10 del LLM (análisis cualitativo válido, precios estimados)
@@ -416,6 +493,16 @@ class Nexus2Scout:
                 "reviews_analysis": reviews_analysis,
                 "price_tiers": price_tiers,
                 "amazon_fees_structure": amazon_fees_structure,
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # POE v4.0: Search Terms Intelligence (Traffic & Demand Analysis)
+                # ═══════════════════════════════════════════════════════════════════
+                "search_terms_intel": search_terms_data if search_terms_data and search_terms_data.get("has_search_data") else {},
+                
+                # ═══════════════════════════════════════════════════════════════════
+                # POE v5.0: Niche Analytics (Pandas-Powered Demographics & Metrics)
+                # ═══════════════════════════════════════════════════════════════════
+                "niche_analytics": poe_data.get("niche_analytics", {}) if has_poe_data else {},
                 
                 # ═══════════════════════════════════════════════════════════════════
                 # PASO 5: Detección de 'Lightning Bolt Scaling'

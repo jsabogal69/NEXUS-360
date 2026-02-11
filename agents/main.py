@@ -94,7 +94,7 @@ async def latest_report():
         return {"message": "Report file not found"}
 
 # --- FIREBASE REPORTS API ---
-from .shared.utils import get_db
+from .shared.utils import get_db, clear_mock_db
 
 @app.get("/api/reports")
 async def list_firebase_reports():
@@ -167,6 +167,13 @@ async def run_folder_workflow(request: FolderIngestRequest):
     Triggers the NEXUS-360 pipeline starting from a Google Drive Folder.
     """
     try:
+        # ═══════════════════════════════════════════════════════════════════
+        # MANDATORY: Clear all in-memory state from previous pipeline runs
+        # This ensures NO data contamination between analyses
+        # ═══════════════════════════════════════════════════════════════════
+        clear_mock_db()
+        logger.info("[PIPELINE] 🧹 Memory cleared — starting fresh analysis")
+        
         # Helper to save artifacts
         import json
         
@@ -275,11 +282,18 @@ async def run_folder_workflow(request: FolderIngestRequest):
             "strategist": strategy,
             "mathematician": models,
             "senior_partner": summary,
-            "guardian": guardian_audit
+            "guardian": guardian_audit,
+            "search_terms_data": search_terms_data if search_terms_data else {}
         }
         
         architect = Nexus7Architect()
         report = await architect.generate_report_artifacts(full_data)
+        
+        # 8b. EXECUTIVE BRIEF (2-Page Market-First)
+        report_id_for_brief = report.get("pdf_url", "").split("report_")[-1].replace(".html", "")
+        brief_result = await architect.generate_executive_brief(full_data, report_id_for_brief)
+        brief_url = brief_result.get("brief_path", brief_result.get("pdf_url", ""))
+        logger.info(f"[ARCHITECT] Executive Brief generated: {brief_url}")
         
         # 9. ARCHIVIST - Archive case for longitudinal studies
         archivist = Nexus8Archivist()
@@ -316,11 +330,11 @@ async def run_folder_workflow(request: FolderIngestRequest):
                 "scout_data": findings,  # Include scout data for Executive Brief
                 "integrator": integrator_url,
                 "strategist": strategist_url,
-                "strategist": strategist_url,
                 "senior_partner": senior_url,
-                "inspector": blueprint_url
+                "inspector": blueprint_url,
+                "executive_brief": brief_url
             },
-            "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect", "Archivist"]
+            "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect", "Executive Brief", "Archivist"]
         }
 
 
@@ -520,6 +534,12 @@ async def run_full_cycle(request: IngestRequest):
     Triggers the complete NEXUS-360 pipeline from Ingestion to Report Generation.
     """
     try:
+        # ═══════════════════════════════════════════════════════════════════
+        # MANDATORY: Clear all in-memory state from previous pipeline runs
+        # ═══════════════════════════════════════════════════════════════════
+        clear_mock_db()
+        logger.info("[PIPELINE] 🧹 Memory cleared — starting fresh full cycle")
+        
         # 1. HARVESTER
         harvester = Nexus1Harvester()
         input_id = harvester.ingest_mock_data(request.source_name, request.content_text)
@@ -583,7 +603,8 @@ async def run_full_cycle(request: IngestRequest):
             "integrator": ssot,
             "strategist": strategy,
             "mathematician": models,
-            "senior_partner": summary
+            "senior_partner": summary,
+            "search_terms_data": {}
         }
         
         architect = Nexus7Architect()

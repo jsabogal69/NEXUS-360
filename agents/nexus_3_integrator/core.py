@@ -17,6 +17,7 @@ class Nexus3Integrator:
         Crucial: It fetches the SCOUT data to define the 'Anchor Niche' for the rest of the pipeline.
         """
         logger.info(f"[{self.role}] Consolidating inputs: {input_ids}")
+        logger.info(f"[{self.role}] 🔒 Processing ONLY these {len(input_ids)} IDs — no external data")
         
         pre_fetched_docs = pre_fetched_docs or {}
         data_stats = data_stats or {}

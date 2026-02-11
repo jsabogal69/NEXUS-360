@@ -324,7 +324,26 @@ class DataExpert:
             "dimensions": ["dimensions", "dimensiones", "size", "talla", "product dimensions"],
             "launch_date": ["launch date", "fecha lanzamiento", "creation date", "date first available", "creation_date", "published date"],
             "click_share": ["click share", "cuota de clic", "share", "click share %", "click_share", "click share percentage"],
-            "click_count": ["niche click count", "click count", "recuento de clics", "click_count", "clicks"]
+            "click_count": ["niche click count", "click count", "recuento de clics", "click_count", "clicks"],
+            # ── NEW Helium 10 Extended Fields ──
+            "brand": ["brand", "marca", "brand name", "brand_name"],
+            "seller_country": ["seller country", "seller country/region", "país del vendedor", "seller_country", "country", "region"],
+            "fulfillment": ["fulfillment", "fulfillment type", "tipo fulfillment", "fba/fbm", "fulfilled by"],
+            "weight": ["weight", "peso", "item weight", "product weight", "shipping weight"],
+            "review_velocity": ["review velocity", "velocidad de reseñas", "review_velocity", "review vel", "reviews/month"],
+            "images_count": ["images", "imágenes", "image count", "images_count", "num images", "photo count"],
+            "seller_age_months": ["seller age", "edad del vendedor", "seller age (mo)", "seller_age", "months selling"],
+            "size_tier": ["size tier", "tier de tamaño", "size_tier", "fba size tier", "product size tier"],
+            "sponsored": ["sponsored", "patrocinado", "is_sponsored", "ad type", "ppc"],
+            "seller_name": ["seller", "vendedor", "seller name", "seller_name", "sold by"],
+            "buy_box": ["buy box", "buy_box", "buy box owner", "buybox"],
+            "title_length": ["title char", "title characters", "title char. count", "title_length", "char count", "character count"],
+            "recent_purchases": ["recent purchases", "compras recientes", "recent_purchases", "bought in past month"],
+            "category": ["category", "categoría", "department", "product category", "main category"],
+            "parent_sales": ["parent level sales", "parent sales", "parent_sales", "parent_level_sales"],
+            "parent_revenue": ["parent level revenue", "parent revenue", "parent_revenue", "parent_level_revenue"],
+            "best_seller": ["best seller", "best_seller", "bestseller", "amazon's choice"],
+            "display_order": ["display order", "display_order", "order", "position", "rank position"]
         }
         
         # Normalize aliases the same way clean_dataframe normalizes columns:
@@ -396,7 +415,27 @@ class DataExpert:
                     "dimensions": str(row.get(col_map.get("dimensions", ""), "N/A")),
                     "launch_date": str(row.get(col_map.get("launch_date", ""), "N/A")),
                     "click_share": DataExpert.normalize_number(row.get(col_map.get("click_share", ""), 0)),
-                    "rank": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))) # Alias for Architect compatibility
+                    "rank": int(DataExpert.normalize_number(row.get(col_map.get("bsr", ""), 0))),
+                    # ── NEW Helium 10 Extended Fields ──
+                    "brand": str(row.get(col_map.get("brand", ""), "N/A")).strip() or "N/A",
+                    "seller_country": str(row.get(col_map.get("seller_country", ""), "N/A")).strip() or "N/A",
+                    "fulfillment": str(row.get(col_map.get("fulfillment", ""), "N/A")).strip() or "N/A",
+                    "weight": str(row.get(col_map.get("weight", ""), "N/A")).strip() or "N/A",
+                    "weight_lbs": DataExpert.normalize_number(row.get(col_map.get("weight", ""), 0)),
+                    "review_velocity": int(DataExpert.normalize_number(row.get(col_map.get("review_velocity", ""), 0))),
+                    "images_count": int(DataExpert.normalize_number(row.get(col_map.get("images_count", ""), 0))),
+                    "seller_age_months": int(DataExpert.normalize_number(row.get(col_map.get("seller_age_months", ""), 0))),
+                    "size_tier": str(row.get(col_map.get("size_tier", ""), "N/A")).strip() or "N/A",
+                    "sponsored": str(row.get(col_map.get("sponsored", ""), "No")).strip() or "No",
+                    "seller_name": str(row.get(col_map.get("seller_name", ""), "N/A")).strip() or "N/A",
+                    "buy_box": str(row.get(col_map.get("buy_box", ""), "N/A")).strip() or "N/A",
+                    "title_length": int(DataExpert.normalize_number(row.get(col_map.get("title_length", ""), 0))),
+                    "recent_purchases": int(DataExpert.normalize_number(row.get(col_map.get("recent_purchases", ""), 0))),
+                    "category": str(row.get(col_map.get("category", ""), "N/A")).strip() or "N/A",
+                    "parent_sales": int(DataExpert.normalize_number(row.get(col_map.get("parent_sales", ""), 0))),
+                    "parent_revenue": round(DataExpert.normalize_number(row.get(col_map.get("parent_revenue", ""), 0)), 2),
+                    "best_seller": str(row.get(col_map.get("best_seller", ""), "No")).strip() or "No",
+                    "display_order": int(DataExpert.normalize_number(row.get(col_map.get("display_order", ""), idx + 1)))
                 }
                 
                 if product["price"] > 0 or product["sales"] > 0 or product["click_share"] > 0:
@@ -415,9 +454,328 @@ class DataExpert:
                 result["avg_price"] = round(sum(prices) / len(prices), 2)
                 result["price_range"] = f"${min(prices)} - ${max(prices)}"
             
+            # ── AUTO: Tag demographics & compute niche analytics ──
+            try:
+                DataExpert.analyze_product_demographics(products)
+                result["niche_analytics"] = DataExpert.compute_niche_analytics(products)
+                logger.info(f"[DATA-EXPERT] 🎯 Niche analytics computed: {result['niche_analytics'].get('demographics', {}).get('dominant_segment', 'N/A')} dominant")
+            except Exception as e:
+                logger.warning(f"[DATA-EXPERT] Niche analytics failed (non-critical): {e}")
+            
             logger.info(f"[DATA-EXPERT] 💰 Extracted {len(products)} products from {filename}. Avg Price: ${result['avg_price']}")
             
         return result
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # PRODUCT DEMOGRAPHICS & TARGET AGE ANALYSIS
+    # ═══════════════════════════════════════════════════════════════════════
+
+    @staticmethod
+    def analyze_product_demographics(products: list) -> dict:
+        """
+        Analyzes product titles to extract target customer demographics.
+        Uses regex patterns to identify age ranges, grade levels, and 
+        age-related keywords. Modifies products in-place by adding:
+          - target_age_min, target_age_max, age_segment
+        
+        Returns:
+            Summary dict with segment counts and dominant segment.
+        """
+        # Grade-to-age mapping
+        GRADE_TO_AGE = {
+            "pre-k": 4, "prek": 4, "preschool": 4,
+            "kindergarten": 5, "k": 5,
+            "1st": 6, "first": 6, "1": 6,
+            "2nd": 7, "second": 7, "2": 7,
+            "3rd": 8, "third": 8, "3": 8,
+            "4th": 9, "fourth": 9, "4": 9,
+            "5th": 10, "fifth": 10, "5": 10,
+            "6th": 11, "sixth": 11, "6": 11,
+            "7th": 12, "seventh": 12,
+            "8th": 13, "eighth": 13,
+        }
+        
+        def _classify_segment(age_min, age_max):
+            """Classify age range into market segment."""
+            mid = (age_min + age_max) / 2
+            if mid <= 1:
+                return "Infant"
+            elif mid <= 3:
+                return "Toddler"
+            elif mid <= 5:
+                return "Preschool"
+            elif mid <= 10:
+                return "Elementary"
+            elif mid <= 12:
+                return "Tween"
+            elif mid <= 17:
+                return "Teen"
+            elif mid >= 18:
+                return "Adult"
+            return "Unspecified"
+        
+        def _extract_age_from_title(title: str) -> tuple:
+            """Extract (age_min, age_max) from product title using regex patterns."""
+            t = title.lower()
+            
+            # Pattern 1: "Ages X-Y" / "Age X-Y" / "ages X to Y"
+            m = re.search(r'ages?\s*(\d{1,2})\s*[-–—to&]\s*(\d{1,2})', t)
+            if m:
+                return int(m.group(1)), int(m.group(2))
+            
+            # Pattern 2: "Ages X+" / "Age X & Up" / "Age X and Up"  
+            m = re.search(r'ages?\s*(\d{1,2})\s*(?:\+|&\s*up|and\s*up|up)', t)
+            if m:
+                a = int(m.group(1))
+                return a, min(a + 6, 99)
+            
+            # Pattern 3: "X-Y years" / "X-Y year old"
+            m = re.search(r'(\d{1,2})\s*[-–—to]\s*(\d{1,2})\s*(?:years?|yr|año)', t)
+            if m:
+                return int(m.group(1)), int(m.group(2))
+            
+            # Pattern 4: "for X year olds"
+            m = re.search(r'for\s*(\d{1,2})\s*year\s*old', t)
+            if m:
+                a = int(m.group(1))
+                return a, a + 2
+            
+            # Pattern 5: Grade ranges "Grade K-3" / "1st-3rd Grade" / "Grades 1-5"
+            m = re.search(r'grades?\s*(pre-?k|k|kindergarten|\d+(?:st|nd|rd|th)?)\s*[-–—to&]\s*(pre-?k|k|kindergarten|\d+(?:st|nd|rd|th)?)', t)
+            if m:
+                g1 = re.sub(r'(st|nd|rd|th)$', '', m.group(1).lower())
+                g2 = re.sub(r'(st|nd|rd|th)$', '', m.group(2).lower())
+                a1 = GRADE_TO_AGE.get(g1, int(g1) + 5 if g1.isdigit() else 5)
+                a2 = GRADE_TO_AGE.get(g2, int(g2) + 5 if g2.isdigit() else 10)
+                return a1, a2
+            
+            # Pattern 6: Single grade mention "Kindergarten" / "3rd Grade"
+            m = re.search(r'(pre-?k|kindergarten|\d+(?:st|nd|rd|th))\s*grade', t)
+            if m:
+                g = re.sub(r'(st|nd|rd|th)$', '', m.group(1).lower())
+                a = GRADE_TO_AGE.get(g, int(g) + 5 if g.isdigit() else 5)
+                return a, a + 1
+            
+            # Pattern 7: Keyword-based age inference
+            keyword_ages = [
+                (r'\b(?:infant|newborn|baby)\b', 0, 1),
+                (r'\b(?:toddler|toddlers)\b', 1, 3),
+                (r'\b(?:preschool|pre-school|pre school|prek|pre-k)\b', 3, 5),
+                (r'\bfor\s+kids\b', 4, 12),
+                (r'\bchildren\b', 4, 12),
+                (r'\b(?:tween|tweens)\b', 10, 12),
+                (r'\b(?:teen|teens|teenager|adolescent)\b', 13, 17),
+                (r'\b(?:adult|adults|grown-?up)\b', 18, 65),
+                (r'\b(?:family|families|all\s+ages)\b', 4, 99),
+                (r'\b(?:senior|elderly)\b', 60, 99),
+            ]
+            for pattern, a_min, a_max in keyword_ages:
+                if re.search(pattern, t):
+                    return a_min, a_max
+            
+            # Pattern 8: Multiple standalone ages "4-5-6-7-8" / "4, 5, 6, 7, 8"
+            m = re.findall(r'\b(\d{1,2})\b', t)
+            ages = [int(x) for x in m if 1 <= int(x) <= 17]
+            if len(ages) >= 3:
+                return min(ages), max(ages)
+            
+            return None, None
+        
+        segments = {}
+        for p in products:
+            title = p.get("title", p.get("name", ""))
+            age_min, age_max = _extract_age_from_title(title)
+            
+            if age_min is not None:
+                p["target_age_min"] = age_min
+                p["target_age_max"] = age_max
+                seg = _classify_segment(age_min, age_max)
+                p["age_segment"] = seg
+            else:
+                p["target_age_min"] = None
+                p["target_age_max"] = None
+                p["age_segment"] = "Unspecified"
+                seg = "Unspecified"
+            
+            segments[seg] = segments.get(seg, 0) + 1
+        
+        # Find dominant segment (excluding Unspecified)
+        specified = {k: v for k, v in segments.items() if k != "Unspecified"}
+        dominant = max(specified, key=specified.get) if specified else "Unspecified"
+        
+        return {
+            "segments": segments,
+            "dominant_segment": dominant,
+            "total_classified": sum(v for k, v in segments.items() if k != "Unspecified"),
+            "total_unclassified": segments.get("Unspecified", 0),
+            "classification_rate": round(sum(v for k, v in segments.items() if k != "Unspecified") / max(len(products), 1) * 100, 1)
+        }
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # ADVANCED NICHE ANALYTICS (Pandas-Powered)
+    # ═══════════════════════════════════════════════════════════════════════
+
+    @staticmethod
+    def compute_niche_analytics(products: list) -> dict:
+        """
+        Computes advanced niche analytics using Pandas:
+          - Price statistics (mean, median, std, quartiles)
+          - Revenue Pareto analysis (top 20% = X% revenue)
+          - Brand concentration (HHI index)
+          - Rating distribution
+          - Seller origin & fulfillment breakdown
+          - Review velocity percentiles
+          - Age segment distribution
+        """
+        if not products:
+            return {}
+        
+        df = pd.DataFrame(products)
+        analytics = {}
+        
+        # ── 1. PRICE ANALYTICS ──
+        prices = df["price"][df["price"] > 0].dropna()
+        if len(prices) > 0:
+            analytics["price"] = {
+                "mean": round(float(prices.mean()), 2),
+                "median": round(float(prices.median()), 2),
+                "std": round(float(prices.std()), 2) if len(prices) > 1 else 0,
+                "q25": round(float(prices.quantile(0.25)), 2),
+                "q75": round(float(prices.quantile(0.75)), 2),
+                "min": round(float(prices.min()), 2),
+                "max": round(float(prices.max()), 2),
+                "sweet_spot": f"${round(float(prices.quantile(0.25)),2)} - ${round(float(prices.quantile(0.75)),2)}"
+            }
+        
+        # ── 2. REVENUE PARETO ANALYSIS ──
+        revenues = df["revenue"][df["revenue"] > 0].sort_values(ascending=False).dropna()
+        if len(revenues) > 0:
+            total_rev = revenues.sum()
+            top_20_count = max(1, int(len(revenues) * 0.2))
+            top_20_rev = revenues.iloc[:top_20_count].sum()
+            pareto_ratio = round((top_20_rev / total_rev) * 100, 1) if total_rev > 0 else 0
+            analytics["revenue_pareto"] = {
+                "total_revenue": round(float(total_rev), 2),
+                "top_20pct_share": pareto_ratio,
+                "top_20pct_count": top_20_count,
+                "concentration": "Alta" if pareto_ratio > 70 else ("Media" if pareto_ratio > 50 else "Baja"),
+                "interpretation": f"Top {top_20_count} productos generan {pareto_ratio}% del revenue total"
+            }
+        
+        # ── 3. BRAND CONCENTRATION (HHI) ──
+        if "brand" in df.columns:
+            brands = df["brand"][df["brand"] != "N/A"].dropna()
+            if len(brands) > 0:
+                brand_counts = brands.value_counts()
+                total_brands = len(brands)
+                # HHI = sum of squared market shares (0-10000 scale)
+                market_shares = (brand_counts / total_brands * 100)
+                hhi = round(float((market_shares ** 2).sum()))
+                
+                if hhi >= 2500:
+                    hhi_label = "Muy Concentrado"
+                    hhi_color = "#ef4444"
+                elif hhi >= 1500:
+                    hhi_label = "Moderadamente Concentrado"
+                    hhi_color = "#d97706"
+                else:
+                    hhi_label = "Competitivo"
+                    hhi_color = "#059669"
+                
+                analytics["brand_concentration"] = {
+                    "hhi_index": hhi,
+                    "hhi_label": hhi_label,
+                    "hhi_color": hhi_color,
+                    "unique_brands": int(len(brand_counts)),
+                    "top_brand": str(brand_counts.index[0]),
+                    "top_brand_share": round(float(brand_counts.iloc[0] / total_brands * 100), 1),
+                    "top_3": [{"brand": str(b), "share": round(float(c / total_brands * 100), 1)} for b, c in brand_counts.head(3).items()]
+                }
+        
+        # ── 4. RATING DISTRIBUTION ──
+        ratings = df["rating"][df["rating"] > 0].dropna()
+        if len(ratings) > 0:
+            bins = {"below_3.5": 0, "3.5_to_4.0": 0, "4.0_to_4.5": 0, "above_4.5": 0}
+            for r in ratings:
+                if r < 3.5:
+                    bins["below_3.5"] += 1
+                elif r < 4.0:
+                    bins["3.5_to_4.0"] += 1
+                elif r < 4.5:
+                    bins["4.0_to_4.5"] += 1
+                else:
+                    bins["above_4.5"] += 1
+            analytics["rating_distribution"] = {
+                "bins": bins,
+                "mean": round(float(ratings.mean()), 2),
+                "median": round(float(ratings.median()), 2),
+                "quality_bar": round(float((ratings >= 4.0).sum() / len(ratings) * 100), 1)
+            }
+        
+        # ── 5. SELLER ORIGIN BREAKDOWN ──
+        if "seller_country" in df.columns:
+            origins = df["seller_country"].str.upper().value_counts()
+            total_o = len(df)
+            origin_dist = {}
+            for country, count in origins.head(5).items():
+                origin_dist[str(country)] = round(float(count / total_o * 100), 1)
+            analytics["seller_origins"] = origin_dist
+        
+        # ── 6. FULFILLMENT MIX ──
+        if "fulfillment" in df.columns:
+            ful = df["fulfillment"].str.upper().value_counts()
+            total_f = len(df)
+            ful_dist = {}
+            for ftype, count in ful.items():
+                ful_dist[str(ftype)] = round(float(count / total_f * 100), 1)
+            analytics["fulfillment_mix"] = ful_dist
+        
+        # ── 7. REVIEW VELOCITY PERCENTILES ──
+        if "review_velocity" in df.columns:
+            rv = df["review_velocity"][df["review_velocity"] > 0].dropna()
+            if len(rv) > 0:
+                analytics["review_velocity"] = {
+                    "p25": int(rv.quantile(0.25)),
+                    "p50": int(rv.quantile(0.50)),
+                    "p75": int(rv.quantile(0.75)),
+                    "p90": int(rv.quantile(0.90)) if len(rv) >= 5 else int(rv.max()),
+                    "mean": round(float(rv.mean()), 1)
+                }
+        
+        # ── 8. DEMOGRAPHICS (from previously tagged products) ──
+        if "age_segment" in df.columns:
+            seg_counts = df["age_segment"].value_counts()
+            total_seg = len(df)
+            demographics = {}
+            for seg, count in seg_counts.items():
+                demographics[str(seg)] = {
+                    "count": int(count),
+                    "pct": round(float(count / total_seg * 100), 1)
+                }
+            
+            # Dominant specified segment
+            specified = {k: v for k, v in demographics.items() if k != "Unspecified"}
+            dominant = max(specified, key=lambda x: specified[x]["count"]) if specified else "Unspecified"
+            
+            analytics["demographics"] = {
+                "segments": demographics,
+                "dominant_segment": dominant,
+                "classification_rate": round(float(df["age_segment"].ne("Unspecified").sum() / total_seg * 100), 1)
+            }
+            
+            # Price by segment analysis
+            price_by_seg = {}
+            for seg in df["age_segment"].unique():
+                seg_prices = df[df["age_segment"] == seg]["price"]
+                seg_prices = seg_prices[seg_prices > 0].dropna()
+                if len(seg_prices) > 0:
+                    price_by_seg[str(seg)] = {
+                        "avg_price": round(float(seg_prices.mean()), 2),
+                        "count": int(len(seg_prices))
+                    }
+            analytics["price_by_segment"] = price_by_seg
+        
+        return analytics
 
     @staticmethod
     def extract_pricing_from_bytes(content_bytes: bytes, filename: str) -> dict:

@@ -146,6 +146,10 @@ class Nexus1Harvester:
         Connects to Google Drive, first looks for POE Content Guide,
         then ingests all files with context from the guide.
         """
+        # MANDATORY: Reset all instance state to prevent cross-run contamination
+        self.poe_guide = None
+        self.file_instructions = {}
+        
         from ..shared.utils import get_drive_service
         from google.oauth2.credentials import Credentials
         from googleapiclient.discovery import build

@@ -73,6 +73,634 @@ class Nexus7Architect:
         price_tiers = s_data.get("price_tiers", {})
         amazon_fees = s_data.get("amazon_fees_structure", {})
         
+        # ═══════════════════════════════════════════════════════════════════
+        # POE v4.0: SEARCH TERMS INTELLIGENCE (Traffic & Demand Data)
+        # Fuente oficial de intención de usuario → Keywords vs. Conversión
+        # ═══════════════════════════════════════════════════════════════════
+        st_intel = full_data.get("search_terms_data", {}) or s_data.get("search_terms_intel", {})
+        has_search_intel = st_intel.get("has_search_data", False)
+        st_terms = st_intel.get("terms", [])[:15]  # Top 15 keywords
+        st_total_volume = st_intel.get("total_search_volume", 0)
+        st_avg_conversion = st_intel.get("avg_conversion_rate", 0.0)
+        st_top_keywords = st_intel.get("top_keywords", [])
+        st_source_file = st_intel.get("source_file", "NicheDetailsSearchTermsTab")
+        
+        # Build Search Terms & Traffic Section HTML (combines ProductsTab + SearchTermsTab)
+        # Extract product traffic data from top_10_products
+        traffic_products = s_data.get("top_10_products", [])
+        has_product_traffic = any(
+            p.get("sales", 0) > 0 or p.get("click_share", 0) > 0 or p.get("revenue", 0) > 0 
+            for p in traffic_products
+        )
+        
+        search_terms_section_html = ""
+        if has_search_intel or has_product_traffic:
+            # ── Aggregate product traffic KPIs ──
+            total_revenue = sum(p.get("revenue", 0) for p in traffic_products if isinstance(p.get("revenue"), (int, float)))
+            total_sales = sum(p.get("sales", 0) for p in traffic_products if isinstance(p.get("sales"), (int, float)))
+            click_shares = [p.get("click_share", 0) for p in traffic_products if isinstance(p.get("click_share"), (int, float)) and p.get("click_share", 0) > 0]
+            avg_product_click_share = round(sum(click_shares) / len(click_shares), 1) if click_shares else 0
+            
+            # Volume display
+            if has_search_intel and st_terms:
+                top_kw_name = st_terms[0].get("term", "N/A")
+                top_kw_vol = st_terms[0].get("volume", 0)
+                if st_total_volume >= 1_000_000:
+                    vol_display = f"{st_total_volume/1_000_000:.1f}M"
+                elif st_total_volume >= 1_000:
+                    vol_display = f"{st_total_volume/1_000:.0f}K"
+                else:
+                    vol_display = str(st_total_volume)
+            else:
+                top_kw_name = "N/A"
+                top_kw_vol = 0
+                vol_display = "—"
+            
+            # Revenue display
+            if total_revenue >= 1_000_000:
+                rev_display = f"${total_revenue/1_000_000:.1f}M"
+            elif total_revenue >= 1_000:
+                rev_display = f"${total_revenue/1_000:.0f}K"
+            elif total_revenue > 0:
+                rev_display = f"${total_revenue:,.0f}"
+            else:
+                rev_display = "—"
+            
+            # Sales display
+            if total_sales >= 1_000:
+                sales_display = f"{total_sales/1_000:.1f}K"
+            elif total_sales > 0:
+                sales_display = f"{total_sales:,}"
+            else:
+                sales_display = "—"
+            
+            # ── Build Product Traffic Rows ──
+            product_traffic_rows = ""
+            if has_product_traffic:
+                sorted_products = sorted(traffic_products, key=lambda x: x.get("revenue", 0) or x.get("sales", 0) or 0, reverse=True)
+                for i, p in enumerate(sorted_products[:15]):
+                    p_name = p.get("name", p.get("title", f"Product {i}"))[:55]
+                    p_asin = p.get("asin", "N/A")
+                    p_sales = p.get("sales", 0)
+                    p_revenue = p.get("revenue", 0)
+                    p_click = p.get("click_share", 0)
+                    p_price = p.get("price", 0)
+                    p_fees = p.get("fees", 0)
+                    p_brand = p.get("brand", "N/A")
+                    p_fulfillment = str(p.get("fulfillment", "N/A")).upper()
+                    p_country = str(p.get("seller_country", "N/A")).upper()
+                    p_rev_vel = int(p.get("review_velocity", 0))
+                    p_weight = p.get("weight", "N/A")
+                    p_sponsored = str(p.get("sponsored", "No"))
+                    p_seller_age = int(p.get("seller_age_months", 0))
+                    p_recent = int(p.get("recent_purchases", 0))
+                    
+                    # Revenue display
+                    if isinstance(p_revenue, (int, float)) and p_revenue >= 1000:
+                        p_rev_str = f"${p_revenue/1000:.1f}K"
+                    elif isinstance(p_revenue, (int, float)) and p_revenue > 0:
+                        p_rev_str = f"${p_revenue:,.0f}"
+                    else:
+                        p_rev_str = "—"
+                    
+                    # Sales display
+                    p_sales_str = f"{p_sales:,}" if isinstance(p_sales, (int, float)) and p_sales > 0 else "—"
+                    
+                    # Click share bar
+                    p_click_bar = min(100, p_click * 3) if isinstance(p_click, (int, float)) else 0
+                    p_click_str = f"{p_click:.1f}%" if isinstance(p_click, (int, float)) and p_click > 0 else "—"
+                    
+                    # Fees display
+                    p_fees_str = f"${p_fees:.2f}" if isinstance(p_fees, (int, float)) and p_fees > 0 else "—"
+                    
+                    # Fulfillment badge
+                    if "AMZ" in p_fulfillment:
+                        pf_bg = "#1e3a8a"; pf_label = "AMZ"
+                    elif "FBA" in p_fulfillment:
+                        pf_bg = "#059669"; pf_label = "FBA"
+                    elif "FBM" in p_fulfillment:
+                        pf_bg = "#d97706"; pf_label = "FBM"
+                    else:
+                        pf_bg = "#94a3b8"; pf_label = "—"
+                    
+                    # Country flag
+                    if "CN" in p_country:
+                        pf_flag = "🇨🇳"
+                    elif "US" in p_country:
+                        pf_flag = "🇺🇸"
+                    elif "AMZ" in p_country:
+                        pf_flag = "🏢"
+                    else:
+                        pf_flag = "🌐"
+                    
+                    # PPC badge
+                    ppc_html = ""
+                    if p_sponsored and p_sponsored not in ("No", "N/A", "", "nan"):
+                        ppc_html = '<span style="background:#ef4444; color:white; padding:1px 4px; border-radius:3px; font-size:0.45rem; font-weight:800;">PPC</span>'
+                    
+                    # Review velocity
+                    vel_str = f"{p_rev_vel}/mo" if p_rev_vel > 0 else "—"
+                    vel_color = "#059669" if p_rev_vel >= 100 else ("#d97706" if p_rev_vel >= 30 else "#64748b")
+                    
+                    product_traffic_rows += f'''
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:10px 12px; font-size:0.8rem;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="background:#1e3a8a; color:white; width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:800;">{i+1}</span>
+                                <div>
+                                    <div style="font-weight:600; color:var(--primary); font-size:0.75rem;">{p_name}</div>
+                                    <div style="display:flex; gap:4px; align-items:center; margin-top:3px; flex-wrap:wrap;">
+                                        <span style="font-family:monospace; font-size:0.55rem; color:#64748b;">{p_asin}</span>
+                                        <span style="font-size:0.55rem; font-weight:700; color:#334155;">{p_brand}</span>
+                                        <span style="font-size:0.5rem;">{pf_flag}</span>
+                                        <span style="background:{pf_bg}; color:white; padding:0px 4px; border-radius:2px; font-size:0.45rem; font-weight:800;">{pf_label}</span>
+                                        {ppc_html}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding:10px 8px; font-family:monospace; font-weight:700; color:#0f172a; font-size:0.85rem;">${p_price:.2f}</td>
+                        <td style="padding:10px 8px; font-family:monospace; font-weight:700; color:#0f172a; font-size:0.85rem;">{p_sales_str}</td>
+                        <td style="padding:10px 8px; font-family:monospace; font-weight:700; color:#059669; font-size:0.85rem;">{p_rev_str}</td>
+                        <td style="padding:10px 8px;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div style="flex:1; background:#e2e8f0; border-radius:4px; height:8px; max-width:50px;">
+                                    <div style="width:{p_click_bar}%; background:linear-gradient(90deg, #f59e0b, #ef4444); height:100%; border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.7rem; color:#475569; font-weight:600;">{p_click_str}</span>
+                            </div>
+                        </td>
+                        <td style="padding:10px 8px; font-family:monospace; font-size:0.75rem; color:{vel_color}; font-weight:600;">{vel_str}</td>
+                        <td style="padding:10px 8px; font-family:monospace; font-size:0.75rem; color:#64748b;">{p_fees_str}</td>
+                    </tr>'''
+            
+            # ── Build Keyword Rows (existing logic) ──
+            kw_rows_html = ""
+            if has_search_intel and st_terms:
+                for i, term in enumerate(st_terms):
+                    t_name = term.get("term", "N/A")
+                    t_vol = term.get("volume", 0)
+                    t_growth = term.get("growth_90d", "N/A")
+                    t_click = term.get("click_share", 0)
+                    t_conv = term.get("conversion_rate", 0)
+                    
+                    growth_str = str(t_growth)
+                    if isinstance(t_growth, (int, float)):
+                        growth_color = "#166534" if t_growth > 0 else "#dc2626"
+                        growth_str = f"+{t_growth}%" if t_growth > 0 else f"{t_growth}%"
+                    else:
+                        growth_color = "#64748b"
+                    
+                    if isinstance(t_conv, (int, float)):
+                        conv_color = "#166534" if t_conv >= 15 else ("#f59e0b" if t_conv >= 8 else "#dc2626")
+                        conv_str = f"{t_conv:.1f}%"
+                    else:
+                        conv_color = "#64748b"
+                        conv_str = str(t_conv)
+                    
+                    click_bar_w = min(100, t_click * 3) if isinstance(t_click, (int, float)) else 10
+                    t_vol_display = f"{t_vol/1000:.1f}K" if isinstance(t_vol, (int, float)) and t_vol >= 1000 else str(t_vol)
+                    
+                    kw_rows_html += f'''
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:10px 12px; font-weight:600; color:var(--primary); font-size:0.85rem;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="background:#6366f1; color:white; width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:800;">{i+1}</span>
+                                {t_name}
+                            </div>
+                        </td>
+                        <td style="padding:10px 12px; font-family:monospace; font-weight:700; color:#0f172a; font-size:0.9rem;">{t_vol_display}</td>
+                        <td style="padding:10px 12px;"><span style="color:{growth_color}; font-weight:700; font-size:0.8rem;">{growth_str}</span></td>
+                        <td style="padding:10px 12px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="flex:1; background:#e2e8f0; border-radius:4px; height:8px; max-width:80px;">
+                                    <div style="width:{click_bar_w}%; background:linear-gradient(90deg, #3b82f6, #6366f1); height:100%; border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.75rem; color:#475569; font-weight:600;">{t_click}%</span>
+                            </div>
+                        </td>
+                        <td style="padding:10px 12px; text-align:center;"><span style="background:{'#dcfce7' if conv_color == '#166534' else '#fef9c3' if conv_color == '#f59e0b' else '#fee2e2'}; color:{conv_color}; padding:3px 10px; border-radius:8px; font-size:0.75rem; font-weight:700;">{conv_str}</span></td>
+                    </tr>'''
+            
+            # ── Opportunity detection ──
+            opp_section_html = ""
+            if has_search_intel and st_terms:
+                opp_terms = [t for t in st_terms if isinstance(t.get("conversion_rate"), (int, float)) and t["conversion_rate"] >= 15 and isinstance(t.get("volume"), (int, float)) and t["volume"] < st_total_volume * 0.1]
+                if opp_terms:
+                    opp_chips = ""
+                    for ot in opp_terms[:3]:
+                        opp_chips += f'<span style="background:#ecfdf5; color:#065f46; padding:4px 12px; border-radius:8px; font-size:0.75rem; font-weight:600; margin:3px;">🎯 {ot["term"]} ({ot["conversion_rate"]:.1f}% conv)</span>'
+                    opp_section_html = f"""<div style="background:linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border:2px solid #86efac; padding:20px; border-radius:16px; margin-bottom:20px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                            <span style="font-size:1.2rem;">💡</span>
+                            <span style="font-weight:700; color:#065f46; font-size:0.9rem;">Oportunidades de Alta Conversión Detectadas</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:#064e3b; margin-bottom:12px;">Keywords con conversión ≥15% representan oportunidades de nicho con demanda verificada:</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">{opp_chips}</div>
+                    </div>"""
+            
+            # ── Build demand vs supply cross-reference ──
+            cross_ref_html = ""
+            if has_search_intel and has_product_traffic and st_total_volume > 0 and total_sales > 0:
+                demand_supply_ratio = round(st_total_volume / max(total_sales, 1), 1)
+                if demand_supply_ratio > 5:
+                    ds_verdict = "🟢 Alta Demanda Insatisfecha"
+                    ds_color = "#059669"
+                    ds_hint = "El volumen de búsqueda supera ampliamente las ventas actuales → oportunidad de captura."
+                elif demand_supply_ratio > 2:
+                    ds_verdict = "🟡 Demanda Moderada"
+                    ds_color = "#d97706"
+                    ds_hint = "Hay espacio en el mercado, pero la competencia ya captura una parte significativa."
+                else:
+                    ds_verdict = "🔴 Mercado Saturado"
+                    ds_color = "#dc2626"
+                    ds_hint = "Las ventas están cerca del techo de búsqueda → diferenciación crítica para entrar."
+                
+                cross_ref_html = f"""
+                <div style="background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border:2px solid #e2e8f0; padding:20px; border-radius:16px; margin-bottom:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.3rem;">⚡</span>
+                            <span style="font-weight:700; color:var(--primary); font-size:0.9rem;">Cruce Demanda vs. Oferta (Keywords → Ventas)</span>
+                        </div>
+                        <span style="color:{ds_color}; font-weight:800; font-size:0.85rem;">{ds_verdict}</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                        <div style="text-align:center; padding:12px; background:white; border-radius:10px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase;">BÚSQUEDAS/MES</div>
+                            <div style="font-size:1.4rem; font-weight:800; color:#6366f1;">{vol_display}</div>
+                        </div>
+                        <div style="text-align:center; padding:12px; background:white; border-radius:10px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase;">UNIDADES VENDIDAS/MES</div>
+                            <div style="font-size:1.4rem; font-weight:800; color:#059669;">{sales_display}</div>
+                        </div>
+                        <div style="text-align:center; padding:12px; background:white; border-radius:10px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase;">RATIO DEMANDA/OFERTA</div>
+                            <div style="font-size:1.4rem; font-weight:800; color:{ds_color};">{demand_supply_ratio}x</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.75rem; color:#475569; margin-top:12px; padding:10px; background:white; border-radius:8px; border-left:3px solid {ds_color};">{ds_hint}</div>
+                </div>"""
+            
+            # ── Build Logistics & Seller Intelligence Card ──
+            seller_intel_html = ""
+            if has_product_traffic and len(traffic_products) > 0:
+                # Seller origin distribution
+                origins = {"CN": 0, "US": 0, "AMZ": 0, "Other": 0}
+                ful_dist = {"AMZ": 0, "FBA": 0, "FBM": 0, "Other": 0}
+                total_weight = 0
+                weight_count = 0
+                total_seller_age = 0
+                age_count = 0
+                ppc_count = 0
+                total_images = 0
+                img_count = 0
+                for tp in traffic_products:
+                    sc = str(tp.get("seller_country", "N/A")).upper()
+                    sn = str(tp.get("seller_name", "")).upper()
+                    if "CN" in sc:
+                        origins["CN"] += 1
+                    elif "US" in sc:
+                        origins["US"] += 1
+                    elif "AMZ" in sc or "AMAZON" in sn:
+                        origins["AMZ"] += 1
+                    else:
+                        origins["Other"] += 1
+                    
+                    fl = str(tp.get("fulfillment", "N/A")).upper()
+                    if "AMZ" in fl:
+                        ful_dist["AMZ"] += 1
+                    elif "FBA" in fl:
+                        ful_dist["FBA"] += 1
+                    elif "FBM" in fl:
+                        ful_dist["FBM"] += 1
+                    else:
+                        ful_dist["Other"] += 1
+                    
+                    w = tp.get("weight_lbs", 0)
+                    if isinstance(w, (int, float)) and w > 0:
+                        total_weight += w
+                        weight_count += 1
+                    
+                    sa = int(tp.get("seller_age_months", 0))
+                    if sa > 0:
+                        total_seller_age += sa
+                        age_count += 1
+                    
+                    sp = str(tp.get("sponsored", "No"))
+                    if sp and sp not in ("No", "N/A", "", "nan"):
+                        ppc_count += 1
+                    
+                    im = int(tp.get("images_count", 0))
+                    if im > 0:
+                        total_images += im
+                        img_count += 1
+                
+                n_prods = len(traffic_products)
+                avg_weight = round(total_weight / weight_count, 2) if weight_count > 0 else 0
+                avg_age = round(total_seller_age / age_count) if age_count > 0 else 0
+                ppc_pct = round((ppc_count / n_prods) * 100) if n_prods > 0 else 0
+                avg_imgs = round(total_images / img_count, 1) if img_count > 0 else 0
+                
+                # Maturity verdict
+                if avg_age >= 48:
+                    mat_label = "Mercado Maduro"
+                    mat_color = "#059669"
+                elif avg_age >= 24:
+                    mat_label = "En Crecimiento"
+                    mat_color = "#d97706"
+                else:
+                    mat_label = "Mercado Joven"
+                    mat_color = "#3b82f6"
+                
+                # Origin bars
+                origin_items = ""
+                for okey, ocount in sorted(origins.items(), key=lambda x: x[1], reverse=True):
+                    if ocount == 0:
+                        continue
+                    opct = round((ocount / n_prods) * 100)
+                    oflags = {"CN": "🇨🇳", "US": "🇺🇸", "AMZ": "🏢", "Other": "🌐"}
+                    ocolors = {"CN": "#ef4444", "US": "#3b82f6", "AMZ": "#1e3a8a", "Other": "#94a3b8"}
+                    origin_items += f'<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;"><span style="font-size:0.7rem;">{oflags.get(okey, "🌐")}</span><span style="font-size:0.65rem; font-weight:700; min-width:35px;">{okey}</span><div style="flex:1; background:#e2e8f0; border-radius:3px; height:10px;"><div style="width:{opct}%; background:{ocolors.get(okey, "#94a3b8")}; height:100%; border-radius:3px;"></div></div><span style="font-size:0.65rem; font-weight:700; color:#334155;">{opct}%</span></div>'
+                
+                # Fulfillment distribution
+                ful_items = ""
+                for fkey, fcount in sorted(ful_dist.items(), key=lambda x: x[1], reverse=True):
+                    if fcount == 0:
+                        continue
+                    fpct = round((fcount / n_prods) * 100)
+                    fcolors = {"AMZ": "#1e3a8a", "FBA": "#059669", "FBM": "#d97706", "Other": "#94a3b8"}
+                    ful_items += f'<div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;"><span style="background:{fcolors.get(fkey, "#94a3b8")}; color:white; padding:1px 6px; border-radius:3px; font-size:0.55rem; font-weight:800; min-width:30px; text-align:center;">{fkey}</span><div style="flex:1; background:#e2e8f0; border-radius:3px; height:10px;"><div style="width:{fpct}%; background:{fcolors.get(fkey, "#94a3b8")}; height:100%; border-radius:3px;"></div></div><span style="font-size:0.65rem; font-weight:700; color:#334155;">{fpct}%</span></div>'
+                
+                seller_intel_html = f"""
+                <div style="background:linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%); border:2px solid #c4b5fd; padding:20px; border-radius:16px; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                        <span style="font-size:1.3rem;">🏭</span>
+                        <span style="font-weight:700; color:#5b21b6; font-size:0.9rem;">Logistics & Seller Intelligence</span>
+                        <span style="background:#ede9fe; color:#7c3aed; padding:2px 8px; border-radius:8px; font-size:0.55rem; font-weight:800;">H10 Deep Data · {n_prods} productos</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">🌍 Origen Sellers</div>
+                            {origin_items}
+                        </div>
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">📦 Fulfillment</div>
+                            {ful_items}
+                        </div>
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">📊 Métricas Clave</div>
+                            <div style="margin-bottom:6px;"><span style="font-size:0.6rem; color:#64748b;">Peso Prom:</span> <span style="font-weight:700; font-size:0.8rem; color:#334155;">{avg_weight} lbs</span></div>
+                            <div style="margin-bottom:6px;"><span style="font-size:0.6rem; color:#64748b;">Seller Age Prom:</span> <span style="font-weight:700; font-size:0.8rem; color:{mat_color};">{avg_age} meses</span> <span style="font-size:0.55rem; color:{mat_color};">({mat_label})</span></div>
+                            <div style="margin-bottom:6px;"><span style="font-size:0.6rem; color:#64748b;">PPC Competition:</span> <span style="font-weight:700; font-size:0.8rem; color:{'#ef4444' if ppc_pct > 40 else '#d97706' if ppc_pct > 20 else '#059669'};">{ppc_pct}%</span> <span style="font-size:0.55rem; color:#64748b;">patrocinados</span></div>
+                            <div><span style="font-size:0.6rem; color:#64748b;">Imgs/Listing Prom:</span> <span style="font-weight:700; font-size:0.8rem; color:#334155;">{avg_imgs}</span></div>
+                        </div>
+                    </div>
+                </div>"""
+            
+            # ── Build Demographic & Niche Profile Card ──
+            demographic_profile_html = ""
+            na = s_data.get("niche_analytics", {})
+            if na and na.get("demographics"):
+                demo = na.get("demographics", {})
+                segs = demo.get("segments", {})
+                dom_seg = demo.get("dominant_segment", "N/A")
+                cls_rate = demo.get("classification_rate", 0)
+                
+                seg_emojis = {"Infant": "🍼", "Toddler": "🧒", "Preschool": "📖", "Elementary": "📚", "Tween": "🎮", "Teen": "🧑", "Adult": "👔", "Family": "👨‍👩‍👧‍👦", "Unspecified": "❓"}
+                seg_colors = {"Infant": "#f472b6", "Toddler": "#fb923c", "Preschool": "#a78bfa", "Elementary": "#60a5fa", "Tween": "#34d399", "Teen": "#fbbf24", "Adult": "#6b7280", "Family": "#3b82f6", "Unspecified": "#94a3b8"}
+                
+                # Build segment bars
+                seg_bars = ""
+                total_p = sum(v.get("count", 0) for v in segs.values())
+                for seg_name, seg_data in sorted(segs.items(), key=lambda x: x[1].get("count", 0), reverse=True):
+                    if seg_data.get("count", 0) == 0:
+                        continue
+                    pct = seg_data.get("pct", 0)
+                    emoji = seg_emojis.get(seg_name, "📊")
+                    color = seg_colors.get(seg_name, "#64748b")
+                    is_dom = " ⭐" if seg_name == dom_seg else ""
+                    seg_bars += f'<div style="display:flex; align-items:center; gap:6px; margin-bottom:5px;"><span style="font-size:0.8rem; min-width:20px;">{emoji}</span><span style="font-size:0.6rem; font-weight:700; min-width:70px; color:#334155;">{seg_name}{is_dom}</span><div style="flex:1; background:#e2e8f0; border-radius:4px; height:12px;"><div style="width:{pct}%; background:{color}; height:100%; border-radius:4px; transition:width 0.3s;"></div></div><span style="font-size:0.65rem; font-weight:700; color:#334155; min-width:35px; text-align:right;">{pct}%</span></div>'
+                
+                # Price by segment
+                pbs = na.get("price_by_segment", {})
+                price_seg_items = ""
+                for ps_name, ps_data in sorted(pbs.items(), key=lambda x: x[1].get("avg_price", 0), reverse=True):
+                    if ps_name == "Unspecified":
+                        continue
+                    ps_emoji = seg_emojis.get(ps_name, "📊")
+                    price_seg_items += f'<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #f1f5f9;"><span style="font-size:0.65rem;">{ps_emoji} {ps_name} ({ps_data.get("count", 0)})</span><span style="font-weight:700; font-size:0.75rem; color:#334155;">${ps_data.get("avg_price", 0):.2f}</span></div>'
+                
+                # Brand concentration
+                bc = na.get("brand_concentration", {})
+                hhi_html = ""
+                if bc:
+                    hhi = bc.get("hhi_index", 0)
+                    hhi_pct = min(100, hhi / 100)  # Scale 0-10000 to 0-100
+                    hhi_html = f"""
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">🏢 Concentración de Marcas</div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                <span style="font-size:1.3rem; font-weight:800; color:{bc.get('hhi_color', '#64748b')};">HHI {hhi}</span>
+                                <span style="font-size:0.6rem; font-weight:700; color:{bc.get('hhi_color', '#64748b')};">{bc.get('hhi_label', 'N/A')}</span>
+                            </div>
+                            <div style="background:#e2e8f0; border-radius:4px; height:8px; margin-bottom:8px;">
+                                <div style="width:{hhi_pct}%; background:{bc.get('hhi_color', '#94a3b8')}; height:100%; border-radius:4px;"></div>
+                            </div>
+                            <div style="font-size:0.6rem; color:#64748b;">{bc.get('unique_brands', 0)} marcas únicas</div>
+                            <div style="font-size:0.55rem; color:#475569; margin-top:4px;">Top: <strong>{bc.get('top_brand', 'N/A')}</strong> ({bc.get('top_brand_share', 0)}%)</div>
+                        </div>"""
+                
+                # Revenue Pareto + Price Sweet Spot + Review Velocity
+                rp = na.get("revenue_pareto", {})
+                price_a = na.get("price", {})
+                rv = na.get("review_velocity", {})
+                
+                metrics_html = f"""
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">📊 Métricas de Nicho</div>"""
+                
+                if rp:
+                    rp_color = "#ef4444" if rp.get("concentration") == "Alta" else ("#d97706" if rp.get("concentration") == "Media" else "#059669")
+                    metrics_html += f"""
+                            <div style="margin-bottom:6px;"><span style="font-size:0.55rem; color:#64748b;">Revenue Pareto:</span> <span style="font-weight:700; font-size:0.75rem; color:{rp_color};">Top 20% = {rp.get('top_20pct_share', 0)}%</span></div>"""
+                
+                if price_a:
+                    metrics_html += f"""
+                            <div style="margin-bottom:6px;"><span style="font-size:0.55rem; color:#64748b;">Price Sweet Spot:</span> <span style="font-weight:700; font-size:0.75rem; color:#059669;">{price_a.get('sweet_spot', 'N/A')}</span></div>"""
+                
+                if rv:
+                    metrics_html += f"""
+                            <div style="margin-bottom:6px;"><span style="font-size:0.55rem; color:#64748b;">Rev. Velocity P50:</span> <span style="font-weight:700; font-size:0.75rem;">{rv.get('p50', 0)}/mo</span></div>
+                            <div><span style="font-size:0.55rem; color:#64748b;">Rev. Velocity P90:</span> <span style="font-weight:700; font-size:0.75rem; color:#059669;">{rv.get('p90', 0)}/mo</span></div>"""
+                
+                metrics_html += "\n                        </div>"
+                
+                demographic_profile_html = f"""
+                <div style="background:linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border:2px solid #f9a8d4; padding:20px; border-radius:16px; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                        <span style="font-size:1.3rem;">🎯</span>
+                        <span style="font-weight:700; color:#9d174d; font-size:0.9rem;">Demographic & Niche Profile</span>
+                        <span style="background:#fce7f3; color:#be185d; padding:2px 8px; border-radius:8px; font-size:0.55rem; font-weight:800;">Target Age Analysis · {cls_rate}% clasificado</span>
+                        <span style="background:#fce7f3; color:#9d174d; padding:2px 8px; border-radius:8px; font-size:0.55rem; font-weight:800;">Dominante: {dom_seg}</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px;">
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">👥 Segmentos por Edad</div>
+                            {seg_bars}
+                        </div>
+                        <div style="background:white; padding:14px; border-radius:12px;">
+                            <div style="font-size:0.6rem; color:#64748b; font-weight:700; text-transform:uppercase; margin-bottom:8px;">💰 Precio por Segmento</div>
+                            {price_seg_items}
+                        </div>
+                        {hhi_html}
+                        {metrics_html}
+                    </div>
+                </div>"""
+
+            # ── Assemble source badges ──
+            source_badges = '<span style="background:#ecfdf5; color:#059669; padding:4px 12px; border-radius:20px; font-size:0.65rem; font-weight:800; border:1px solid #a7f3d0;">📁 DATOS POE</span>'
+            if has_search_intel:
+                source_badges += f' <span style="background:#f0fdf4; color:#166534; padding:4px 12px; border-radius:20px; font-size:0.6rem; font-weight:700; border:1px solid #bbf7d0;">📄 {st_source_file}</span>'
+            if has_product_traffic:
+                source_badges += ' <span style="background:#eff6ff; color:#1d4ed8; padding:4px 12px; border-radius:20px; font-size:0.6rem; font-weight:700; border:1px solid #bfdbfe;">📄 NicheDetailsProductsTab</span>'
+            
+            # ── Build product traffic table block ──
+            product_table_block = ""
+            if product_traffic_rows:
+                product_table_block = f'''
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; margin-bottom:25px;">
+                    <div style="background:linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); padding:15px 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:white; font-weight:700; font-size:0.9rem;">📊 Tráfico & Revenue por Producto (Click Share, Ventas, Ingresos)</span>
+                            <span style="color:#93c5fd; font-size:0.65rem;">Fuente: NicheDetailsProductsTab · Datos POE Verificados</span>
+                        </div>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f8fafc;">
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">PRODUCTO</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">PRECIO</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">VENTAS/MES</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">REVENUE</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">CLICK SHARE</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">REV. VEL</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">FBA FEES</th>
+                            </tr>
+                        </thead>
+                        <tbody>{product_traffic_rows}</tbody>
+                    </table>
+                </div>'''
+            
+            # ── Build keyword table block ──
+            keyword_table_block = ""
+            if kw_rows_html:
+                keyword_table_block = f'''
+                <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; margin-bottom:25px;">
+                    <div style="background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding:15px 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:white; font-weight:700; font-size:0.9rem;">🔑 Ranking de Keywords por Demanda</span>
+                            <span style="color:#94a3b8; font-size:0.65rem;">Prioridad Alta para SEO · Fuente: NicheDetailsSearchTermsTab</span>
+                        </div>
+                    </div>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f8fafc;">
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">KEYWORD</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">VOLUMEN</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">GROWTH 90D</th>
+                                <th style="text-align:left; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">CLICK SHARE</th>
+                                <th style="text-align:center; padding:12px; font-size:0.7rem; color:#64748b; font-weight:800; text-transform:uppercase;">CONVERSIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>{kw_rows_html}</tbody>
+                    </table>
+                </div>'''
+            
+            # ── Assemble full section ──
+            search_terms_section_html = f'''
+            <div class="page-break section-container">
+                <h2 class="section-title">II-B. Traffic, Clicks & Search Intelligence <span class="agent-badge" style="background:#059669;">POE Data · Harvester</span></h2>
+                
+                <!-- Source Header -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:40px; height:40px; background:linear-gradient(135deg, #059669, #10b981); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">📈</div>
+                        <div>
+                            <div style="font-size:0.65rem; color:#047857; font-weight:800; text-transform:uppercase; letter-spacing:1px;">TRÁFICO, IMPRESIONES & DEMANDA REAL</div>
+                            <div style="font-size:1rem; font-weight:700; color:#065f46;">Clicks, Revenue por Producto + Keywords vs. Conversión</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        {source_badges}
+                    </div>
+                </div>
+                
+                <!-- KPI Cards Row -->
+                <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-bottom:25px;">
+                    <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); padding:16px 12px; border-radius:14px; border:2px solid #93c5fd; text-align:center;">
+                        <div style="font-size:0.55rem; color:#1d4ed8; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">REVENUE TOTAL</div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#1e40af;">{rev_display}</div>
+                        <div style="font-size:0.6rem; color:#3b82f6; margin-top:3px;">ingresos/mes nicho</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding:16px 12px; border-radius:14px; border:2px solid #a7f3d0; text-align:center;">
+                        <div style="font-size:0.55rem; color:#047857; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">UNIDADES VENDIDAS</div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#065f46;">{sales_display}</div>
+                        <div style="font-size:0.6rem; color:#059669; margin-top:3px;">ventas/mes total</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%); padding:16px 12px; border-radius:14px; border:2px solid #c4b5fd; text-align:center;">
+                        <div style="font-size:0.55rem; color:#6d28d9; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">VOL. BÚSQUEDA</div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#5b21b6;">{vol_display}</div>
+                        <div style="font-size:0.6rem; color:#7c3aed; margin-top:3px;">búsquedas/mes</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); padding:16px 12px; border-radius:14px; border:2px solid #fdba74; text-align:center;">
+                        <div style="font-size:0.55rem; color:#c2410c; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">AVG CLICK SHARE</div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#9a3412;">{avg_product_click_share}%</div>
+                        <div style="font-size:0.6rem; color:#ea580c; margin-top:3px;">cuota de clics prom.</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg, #fef2f2 0%, #fecaca 100%); padding:16px 12px; border-radius:14px; border:2px solid #fca5a5; text-align:center;">
+                        <div style="font-size:0.55rem; color:#991b1b; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">CONVERSIÓN</div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#b91c1c;">{st_avg_conversion:.1f}%</div>
+                        <div style="font-size:0.6rem; color:#dc2626; margin-top:3px;">tasa promedio nicho</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding:16px 12px; border-radius:14px; border:2px solid #86efac; text-align:center;">
+                        <div style="font-size:0.55rem; color:#166534; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">PRODUCTOS</div>
+                        <div style="font-size:1.5rem; font-weight:800; color:#15803d;">{len(traffic_products)}</div>
+                        <div style="font-size:0.6rem; color:#16a34a; margin-top:3px;">competidores activos</div>
+                    </div>
+                </div>
+                
+                <!-- Product Traffic Table -->
+                {product_table_block}
+                
+                <!-- Keywords Table -->
+                {keyword_table_block}
+                
+                <!-- Demand vs Supply Cross-Reference -->
+                {cross_ref_html}
+                
+                <!-- Opportunity Insights -->
+                {opp_section_html}
+                
+                <!-- Logistics & Seller Intelligence -->
+                {seller_intel_html}
+                
+                <!-- Demographic & Niche Profile -->
+                {demographic_profile_html}
+                
+                <!-- Methodology Note -->
+                <div style="background:#f8fafc; padding:12px 16px; border-radius:10px; border-left:4px solid #059669;">
+                    <div style="font-size:0.7rem; color:#475569; line-height:1.5;">
+                        <strong style="color:#059669;">📋 Metodología:</strong> Datos extraídos de <strong>NicheDetailsProductsTab</strong> (ventas, revenue, click share, fees) y <strong>NicheDetailsSearchTermsTab</strong> (keywords, volumen, conversión).
+                        Revenue = ingresos mensuales por producto. Click Share = % de clics capturados del nicho. Conversión = tasa de compra tras búsqueda.
+                        <strong>Uso recomendado:</strong> Cruzar Click Share de productos vs. Keywords de alta conversión para priorización de listing y SEO.
+                    </div>
+                </div>
+            </div>
+            '''
+        else:
+            search_terms_section_html = ""
+        
         # Calculate price range from top_10 if not in price_tiers
         top_10_list_for_pricing = s_data.get("top_10_products", [])
         prices_list = [p.get("price", 0) for p in top_10_list_for_pricing if p.get("price", 0) > 0]
@@ -134,7 +762,7 @@ class Nexus7Architect:
                     <span style="font-size:1.2rem;">{icon}</span>
                     <span style="background:{bg_color}; color:{text_color}; padding:2px 8px; border-radius:4px; font-size:0.6rem; font-weight:800;">{ext}</span>
                 </div>
-                <div style="font-weight:700; font-size:0.85rem; color:var(--primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{fname}</div>
+                <div style="font-weight:700; font-size:0.85rem; color:var(--primary); word-wrap:break-word;">{fname}</div>
                 <div style="font-size:0.7rem; color:#64748b; margin-top:5px; line-height:1.4;">{summary_str}</div>
             </div>"""
 
@@ -145,6 +773,15 @@ class Nexus7Architect:
             rating = p.get('rating', 0)
             reviews = p.get('reviews', 0)
             price = p.get('price', 0)
+            brand = p.get('brand', 'N/A')
+            seller_country = str(p.get('seller_country', 'N/A')).upper()
+            fulfillment = str(p.get('fulfillment', 'N/A')).upper()
+            seller_age = int(p.get('seller_age_months', 0))
+            rev_velocity = int(p.get('review_velocity', 0))
+            images_ct = int(p.get('images_count', 0))
+            sponsored = str(p.get('sponsored', 'No'))
+            recent_purch = int(p.get('recent_purchases', 0))
+            seller_name = p.get('seller_name', 'N/A')
             
             # Format reviews count
             if reviews >= 1000:
@@ -181,15 +818,68 @@ class Nexus7Architect:
                 price_tier = "💰 Value"
                 price_color = "#166534"
             
+            # Seller country flag
+            if "CN" in seller_country:
+                country_flag = "🇨🇳"
+                country_label = "China"
+            elif "US" in seller_country:
+                country_flag = "🇺🇸"
+                country_label = "USA"
+            elif "AMZ" in seller_country or "AMAZON" in seller_name.upper():
+                country_flag = "🏢"
+                country_label = "Amazon"
+            elif "AE" in seller_country:
+                country_flag = "🇦🇪"
+                country_label = "UAE"
+            elif "LV" in seller_country:
+                country_flag = "🇱🇻"
+                country_label = "Latvia"
+            else:
+                country_flag = "🌐"
+                country_label = seller_country if seller_country != "N/A" else "Global"
+            
+            # Fulfillment badge
+            if "AMZ" in fulfillment:
+                ful_bg = "#1e3a8a"; ful_color = "white"; ful_label = "AMZ"
+            elif "FBA" in fulfillment:
+                ful_bg = "#059669"; ful_color = "white"; ful_label = "FBA"
+            elif "FBM" in fulfillment:
+                ful_bg = "#d97706"; ful_color = "white"; ful_label = "FBM"
+            else:
+                ful_bg = "#94a3b8"; ful_color = "white"; ful_label = "N/A"
+            
+            # Sponsored badge
+            sponsored_badge = ""
+            if sponsored and sponsored not in ("No", "N/A", "", "nan"):
+                sponsored_badge = f'<span style="background:#ef4444; color:white; padding:1px 5px; border-radius:3px; font-size:0.5rem; font-weight:800;">PPC</span>'
+            
+            # Review velocity indicator
+            vel_html = ""
+            if rev_velocity > 0:
+                if rev_velocity >= 200:
+                    vel_html = f'<span style="color:#059669; font-size:0.6rem; font-weight:700;">🔥 {rev_velocity}/mo</span>'
+                elif rev_velocity >= 50:
+                    vel_html = f'<span style="color:#d97706; font-size:0.6rem; font-weight:700;">📈 {rev_velocity}/mo</span>'
+                else:
+                    vel_html = f'<span style="color:#64748b; font-size:0.6rem;">{rev_velocity}/mo</span>'
+            
             top_10_rows += f"""
             <tr>
                 <td style="text-align:center; font-weight:bold; color:var(--accent); font-size:1.2rem;">#{p.get('rank', 'N/A')}</td>
                 <td style="min-width:220px;">
-                    <strong style="color:var(--primary); font-size:0.95rem;">{p.get('name', 'Product Name N/A')[:80]}</strong>
-                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; align-items:center;">
+                    <strong style="color:var(--primary); font-size:0.95rem;">{p.get('name', 'Product Name N/A')}</strong>
+                    <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; align-items:center;">
                         <span style="background:#1e3a8a; color:white; padding:3px 8px; border-radius:4px; font-size:0.65rem; font-weight:700; font-family:monospace;">{p.get('asin', 'N/A')}</span>
                         <span style="background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:4px; font-size:0.7rem; font-weight:600;">${price:.2f}</span>
                         <span style="color:{price_color}; font-size:0.65rem; font-weight:700;">{price_tier}</span>
+                        {sponsored_badge}
+                    </div>
+                    <div style="display:flex; gap:6px; margin-top:5px; flex-wrap:wrap; align-items:center;">
+                        <span style="font-size:0.6rem; font-weight:700; color:#334155;">{brand}</span>
+                        <span style="font-size:0.6rem;">{country_flag} {country_label}</span>
+                        <span style="background:{ful_bg}; color:{ful_color}; padding:1px 5px; border-radius:3px; font-size:0.5rem; font-weight:800;">{ful_label}</span>
+                        <span style="font-size:0.55rem; color:#64748b;">{seller_age}mo</span>
+                        {vel_html}
                     </div>
                 </td>
                 <td style="min-width:140px;">
@@ -685,7 +1375,7 @@ class Nexus7Architect:
                     <span style="background:{badge_color}; color:white; padding:2px 6px; border-radius:8px; font-size:0.55rem; font-weight:800;">{demand}%</span>
                 </div>
                 <div style="font-size:0.75rem; color:var(--primary); font-weight:700; margin-bottom:4px;">{event_name}</div>
-                <div style="font-size:0.6rem; color:#475569; line-height:1.3;">{strategy[:80]}{'...' if len(strategy) > 80 else ''}</div>
+                <div style="font-size:0.6rem; color:#475569; line-height:1.3;">{strategy}</div>
                 {'<div style="margin-top:6px; font-size:0.55rem; color:#dc2626; font-weight:700;">⭐ DETECTADO POR IA</div>' if has_llm else ''}
             </div>'''
         
@@ -1208,7 +1898,7 @@ class Nexus7Architect:
                 <div style="background:#f8fafc; padding:10px; border-radius:8px; font-style:italic; font-size:0.8rem; color:#475569; border-left:3px solid {accent}; margin-bottom:10px;">
                     "{p_quote}"
                 </div>
-                <div style="font-size:0.75rem; color:#4b5563; line-height:1.4; margin-bottom:12px;">{p_story[:180]}{'...' if len(p_story) > 180 else ''}</div>
+                <div style="font-size:0.75rem; color:#4b5563; line-height:1.4; margin-bottom:12px;">{p_story}</div>
                 <div style="display:flex; gap:5px; flex-wrap:wrap;">{criteria_html}</div>
             </div>'''
         
@@ -1283,6 +1973,7 @@ class Nexus7Architect:
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <span style="background:#6366f1; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">I. Veredicto</span>
                     <span style="background:#3b82f6; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">II. Competencia</span>
+                    {'<span style="background:#059669; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">II-B. Traffic & SEO</span>' if has_search_intel else ''}
                     <span style="background:#22c55e; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">III. Consumidor</span>
                     <span style="background:#f59e0b; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">IV. Finanzas</span>
                     <span style="background:#ef4444; color:white; padding:4px 10px; border-radius:15px; font-size:0.65rem; font-weight:600;">V. Riesgos</span>
@@ -1295,6 +1986,8 @@ class Nexus7Architect:
             <h2 class="section-title">II. Análisis Competitivo & Brechas <span class="agent-badge">Scout + Strategist</span></h2>
             <table><thead><tr><th>Rank</th><th>Producto</th><th>Precio</th><th>Rating</th><th>Fortaleza</th><th>Debilidad</th><th>Oportunidad</th></tr></thead><tbody>{top_10_rows}</tbody></table>
         </div>
+
+        {search_terms_section_html}
 
         <!-- SECTION III: Insights del Consumidor (consolidado) -->
         <div class="page-break section-container">
@@ -2354,7 +3047,7 @@ class Nexus7Architect:
                 "color": "#16a34a",
                 "bg": "#f0fdf4",
                 "border": "#bbf7d0",
-                "summary": go_summary[:150]
+                "summary": go_summary
             }
 
     @report_agent_activity
@@ -2665,7 +3358,7 @@ class Nexus7Architect:
             pain_html += f'''
             <div style="background:white; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 {pp.get("pain", "")[:50]}</div>
+                    <div style="font-weight:600; color:#1e293b; font-size:0.85rem; flex:1;">😤 {pp.get("pain", "")}</div>
                     <div style="background:{gap_color}20; color:{gap_color}; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">GAP +{gap:.1f}</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
@@ -2682,7 +3375,7 @@ class Nexus7Architect:
             if isinstance(kw, dict):
                 keywords_html += f'''
                 <div style="background:#eff6ff; padding:6px 10px; border-radius:6px; font-size:0.7rem;">
-                    <span style="font-weight:600; color:#1e40af;">{kw.get("keyword", "")[:25]}</span>
+                    <span style="font-weight:600; color:#1e40af;">{kw.get("keyword", "")}</span>
                     <span style="color:#64748b; margin-left:5px;">({kw.get("volume", "Med")})</span>
                 </div>'''
         
@@ -2692,11 +3385,11 @@ class Nexus7Architect:
             rating = c.get("rating", 4.0)
             reviews = c.get("reviews", 0)
             price = c.get("price", 0)
-            vuln = c.get("vuln", c.get("weakness", "N/A"))[:30]
-            gap = c.get("gap", c.get("opportunity", "N/A"))[:25]
+            vuln = c.get("vuln", c.get("weakness", "N/A"))
+            gap = c.get("gap", c.get("opportunity", "N/A"))
             # Get ASIN/SKU and full product name from CSV data
             asin = c.get("asin", c.get("sku", "N/A"))
-            product_name = c.get("title", c.get("name", ""))[:75]  # Full name from CSV
+            product_name = c.get("title", c.get("name", ""))
             comp_rows += f'''
             <tr style="border-bottom:1px solid #e2e8f0;">
                 <td style="padding:8px; font-weight:600; color:#1e293b; font-size:0.75rem;">
@@ -2717,7 +3410,7 @@ class Nexus7Architect:
             share = ms.get("share", 0)
             market_bars += f'''
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span style="width:60px; font-size:0.7rem; color:#64748b; text-align:right;">{ms.get("brand", "")[:10]}</span>
+                <span style="width:80px; font-size:0.7rem; color:#64748b; text-align:right; overflow-wrap:break-word;">{ms.get("brand", "")}</span>
                 <div style="flex:1; height:12px; background:#e2e8f0; border-radius:6px; overflow:hidden;">
                     <div style="width:{share}%; height:100%; background:linear-gradient(90deg, #3b82f6, #8b5cf6);"></div>
                 </div>
@@ -2823,7 +3516,7 @@ class Nexus7Architect:
             <div style="background:#fef2f2; border-left:3px solid #dc2626; padding:8px 10px; margin-bottom:6px; border-radius:0 6px 6px 0;">
                 <div style="font-size:0.7rem; font-weight:700; color:#dc2626;">⚠️ {gap.get("competitor", "")} ignora:</div>
                 <div style="font-size:0.7rem; color:#7f1d1d;">{gap.get("ignored_issue", "")}</div>
-                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—{gap.get("user_frustration", "")[:60]}"</div>
+                <div style="font-size:0.65rem; color:#64748b; margin-top:2px;">"—{gap.get("user_frustration", "")}"</div>
             </div>'''
         
         # GaryVee Content HTML
@@ -2831,8 +3524,8 @@ class Nexus7Architect:
         for g in garyvee_content[:3]:
             garyvee_html += f'''
             <div style="background:#fef3c7; border:1px solid #fcd34d; padding:10px; border-radius:8px; margin-bottom:6px;">
-                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 {g.get("idea", "")[:50]}</div>
-                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 {g.get("format", "")} | Hook: "{g.get("hook", "")[:40]}..."</div>
+                <div style="font-size:0.7rem; font-weight:700; color:#b45309;">🔥 {g.get("idea", "")}</div>
+                <div style="font-size:0.65rem; color:#78350f; margin-top:3px;">📺 {g.get("format", "")} | Hook: "{g.get("hook", "")}"</div>
                 <div style="font-size:0.6rem; color:#92400e; margin-top:2px;">💢 Trigger: {g.get("emotional_trigger", "")}</div>
             </div>'''
         
@@ -2841,9 +3534,9 @@ class Nexus7Architect:
         for p in patel_content[:3]:
             patel_html += f'''
             <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:10px; border-radius:8px; margin-bottom:6px;">
-                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 {p.get("idea", "")[:50]}</div>
+                <div style="font-size:0.7rem; font-weight:700; color:#1e40af;">📈 {p.get("idea", "")}</div>
                 <div style="font-size:0.65rem; color:#1d4ed8; margin-top:3px;">🎯 KW: {p.get("target_keyword", "")} ({p.get("search_intent", "")})</div>
-                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: {p.get("content_gap", "")[:50]}</div>
+                <div style="font-size:0.6rem; color:#3b82f6; margin-top:2px;">📊 Gap: {p.get("content_gap", "")}</div>
             </div>'''
         
         # Social Insights HTML (TikTok, Reddit, YouTube)
@@ -2853,15 +3546,15 @@ class Nexus7Architect:
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
                 <div style="background:#000; color:white; padding:8px; border-radius:6px;">
                     <div style="font-size:0.6rem; font-weight:700;">📱 TIKTOK</div>
-                    <div style="font-size:0.6rem; margin-top:4px;">{tiktok_trends[:60] if tiktok_trends else "N/A"}...</div>
+                    <div style="font-size:0.6rem; margin-top:4px; line-height:1.4;">{tiktok_trends if tiktok_trends else "N/A"}</div>
                 </div>
                 <div style="background:#ff4500; color:white; padding:8px; border-radius:6px;">
                     <div style="font-size:0.6rem; font-weight:700;">🔴 REDDIT</div>
-                    <div style="font-size:0.6rem; margin-top:4px;">{reddit_insights[:60] if reddit_insights else "N/A"}...</div>
+                    <div style="font-size:0.6rem; margin-top:4px; line-height:1.4;">{reddit_insights if reddit_insights else "N/A"}</div>
                 </div>
                 <div style="background:#ff0000; color:white; padding:8px; border-radius:6px;">
                     <div style="font-size:0.6rem; font-weight:700;">▶️ YOUTUBE</div>
-                    <div style="font-size:0.6rem; margin-top:4px;">{youtube_gaps[:60] if youtube_gaps else "N/A"}...</div>
+                    <div style="font-size:0.6rem; margin-top:4px; line-height:1.4;">{youtube_gaps if youtube_gaps else "N/A"}</div>
                 </div>
             </div>'''
 
@@ -2891,7 +3584,7 @@ class Nexus7Architect:
             background: white; 
             border-radius: 0; 
             box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); 
-            overflow: hidden; 
+            overflow: visible; 
             margin-bottom: 30px; 
             position: relative;
         }}
@@ -2965,8 +3658,9 @@ class Nexus7Architect:
             <div class="header">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <div style="font-size: 0.6rem; font-weight: 700; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">🎯 Executive Decision Brief</div>
-                        <div style="font-size: 1.3rem; font-weight: 800;">{anchor}</div>
+                        <div style="font-size: 0.6rem; font-weight: 700; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">🎯 NEXUS-360 • Reporte Ejecutivo de Viabilidad</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; line-height: 1.3;">{anchor}</div>
+                        <div style="font-size: 0.7rem; color: #cbd5e1; margin-top: 4px; font-style: italic;">Análisis Integral de Mercado, Competencia y Oportunidad Estratégica</div>
                     </div>
                     <div style="text-align:right;">
                         <div style="font-size: 0.65rem; color: #94a3b8;">{timestamp_now()}</div>
@@ -2981,7 +3675,7 @@ class Nexus7Architect:
                     <div class="verdict-icon">{verdict["icon"]}</div>
                     <div style="flex:1;">
                         <div class="verdict-status">{verdict["status"]}</div>
-                        <div class="verdict-summary">{verdict["summary"][:100]}</div>
+                        <div class="verdict-summary">{verdict["summary"]}</div>
                     </div>
                     <div class="confidence">
                         <div class="confidence-value">{confidence}%</div>
@@ -3003,7 +3697,7 @@ class Nexus7Architect:
                         <div>
                             <div class="consumer-quote">😤 "{consumer_frustration}"</div>
                             <div class="consumer-quote" style="background:linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-color:#3b82f6;">💭 "{consumer_desire}"</div>
-                            {f'<div class="lightning"><div class="lightning-title">⚡ OPORTUNIDAD RELÁMPAGO ({velocity_score})</div><div style="font-size:0.75rem; color:#78350f; margin-top:4px;">{lightning_reason[:80]}</div></div>' if is_lightning else ''}
+                            {f'<div class="lightning"><div class="lightning-title">⚡ OPORTUNIDAD RELÁMPAGO ({velocity_score})</div><div style="font-size:0.75rem; color:#78350f; margin-top:4px;">{lightning_reason}</div></div>' if is_lightning else ''}
                             <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">{keywords_html}</div>
                         </div>
                     </div>
@@ -3051,7 +3745,7 @@ class Nexus7Architect:
                         <div class="card">
                             <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📅 ESTACIONALIDAD</div>
                             {''.join(f'<div style="font-size:0.75rem; margin-bottom:4px;"><span style="font-weight:600; color:#3b82f6;">{p.get("month", "")}</span>: {p.get("event", "")} ({p.get("impact", "")})</div>' for p in peaks[:2])}
-                            <div style="font-size:0.7rem; color:#64748b; margin-top:6px; font-style:italic;">{seasonality_insight[:80]}</div>
+                            <div style="font-size:0.7rem; color:#64748b; margin-top:6px; font-style:italic;">{seasonality_insight}</div>
                         </div>
                     </div>
                 </div>
@@ -3072,7 +3766,7 @@ class Nexus7Architect:
                 <div class="section">
                     <div class="section-title">✨ Tu Ventaja Diferencial</div>
                     <div class="card" style="margin-bottom:10px;">
-                        <div style="font-size:0.8rem; color:#334155; line-height:1.5;">{exec_summary[:200]}</div>
+                        <div style="font-size:0.8rem; color:#334155; line-height:1.5;">{exec_summary}</div>
                     </div>
                     <div class="two-col">
                         <div>
@@ -3095,8 +3789,8 @@ class Nexus7Architect:
                         </div>
                         <div class="card">
                             <div style="font-size:0.65rem; font-weight:700; color:#64748b; margin-bottom:6px;">📋 NOTAS DE COMPLIANCE</div>
-                            {''.join(f'<div style="font-size:0.75rem; color:#334155; padding:4px 0; border-bottom:1px dashed #e2e8f0;">• {n[:60]}</div>' for n in compliance_notes[:3])}
-                            {f'<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:8px; margin-top:8px;"><div style="font-size:0.7rem; font-weight:700; color:#dc2626;">🚫 VETO ACTIVO</div><div style="font-size:0.7rem; color:#7f1d1d; margin-top:2px;">{veto_reason[:80]}</div></div>' if is_vetoed else ''}
+                            {''.join(f'<div style="font-size:0.75rem; color:#334155; padding:4px 0; border-bottom:1px dashed #e2e8f0;">• {n}</div>' for n in compliance_notes[:3])}
+                            {f'<div style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:8px; margin-top:8px;"><div style="font-size:0.7rem; font-weight:700; color:#dc2626;">🚫 VETO ACTIVO</div><div style="font-size:0.7rem; color:#7f1d1d; margin-top:2px;">{veto_reason}</div></div>' if is_vetoed else ''}
                         </div>
                     </div>
                 </div>
@@ -3147,7 +3841,7 @@ class Nexus7Architect:
                         <div>
                             <div class="section-title">📚 Fuentes Analizadas</div>
                             <div style="display:flex; flex-wrap:wrap; gap:6px;">{sources_html}</div>
-                            {''.join(f'<div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;"><div style="font-size:0.6rem; color:#16a34a; font-weight:700;">🎓 {s.get("source", "")[:30]}</div><div style="font-size:0.7rem; color:#166534;">{s.get("finding", "")[:60]}</div></div>' for s in scholar_audit[:2])}
+                            {''.join(f'<div style="margin-top:8px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px;"><div style="font-size:0.6rem; color:#16a34a; font-weight:700;">🎓 {s.get("source", "")}</div><div style="font-size:0.7rem; color:#166534;">{s.get("finding", "")}</div></div>' for s in scholar_audit[:2])}
                         </div>
                     </div>
                 </div>
