@@ -310,7 +310,11 @@ class Nexus5Mathematician:
         # Determine Base Conversion Rate from SSOT Search Data
         search_data = strategy_data.get("search_data", {})
         has_real_search_data = search_data.get("has_real_data", False)
-        base_conversion_rate = float(search_data.get("avg_conversion_rate", 12.0))
+        base_conversion_rate = float(search_data.get("avg_conversion_rate", 0))
+        if base_conversion_rate <= 0:
+            # Category benchmark: derive from market density
+            num_competitors = len(strategy_data.get("scout_data", {}).get("top_10_products", []))
+            base_conversion_rate = max(8.0, 15.0 - (num_competitors * 0.5))  # More competitors = lower conversion
         
         # Adjust scenarios based on real data
         conv_consv = max(round(base_conversion_rate * 0.7, 1), 2.0)
@@ -318,6 +322,16 @@ class Nexus5Mathematician:
         conv_aggr = round(base_conversion_rate * 1.4, 1)
         
         source_label = "POE (Real)" if has_real_search_data else "Benchmark (Est.)"
+        
+        # Calculate base monthly units from Scout data instead of hardcoding 150
+        scout_products = strategy_data.get("scout_data", {}).get("top_10_products", [])
+        base_monthly_units = 150  # Will be overridden below if data exists
+        if scout_products and base_price > 0:
+            monthly_revenues = [p.get("monthly_revenue", 0) for p in scout_products if p.get("monthly_revenue", 0) > 0]
+            if monthly_revenues:
+                avg_monthly_revenue = sum(monthly_revenues) / len(monthly_revenues)
+                base_monthly_units = max(30, round(avg_monthly_revenue / base_price * 0.15))  # 15% of avg competitor
+                logger.info(f"[{self.role}] Dynamic monthly units: {base_monthly_units} (from {len(monthly_revenues)} competitors)")
         
         three_scenarios = {
             "conservative": {
@@ -329,11 +343,11 @@ class Nexus5Mathematician:
                     "conversion_rate": f"{conv_consv}% ({source_label} -30%)"
                 },
                 "projections": {
-                    "monthly_units": round(150 * 0.70),  # 105 units
-                    "monthly_revenue": round(150 * 0.70 * base_price, 2),
-                    "ppc_spend": round(150 * 0.70 * base_price * (ppc_investment_pct * 1.4), 2),
+                    "monthly_units": round(base_monthly_units * 0.70),
+                    "monthly_revenue": round(base_monthly_units * 0.70 * base_price, 2),
+                    "ppc_spend": round(base_monthly_units * 0.70 * base_price * (ppc_investment_pct * 1.4), 2),
                     "net_margin_pct": max(round(base_net_margin - 12, 1), 5),
-                    "monthly_profit": round(150 * 0.70 * (base_price * 0.12), 2)
+                    "monthly_profit": round(base_monthly_units * 0.70 * (base_price * 0.12), 2)
                 },
                 "viability": "⚠️ Riesgo" if base_net_margin - 12 < 15 else "✅ Viable"
             },
@@ -346,11 +360,11 @@ class Nexus5Mathematician:
                     "conversion_rate": f"{conv_exp}% ({source_label})"
                 },
                 "projections": {
-                    "monthly_units": 150,
-                    "monthly_revenue": round(150 * base_price, 2),
-                    "ppc_spend": round(150 * base_price * ppc_investment_pct, 2),
+                    "monthly_units": base_monthly_units,
+                    "monthly_revenue": round(base_monthly_units * base_price, 2),
+                    "ppc_spend": round(base_monthly_units * base_price * ppc_investment_pct, 2),
                     "net_margin_pct": base_net_margin,
-                    "monthly_profit": round(150 * base_net_profit, 2)
+                    "monthly_profit": round(base_monthly_units * base_net_profit, 2)
                 },
                 "viability": "✅ Objetivo"
             },
@@ -363,11 +377,11 @@ class Nexus5Mathematician:
                     "conversion_rate": f"{conv_aggr}% ({source_label} +40%)"
                 },
                 "projections": {
-                    "monthly_units": round(150 * 1.30),  # 195 units
-                    "monthly_revenue": round(150 * 1.30 * base_price, 2),
-                    "ppc_spend": round(150 * 1.30 * base_price * (ppc_investment_pct * 0.8), 2),
+                    "monthly_units": round(base_monthly_units * 1.30),
+                    "monthly_revenue": round(base_monthly_units * 1.30 * base_price, 2),
+                    "ppc_spend": round(base_monthly_units * 1.30 * base_price * (ppc_investment_pct * 0.8), 2),
                     "net_margin_pct": round(base_net_margin + 8, 1),
-                    "monthly_profit": round(150 * 1.30 * (base_price * 0.28), 2)
+                    "monthly_profit": round(base_monthly_units * 1.30 * (base_price * 0.28), 2)
                 },
                 "viability": "🚀 Potencial Alto"
             }
@@ -467,8 +481,8 @@ class Nexus5Mathematician:
                     {
                         "metric": "Conversion Rate Est.",
                         "threshold": "> 10%",
-                        "current": "12% (estimado)",
-                        "status": "✅ PASS"
+                        "current": f"{base_conversion_rate}% ({'POE' if has_real_search_data else 'estimado'})",
+                        "status": "✅ PASS" if base_conversion_rate > 10 else "⚠️ BELOW"
                     },
                     {
                         "metric": "TACoS Sostenible",
@@ -523,13 +537,17 @@ class Nexus5Mathematician:
         categories = pain_points.get("categories", [])
         
         if not categories:
-            # Default features if no pain points data
-            categories = [
-                {"category": "Funcionalidad", "gap_percentage": 35, "severity": "ALTO"},
-                {"category": "Durabilidad", "gap_percentage": 28, "severity": "ALTO"},
-                {"category": "Estética", "gap_percentage": 18, "severity": "MEDIO"},
-                {"category": "Empaque", "gap_percentage": 12, "severity": "BAJO"},
-            ]
+            # No pain points data — return empty analysis
+            return {
+                "methodology": "Ulwick ODI (Outcome-Driven Innovation)",
+                "formula": "Score = Importance + max(Importance - Satisfaction, 0)",
+                "threshold_high": 12,
+                "threshold_medium": 10,
+                "features": [],
+                "high_priority_count": 0,
+                "strategic_insight": "Sin datos de pain points. Ejecute pipeline con LLM para análisis de oportunidades.",
+                "source": "NO_DATA"
+            }
         
         feature_scores = []
         for cat in categories:

@@ -231,28 +231,30 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
                 "story": story,
                 "decision_criteria": [
                     av.get("trigger", "Calidad"),
-                    "Garantía de Desempeño",
-                    "Validación de Expertos",
-                    "Materiales Duraderos"
+                    f"Solución a: {av.get('pain_point', 'problema principal')}",
+                    f"Validación por {av.get('demographics', 'pares del segmento')}",
+                    "Relación calidad-precio comprobable"
                 ]
             })
             
-        # Fallback if LLM fails
+        # Fallback if LLM fails — context-aware using anchor
         if not dynamic_segments:
              dynamic_segments = [
                     {
                         "id": "primary",
-                        "name": "Early Adopters Premium",
+                        "name": f"Early Adopters de {anchor}",
                         "size": "35%",
-                        "description": "Consumidores tech-savvy que valoran innovación sobre precio.",
+                        "description": f"Consumidores que valoran innovación sobre precio en el mercado de {anchor}.",
+                        "source": "FALLBACK_GENERIC"
                     }
              ]
              detailed_personas = [{
-                 "name": "Alejandra",
-                 "title": "Product Manager, 32 años",
-                 "quote": "Busco calidad sin compromisos.",
-                 "story": "Fallback Persona generated due to missing LLM data.",
-                 "decision_criteria": ["Calidad", "Precio"]
+                 "name": "Persona Tipo",
+                 "title": f"Comprador activo de {anchor}",
+                 "quote": f"Busco la mejor solución en {anchor} sin compromisos.",
+                 "story": f"Persona genérica para {anchor}. Ejecute el pipeline con LLM activo para perfiles detallados.",
+                 "decision_criteria": ["Calidad", "Precio", "Reseñas"],
+                 "source": "FALLBACK_GENERIC"
              }]
 
         strategy_output = {
@@ -304,43 +306,9 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
                 },
                 
                 # ═══════════════════════════════════════════════════════════════
-                # v2.0: PAIN POINTS CLASSIFICATION (por categoría)
+                # v3.0: PAIN POINTS CLASSIFICATION (derived from Scout data)
                 # ═══════════════════════════════════════════════════════════════
-                "pain_points_analysis": {
-                    "categories": [
-                        {
-                            "category": "Funcionalidad",
-                            "icon": "⚙️",
-                            "complaints": ["No funciona como se esperaba", "Instrucciones confusas", "Falta de características"],
-                            "gap_percentage": 35,
-                            "severity": "ALTO"
-                        },
-                        {
-                            "category": "Durabilidad", 
-                            "icon": "🔧",
-                            "complaints": ["Se rompe fácilmente", "Vida útil corta", "Materiales de baja calidad"],
-                            "gap_percentage": 28,
-                            "severity": "ALTO"
-                        },
-                        {
-                            "category": "Estética",
-                            "icon": "🎨",
-                            "complaints": ["Diseño genérico", "No coincide con fotos", "Acabado barato"],
-                            "gap_percentage": 18,
-                            "severity": "MEDIO"
-                        },
-                        {
-                            "category": "Empaque",
-                            "icon": "📦",
-                            "complaints": ["Llegó dañado", "Empaque excesivo", "Sin instrucciones"],
-                            "gap_percentage": 12,
-                            "severity": "BAJO"
-                        }
-                    ],
-                    "total_gap_score": 35 + 28 + 18 + 12,
-                    "dominant_pain": "Funcionalidad",
-                    "recommendation": "Priorizar mejoras en funcionalidad y durabilidad (63% de quejas combinadas)"
-                },
+                "pain_points_analysis": self._build_pain_points(top_10_products, anchor),
                 
                 # ═══════════════════════════════════════════════════════════════
                 # v2.0: JOBS-TO-BE-DONE FRAMEWORK
@@ -377,67 +345,40 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
                 # ═══════════════════════════════════════════════════════════════
                 "usp_proposals": strategic_verdict.get("3_usp_proposals", [
                     {
-                        "title": "Durabilidad Industrial",
+                        "title": f"Calidad Superior en {anchor}",
                         "icon": "🛡️",
-                        "substance": "Materiales Grado Aeroespacial + Garantía 5 Años",
-                        "pain_attack": "Ataca el 28% de quejas por fragilidad",
-                        "details": "Implementación de polímeros reforzados y control de calidad militar para asegurar vida útil >10,000 ciclos."
+                        "substance": "Materiales premium + Garantía extendida",
+                        "pain_attack": "Ataca las principales quejas de calidad del mercado",
+                        "details": f"Propuesta basada en análisis de brechas competitivas en {anchor}. Requiere LLM para detalle específico.",
+                        "source": "FALLBACK_GENERIC"
                     },
                     {
-                        "title": "Simplicidad Adaptativa",
+                        "title": "Experiencia de Usuario Optimizada",
                         "icon": "⚡",
-                        "substance": "Zero-Config Setup (<15 segundos)",
-                        "pain_attack": "Ataca el 35% de fricción por configuración",
-                        "details": "Interfaz intuitiva plug-and-play que elimina la necesidad de manuales técnicos, optimizando el onboarding del usuario."
+                        "substance": "Usabilidad mejorada vs competencia",
+                        "pain_attack": "Ataca fricción en configuración/uso",
+                        "details": f"Diseño centrado en el usuario para {anchor}. Requiere LLM para detalle específico.",
+                        "source": "FALLBACK_GENERIC"
                     },
                     {
-                        "title": "Ecosistema Blindado",
+                        "title": "Ecosistema de Soporte Diferenciado",
                         "icon": "🔒",
-                        "substance": "Seguridad E2E + Soporte Partner Premium",
+                        "substance": "Servicio post-venta superior",
                         "pain_attack": "Diferenciación radical vs genéricos",
-                        "details": "Acceso exclusivo a la red de soporte NEXUS y actualizaciones críticas automáticas para mantener la relevancia del producto."
+                        "details": f"Estrategia de retención y lealtad para {anchor}. Requiere LLM para detalle específico.",
+                        "source": "FALLBACK_GENERIC"
                     }
                 ]),
                 
                 # ═══════════════════════════════════════════════════════════════
-                # v3.0: ERRC GRID (Blue Ocean Strategy - Cuadro de las 4 Acciones)
+                # v3.0: ERRC GRID (from Integrator SSOT or context-aware fallback)
                 # ═══════════════════════════════════════════════════════════════
-                "errc_grid": {
-                    "methodology": "Blue Ocean Strategy (Kim & Mauborgne)",
-                    "purpose": "Identificar cómo crear un Océano Azul de espacio de mercado no disputado",
-                    "eliminate": [
-                        "Features costosas poco valoradas por el consumidor",
-                        "Variantes de SKU innecesarias que diluyen inventario",
-                        "Complejidad en el setup inicial"
-                    ],
-                    "reduce": [
-                        "Exceso de materiales de empaque",
-                        "Manual de instrucciones extenso (reemplazar con QR a video)",
-                        "Número de componentes ensamblables"
-                    ],
-                    "raise": [
-                        "Calidad de materiales de contacto primario",
-                        "Duración de garantía (3 años vs 1 año industria)",
-                        "Velocidad de respuesta de soporte al cliente"
-                    ],
-                    "create": [
-                        "Garantía de por vida para primeros 1000 clientes",
-                        "Comunidad VIP con acceso exclusivo a nuevos productos",
-                        "Programa de recompra/upgrade después de 2 años"
-                    ],
-                    "strategic_insight": f"Para {anchor}: ELIMINAR lo irrelevante, SUBIR lo que genera confianza, CREAR lo que nadie ofrece."
-                },
+                "errc_grid": self._build_errc_grid(ssot_data, anchor),
                 
                 # ═══════════════════════════════════════════════════════════════
-                # v2.0: GAP THRESHOLD CHECK (20% mínimo de insatisfacción)
+                # v3.0: GAP THRESHOLD CHECK (calculated from actual competitor data)
                 # ═══════════════════════════════════════════════════════════════
-                "gap_threshold_analysis": {
-                    "threshold": "20%",
-                    "leader_dissatisfaction": 35,  # Based on Funcionalidad gap
-                    "threshold_met": 35 >= 20,
-                    "verdict": "✅ GAP SUFICIENTE - Oportunidad de diferenciación clara" if 35 >= 20 else "⚠️ GAP INSUFICIENTE - Considerar iteración de producto",
-                    "recommendation": "Proceder con desarrollo" if 35 >= 20 else "Pivotar o refinar propuesta antes de invertir"
-                },
+                "gap_threshold_analysis": self._build_gap_threshold(top_10_products, gaps),
                 
                 # Data source tracking for transparency
                 "pricing_source": pricing_source,
@@ -463,6 +404,134 @@ Recomiendo posicionarnos como el **'Gold Standard'** absoluto. No vendemos un ob
         
         self._save_strategy(strategy_output)
         return strategy_output
+
+    def _build_pain_points(self, top_10_products: list, anchor: str) -> dict:
+        """Build pain points analysis from Scout competitor vulnerability data."""
+        # Aggregate vulnerabilities from competitor products
+        all_vulns = []
+        for p in top_10_products:
+            vulns = p.get("vuln", [])
+            if isinstance(vulns, list):
+                all_vulns.extend(vulns)
+            elif isinstance(vulns, str) and vulns:
+                all_vulns.append(vulns)
+
+        # If we have real vulnerability data, categorize it
+        if all_vulns:
+            # Simple frequency-based categorization
+            categories_map = {
+                "Funcionalidad": {"icon": "⚙️", "complaints": [], "keywords": ["funciona", "feature", "característica", "config", "setup", "slow", "lento", "error"]},
+                "Durabilidad": {"icon": "🔧", "complaints": [], "keywords": ["rompe", "break", "dura", "vida útil", "quality", "calidad", "material", "cheap"]},
+                "Diseño/UX": {"icon": "🎨", "complaints": [], "keywords": ["diseño", "design", "look", "size", "tamaño", "color", "aesthetic", "ugly"]},
+                "Empaque/Envío": {"icon": "📦", "complaints": [], "keywords": ["empaque", "package", "shipping", "envío", "dañado", "damaged", "instruction"]}
+            }
+            
+            uncategorized = []
+            for vuln in all_vulns:
+                vuln_lower = vuln.lower() if isinstance(vuln, str) else ""
+                placed = False
+                for cat_name, cat_info in categories_map.items():
+                    if any(kw in vuln_lower for kw in cat_info["keywords"]):
+                        cat_info["complaints"].append(vuln[:80])
+                        placed = True
+                        break
+                if not placed:
+                    uncategorized.append(vuln[:80])
+            
+            # Distribute uncategorized complaints to "Funcionalidad" (most common)
+            if uncategorized:
+                categories_map["Funcionalidad"]["complaints"].extend(uncategorized[:3])
+            
+            # Build output categories with real percentages
+            total_complaints = max(len(all_vulns), 1)
+            categories = []
+            for cat_name, cat_info in categories_map.items():
+                count = len(cat_info["complaints"])
+                if count > 0:
+                    pct = round((count / total_complaints) * 100)
+                    severity = "ALTO" if pct >= 25 else "MEDIO" if pct >= 15 else "BAJO"
+                    categories.append({
+                        "category": cat_name,
+                        "icon": cat_info["icon"],
+                        "complaints": cat_info["complaints"][:3],  # Top 3
+                        "gap_percentage": pct,
+                        "severity": severity,
+                        "source": "SCOUT_DATA"
+                    })
+            
+            # Sort by gap_percentage descending
+            categories.sort(key=lambda x: x["gap_percentage"], reverse=True)
+            total_score = sum(c["gap_percentage"] for c in categories)
+            dominant = categories[0]["category"] if categories else "Sin datos"
+            
+            return {
+                "categories": categories,
+                "total_gap_score": total_score,
+                "dominant_pain": dominant,
+                "recommendation": f"Priorizar mejoras en {dominant} ({categories[0]['gap_percentage']}% de quejas) para {anchor}",
+                "source": "SCOUT_COMPETITOR_DATA",
+                "data_points": len(all_vulns)
+            }
+        
+        # No vulnerability data — return empty structure with flag
+        return {
+            "categories": [],
+            "total_gap_score": 0,
+            "dominant_pain": "PENDIENTE",
+            "recommendation": f"Sin datos de vulnerabilidades para {anchor}. Ejecute pipeline con LLM para análisis detallado.",
+            "source": "NO_DATA"
+        }
+    
+    def _build_errc_grid(self, ssot_data: dict, anchor: str) -> dict:
+        """Build ERRC grid from Integrator SSOT data or generate context-aware fallback."""
+        # Try to get ERRC from Integrator SSOT
+        ssot_errc = ssot_data.get("errc_grid", {})
+        
+        if ssot_errc and any(ssot_errc.get(k) for k in ["eliminate", "reduce", "raise", "create"]):
+            ssot_errc["methodology"] = "Blue Ocean Strategy (Kim & Mauborgne)"
+            ssot_errc["purpose"] = "Identificar cómo crear un Océano Azul de espacio de mercado no disputado"
+            ssot_errc["source"] = "INTEGRATOR_SSOT"
+            if "strategic_insight" not in ssot_errc:
+                ssot_errc["strategic_insight"] = f"Para {anchor}: ELIMINAR lo irrelevante, SUBIR lo que genera confianza, CREAR lo que nadie ofrece."
+            return ssot_errc
+        
+        # Fallback: context-aware generic grid
+        return {
+            "methodology": "Blue Ocean Strategy (Kim & Mauborgne)",
+            "purpose": "Identificar cómo crear un Océano Azul de espacio de mercado no disputado",
+            "eliminate": [f"Features de bajo valor para consumidores de {anchor}"],
+            "reduce": [f"Complejidad innecesaria en la experiencia de {anchor}"],
+            "raise": [f"Estándares de calidad por encima del promedio de {anchor}"],
+            "create": [f"Propuesta única que no existe en el mercado de {anchor}"],
+            "strategic_insight": f"Para {anchor}: ELIMINAR lo irrelevante, SUBIR lo que genera confianza, CREAR lo que nadie ofrece.",
+            "source": "FALLBACK_GENERIC"
+        }
+    
+    def _build_gap_threshold(self, top_10_products: list, gaps: list) -> dict:
+        """Calculate gap threshold from actual competitor data instead of hardcoded values."""
+        # Try to calculate dissatisfaction from competitor ratings
+        ratings = [p.get("rating", 0) for p in top_10_products if p.get("rating", 0) > 0]
+        
+        if ratings:
+            avg_rating = sum(ratings) / len(ratings)
+            # Dissatisfaction = % of rating below 5.0 (e.g., avg 4.2 => 16% dissatisfied)
+            leader_dissatisfaction = round((1 - (avg_rating / 5.0)) * 100)
+        else:
+            # Use number of identified gaps as a proxy
+            leader_dissatisfaction = min(len(gaps) * 10, 50)  # Each gap ≈ 10% dissatisfaction
+        
+        threshold = 20  # Industry standard minimum for viable differentiation
+        threshold_met = leader_dissatisfaction >= threshold
+        
+        return {
+            "threshold": f"{threshold}%",
+            "leader_dissatisfaction": leader_dissatisfaction,
+            "threshold_met": threshold_met,
+            "verdict": f"✅ GAP SUFICIENTE ({leader_dissatisfaction}%) - Oportunidad de diferenciación clara" if threshold_met else f"⚠️ GAP INSUFICIENTE ({leader_dissatisfaction}%) - Considerar iteración de producto",
+            "recommendation": "Proceder con desarrollo" if threshold_met else "Pivotar o refinar propuesta antes de invertir",
+            "source": "CALCULATED" if ratings else "ESTIMATED_FROM_GAPS",
+            "data_points": len(ratings)
+        }
 
     def _save_strategy(self, data: dict):
         if not self.db: return

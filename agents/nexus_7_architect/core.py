@@ -39,10 +39,15 @@ class Nexus7Architect:
         if not gt_series:
             sales_intel = s_data.get("sales_intelligence", {})
             seasonality = sales_intel.get("seasonality", {})
-            monthly_demand = seasonality.get("monthly_demand", {
-                "Enero": 55, "Febrero": 65, "Marzo": 50, "Abril": 55, "Mayo": 75, "Junio": 70,
-                "Julio": 85, "Agosto": 70, "Septiembre": 65, "Octubre": 75, "Noviembre": 100, "Diciembre": 95
-            })
+            monthly_demand = seasonality.get("monthly_demand", None)
+            if not monthly_demand:
+                # Generate flat simulated baseline instead of hardcoded values
+                import random
+                base = 70
+                months_es = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                monthly_demand = {m: max(40, base + random.randint(-10, 10)) for m in months_es}
+                logger.info(f"[{self.role}] Using simulated flat demand baseline (source: SIMULATED)")
             gt_months = list(monthly_demand.keys())
             
             # v2.6: Build dynamic trend series from Scout keywords instead of generic label

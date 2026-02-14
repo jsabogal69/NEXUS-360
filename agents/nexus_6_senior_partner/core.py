@@ -90,11 +90,13 @@ class Nexus6SeniorPartner:
         # Bullet Point #1: Resolución de Frustración #1 (Psicología de Consumo)
         bp1 = f"✅ ADIÓS A {pain_point.upper()}: Diseñado específicamente para resolver la frustración #1 detectada en el nicho."
         
-        # Bullet Point #2: Beneficio Emocional JTBD
-        bp2 = "🚀 EL TRABAJO HECHO: No vendemos specs, vendemos el resultado que tu vida necesita hoy."
+        # Bullet Point #2: Benefit from JTBD (dynamic from strategy)
+        anchor = strategy_data.get("scout_anchor", "el mercado")
+        bp2 = f"🚀 EL TRABAJO HECHO: Resuelve el problema real que los compradores de {anchor} enfrentan día a día."
         
-        # Bullet Point #3: Autoridad/Certificación
-        bp3 = "💎 CALIDAD NEXUS: Calibrado con inteligencia de mercado para exceder los estándares del Top 10."
+        # Bullet Point #3: Authority from competitive analysis
+        num_competitors = len(strategy_data.get("scout_data", {}).get("top_10_products", []))
+        bp3 = f"💎 CALIDAD NEXUS: Calibrado con análisis de {num_competitors} competidores para exceder los estándares del mercado."
         
         return {
             "bullet_points": [bp1, bp2, bp3],

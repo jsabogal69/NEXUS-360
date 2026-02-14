@@ -129,13 +129,13 @@ class Nexus8Guardian:
             risk_level = "LOW"
             compliance_score = 70
             audit_results = [
-                {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": f"Declaración de conformidad con directivas europeas aplicables para '{anchor}'. Obligatorio para venta en Espacio Económico Europeo."},
-                {"std": "REACH Compliance (EU)", "status": "MANDATORY", "desc": "Regulación de químicos en productos vendidos en UE. Declaración de ausencia de sustancias de muy alta preocupación (SVHC)."},
-                {"std": "California Prop 65", "status": "MANDATORY", "desc": f"Advertencias para productos de '{anchor}' que contienen químicos de la lista de California."},
-                {"std": "Amazon Product Compliance", "status": "MANDATORY", "desc": f"Requisitos específicos de Amazon Seller Central para la categoría '{anchor}'. Documentación de seguridad requerida."},
-                {"std": "Country of Origin Labeling", "status": "MANDATORY", "desc": "Marcado obligatorio de 'Made in [Country]' en todos los productos importados. Regulado por CBP."},
-                {"std": "Product Liability Insurance", "status": "RECOMMENDED", "desc": f"Seguro de responsabilidad del producto para '{anchor}'. Protección legal contra claims de consumidores."},
-                {"std": "FBA Compliance (Amazon)", "status": "MANDATORY", "desc": "Requisitos de empaque, etiquetado y códigos de barras para Fulfillment by Amazon. Pasos de prep específicos por categoría."}
+                {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": f"Declaración de conformidad con directivas europeas aplicables para '{anchor}'. Obligatorio para venta en Espacio Económico Europeo.", "source": "FALLBACK_GENERIC"},
+                {"std": "REACH Compliance (EU)", "status": "MANDATORY", "desc": "Regulación de químicos en productos vendidos en UE. Declaración de ausencia de sustancias de muy alta preocupación (SVHC).", "source": "FALLBACK_GENERIC"},
+                {"std": "California Prop 65", "status": "MANDATORY", "desc": f"Advertencias para productos de '{anchor}' que contienen químicos de la lista de California.", "source": "FALLBACK_GENERIC"},
+                {"std": "Amazon Product Compliance", "status": "MANDATORY", "desc": f"Requisitos específicos de Amazon Seller Central para la categoría '{anchor}'. Documentación de seguridad requerida.", "source": "FALLBACK_GENERIC"},
+                {"std": "Country of Origin Labeling", "status": "MANDATORY", "desc": "Marcado obligatorio de 'Made in [Country]' en todos los productos importados. Regulado por CBP.", "source": "FALLBACK_GENERIC"},
+                {"std": "Product Liability Insurance", "status": "RECOMMENDED", "desc": f"Seguro de responsabilidad del producto para '{anchor}'. Protección legal contra claims de consumidores.", "source": "FALLBACK_GENERIC"},
+                {"std": "FBA Compliance (Amazon)", "status": "MANDATORY", "desc": "Requisitos de empaque, etiquetado y códigos de barras para Fulfillment by Amazon. Pasos de prep específicos por categoría.", "source": "FALLBACK_GENERIC"}
             ]
 
         # ═══════════════════════════════════════════════════════════════════

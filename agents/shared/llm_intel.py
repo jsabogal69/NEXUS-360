@@ -493,13 +493,9 @@ REGLAS CRÍTICAS:
             data["scholar_audit"] = [
                 {
                     "source": f"Industry Insights: {niche}",
-                    "finding": f"El mercado de {niche} está migrando hacia estándares de calidad 'Pro-sumer', donde la durabilidad y la transparencia de materiales son los principales drivers de lealtad.",
-                    "relevance": "Marketing de Autoridad"
-                },
-                {
-                    "source": "E-commerce Trends Report",
-                    "finding": "La reducción de fricción en la experiencia de usuario mediante diseño intuitivo aumenta la tasa de recompra en un 25% en esta categoría.",
-                    "relevance": "Optimización de Conversión"
+                    "finding": f"Análisis pendiente de fuentes académicas para {niche}. Ejecute pipeline completo para insights detallados.",
+                    "relevance": "Análisis de Mercado",
+                    "source_type": "FALLBACK_GENERIC"
                 }
             ]
         
@@ -1007,32 +1003,21 @@ def generate_strategic_avatars(product_context: str, scout_data: dict) -> dict:
         return _generate_mock_avatars(product_context)
 
 def _generate_mock_avatars(ctx: str) -> dict:
-    """Fallback logic derived from context string"""
-    ctx_upper = ctx.upper()
+    """Context-aware fallback — no niche-specific data."""
+    ctx_upper = ctx.upper() if ctx else ""
+    product_word = ctx.split()[0] if ctx and ctx.split() else "Producto"
     
-    if "SHAMPOO" in ctx_upper or "CABELLO" in ctx_upper or "HAIR" in ctx_upper:
-        return {
-            "project_names": ["Project Velvet Root", "Initiative Follicle-Guard", "Protocolo Silk-Flow"],
-            "selected_project_name": "Project Velvet Root",
-            "avatars": [
-                {"name": "La Restauradora Consciente", "percentage": "45%", "demographics": "Mujer 28-40, Urbana", "pain_point": "Caída por estrés/químicos", "trigger": "Sin sulfatos, resultado clínico"},
-                {"name": "El Bio-Hacker Capilar", "percentage": "30%", "demographics": "Hombre/Mujer 35-50", "pain_point": "Adelgazamiento del cabello", "trigger": "Ingredientes activos densificantes"},
-                {"name": "Gift-Giver de Lujo", "percentage": "25%", "demographics": "Varios", "pain_point": "Regalos genéricos", "trigger": "Packaging de experiencia unboxing"}
-            ],
-            "moat_strategy": "Formulación propietaria con extracto fermentado exclusivo y comunidad educativa de 'Salud Capilar' difícil de replicar."
-        }
-    else:
-        # Generic fallback using existing logic but slightly renamed to show variance
-        return {
-            "project_names": [f"Project {ctx.split()[0]} Alpha", "Initiative Core-Value", "Protocolo Market-Fit"],
-            "selected_project_name": f"Project {ctx.split()[0]} Alpha",
-            "avatars": [
-                {"name": "Premium Performance Seeker", "percentage": "40%", "demographics": "High Income", "pain_point": "Product Failure", "trigger": "Reliability Guarantee"},
-                {"name": "Value Maximizer", "percentage": "35%", "demographics": "Middle Class", "pain_point": "Overpriced commodities", "trigger": "Cost-Benefit Ratio"},
-                {"name": "Esthetic Purist", "percentage": "25%", "demographics": "Design Conscious", "pain_point": "Ugly generic products", "trigger": "Minimalist Design"}
-            ],
-            "moat_strategy": "Brand ecosystem and superior customer service layer."
-        }
+    return {
+        "project_names": [f"Project {product_word} Alpha", "Initiative Core-Value", "Protocolo Market-Fit"],
+        "selected_project_name": f"Project {product_word} Alpha",
+        "avatars": [
+            {"name": f"Buscador Premium de {product_word}", "percentage": "40%", "demographics": "Segmento alto", "pain_point": f"Productos de {product_word} que fallan", "trigger": "Garantía de confiabilidad"},
+            {"name": "Maximizador de Valor", "percentage": "35%", "demographics": "Clase media", "pain_point": f"Commodities sobrevalorados en {product_word}", "trigger": "Relación costo-beneficio"},
+            {"name": "Purista Estético", "percentage": "25%", "demographics": "Consciente del diseño", "pain_point": f"Productos genéricos en {product_word}", "trigger": "Diseño diferenciado"}
+        ],
+        "moat_strategy": f"Ecosistema de marca y capa superior de servicio al cliente para {product_word}.",
+        "source": "FALLBACK_GENERIC"
+    }
 
 
 def generate_strategic_verdict(product_context: str, scout_data: dict, gap_analysis: list) -> dict:
@@ -1183,63 +1168,23 @@ def generate_strategic_verdict(product_context: str, scout_data: dict, gap_analy
 
 
 def _generate_mock_verdict(ctx: str) -> dict:
-    """Fallback verdicts based on product context."""
+    """Context-aware fallback verdict — no niche-specific frameworks."""
     # Type safety
     if isinstance(ctx, dict):
         ctx = ctx.get("name", ctx.get("title", str(ctx)))
     ctx = str(ctx) if ctx else "Producto"
-    ctx_upper = ctx.upper()
     
-    # Strategic frameworks for different product types
-    frameworks = {
-        "baby": {
-            "strategic_framework": "TRUST_MOAT",
-            "verdict_title": "EL GUARDIÁN DEL SUEÑO INFANTIL",
-            "verdict_subtitle": "Posicionamiento como la marca de confianza en el desarrollo neurológico temprano",
-            "strategic_thesis": "En un mercado inundado de juguetes electrónicos sin fundamento científico, capturamos a los padres que entienden que el sueño es la base del desarrollo cognitivo.",
-            "key_insight": "El 78% de los padres primerizos busca validación científica pero no la encuentra en los productos actuales.",
-            "competitive_angle": "Mientras la competencia vende 'conveniencia', nosotros vendemos 'desarrollo óptimo certificado'.",
-            "risk_acknowledged": "Riesgo de ser percibidos como 'premium inaccesible'. Mitigación: tier de entrada con upgrade path.",
-            "partner_summary": "Socio, el análisis revela una oportunidad de Foso de Confianza. El mercado de productos para bebé está plagado de commodities sin respaldo. Al posicionarnos como la autoridad en sueño científico, creamos una barrera emocional impenetrable."
-        },
-        "charger": {
-            "strategic_framework": "TECHNOLOGY_HYBRID",
-            "verdict_title": "EL CENTRO DE COMANDO ENERGÉTICO",
-            "verdict_subtitle": "Transformación de un commodity en un hub de gestión de energía inteligente",
-            "strategic_thesis": "Los cargadores actuales son cajas negras. Al hacerlos transparentes y conectados, capturamos al profesional que valora su equipamiento de $2000+.",
-            "key_insight": "El usuario premium no sabe si su cargador está dañando su batería - eso genera ansiedad latente.",
-            "competitive_angle": "Añadimos telemetría donde antes había ignorancia. Somos el Garmin del mundo de la carga.",
-            "risk_acknowledged": "Riesgo de overengineering. Mitigación: UX ultra-simple con data bajo demanda.",
-            "partner_summary": "Socio, identificamos una jugada de Fusión Tecnológica. El mercado de cargadores es una guerra de precios sin diferenciación real. Al integrar transparencia y datos, creamos una nueva subcategoría: 'Smart Charging'."
-        },
-        "hair": {
-            "strategic_framework": "CATEGORY_CREATION",
-            "verdict_title": "RITUAL DE RESTAURACIÓN CAPILAR",
-            "verdict_subtitle": "De shampoo commodity a tratamiento terapéutico de resultados medibles",
-            "strategic_thesis": "El mercado de cuidado capilar está lleno de promesas vacías. Al ofrecer resultados clínicamente medibles, capturamos al consumidor escéptico pero dispuesto a pagar.",
-            "key_insight": "El 67% de los usuarios de shampoos premium no ve resultados pero sigue comprando por esperanza.",
-            "competitive_angle": "Garantía de resultados visibles en 30 días o devolución. Nadie más se atreve.",
-            "risk_acknowledged": "Riesgo de devoluciones masivas. Mitigación: formulación validada + guía de uso correcta.",
-            "partner_summary": "Socio, esto es Creación de Categoría pura. No vendemos shampoo, vendemos un 'Protocolo de Restauración Capilar'. Al medicalizar la narrativa sin ser medicina, escapamos de la comoditización."
-        }
-    }
-    
-    # Find matching framework
-    for key, framework in frameworks.items():
-        if key in ctx_upper.lower():
-            return framework
-    
-    # Default framework with product-specific title
     product_word = ctx.split()[0] if ctx.split() else "producto"
     return {
         "strategic_framework": "PREMIUM_DISRUPTION",
         "verdict_title": f"LA VERSIÓN DEFINITIVA: {product_word.upper()} SIN COMPROMISOS",
         "verdict_subtitle": f"Captura del segmento premium insatisfecho en el mercado de {product_word}",
         "strategic_thesis": f"El mercado de {product_word} está saturado de opciones 'suficientemente buenas'. Atacamos desde arriba con la versión que los exigentes estaban esperando.",
-        "key_insight": "El segmento premium está desatendido porque los incumbentes optimizan para volumen, no para excelencia.",
-        "competitive_angle": "Mientras ellos reducen costos, nosotros maximizamos valor percibido y real.",
+        "key_insight": f"El segmento premium en {product_word} está desatendido porque los incumbentes optimizan para volumen, no para excelencia.",
+        "competitive_angle": f"Mientras los competidores de {product_word} reducen costos, nosotros maximizamos valor percibido y real.",
         "risk_acknowledged": "Riesgo de mercado pequeño. Mitigación: premium atrae imitadores que validan la categoría.",
-        "partner_summary": f"Socio, el análisis indica una estrategia de Disrupción Premium. El mercado de {product_word} sufre de comoditización Terminal. Nuestra jugada es clara: ser el Tesla de la categoría. No competimos en precio, competimos en aspiración."
+        "partner_summary": f"Socio, el análisis indica una estrategia de Disrupción Premium. El mercado de {product_word} sufre de comoditización terminal. Nuestra jugada es clara: ser la referencia de la categoría. No competimos en precio, competimos en aspiración.",
+        "source": "FALLBACK_GENERIC"
     }
 
 def generate_compliance_audit(product_description: str) -> dict:
@@ -1301,44 +1246,18 @@ def generate_compliance_audit(product_description: str) -> dict:
 
 
 def _generate_mock_compliance_audit(ctx: str) -> dict:
-    """Enhanced mock compliance audit based on keywords."""
-    ctx_upper = ctx.upper()
+    """Context-aware generic compliance audit — no niche-specific branching."""
+    ctx_upper = ctx.upper() if ctx else ""
+    product_label = ctx[:30] if ctx else "Producto"
     
-    # Defaults
-    risk = "MEDIUM"
-    score = 75
-    audits = [
-        {"std": "ISO 9001", "status": "RECOMMENDED", "desc": "Sistema de gestión de calidad genérico para asegurar procesos estables."},
-        {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": "Conformidad europea para venta en mercado comunitario."},
-        {"std": "Country of Origin", "status": "MANDATORY", "desc": "Etiquetado obligatorio del país de fabricación."}
-    ]
-
-    # Electronics
-    if any(x in ctx_upper for x in ["CHARGER", "GAN", "POWER", "USB", "ELECTRONIC", "DEVICE"]):
-        risk = "HIGH"
-        score = 85
-        audits = [
-            {"std": "FCC Part 15", "status": "MANDATORY", "desc": "Regulación de emisiones electromagnéticas para EE.UU."},
-            {"std": "RoHS 3", "status": "MANDATORY", "desc": "Restricción de materiales peligrosos en electrónicos."},
-            {"std": "CE Marking (LVD/EMC)", "status": "MANDATORY", "desc": "Seguridad eléctrica y compatibilidad electromagnética en UE."},
-            {"std": "DoE Level VI", "status": "MANDATORY", "desc": "Eficiencia energética para fuentes de alimentación."},
-            {"std": "UL 62368-1", "status": "RECOMMENDED", "desc": "Estándar de seguridad de producto por laboratorio reconocido."}
-        ]
-    
-    # Beauty
-    elif any(x in ctx_upper for x in ["SHAMPOO", "HAIR", "CREAM", "SKIN", "COSMETIC"]):
-        risk = "HIGH"
-        score = 80
-        audits = [
-            {"std": "FDA 21 CFR 701", "status": "MANDATORY", "desc": "Etiquetado obligatorio de cosméticos en EE.UU."},
-            {"std": "EU 1223/2009", "status": "MANDATORY", "desc": "Regulación estricta de ingredientes en la Unión Europea."},
-            {"std": "INCI Nomenclature", "status": "MANDATORY", "desc": "Nomenclatura internacional obligatoria de ingredientes."},
-            {"std": "Leaping Bunny", "status": "RECOMMENDED", "desc": "Certificación de no testado en animales."}
-        ]
-
     return {
-        "risk_level": risk,
-        "compliance_score": score,
-        "audits": audits,
-        "audit_note": f"Auditoría simulada basada en detección de palabras clave para '{ctx[:30]}'."
+        "risk_level": "MEDIUM",
+        "compliance_score": 70,
+        "audits": [
+            {"std": "CE Marking (EU)", "status": "MANDATORY", "desc": f"Conformidad europea para '{product_label}' en mercado comunitario.", "source": "FALLBACK_GENERIC"},
+            {"std": "Country of Origin", "status": "MANDATORY", "desc": "Etiquetado obligatorio del país de fabricación.", "source": "FALLBACK_GENERIC"},
+            {"std": "Amazon Product Compliance", "status": "MANDATORY", "desc": f"Requisitos de Amazon Seller Central para '{product_label}'.", "source": "FALLBACK_GENERIC"}
+        ],
+        "audit_note": f"Auditoría genérica para '{product_label}'. Ejecute con LLM activo para estándares específicos de la categoría.",
+        "source": "FALLBACK_GENERIC"
     }

@@ -154,16 +154,26 @@ class Nexus3Integrator:
         
         # Parseo robusto de datos financieros
         avg_price = market_metrics.get("average_price", 0.0)
-        # Fees estimados (30-40% aprox si no hay dato real)
-        estimated_fees = round(avg_price * 0.35, 2) 
+        # Fees estimados: Amazon referral (15%) + estimated FBA fee (~$5-7 standard)
+        amz_referral = round(avg_price * 0.15, 2)
+        estimated_fba = 5.50  # Standard size FBA avg fee
+        estimated_fees = round(amz_referral + estimated_fba, 2) if avg_price > 0 else 0
         
         # Conversion Rate & Click Share
         avg_cvr = market_metrics.get("avg_conversion_rate", search_context.get("avg_conversion_rate", 0))
-        # Click Share: Try to get from metrics, else generic estimation based on monopoly
+        # Click Share: Calculate from review distribution across Top 10 if available
+        top10 = scout_context.get("top_10_products", [])
         monopoly = market_metrics.get("monopoly_status", "Competitivo")
-        estimated_click_share = 12.0 # Default
-        if "Monopolio" in monopoly: estimated_click_share = 65.0
-        elif "Fragmentado" in monopoly: estimated_click_share = 8.0
+        estimated_click_share = 0
+        if top10:
+            total_reviews = sum(p.get("reviews", 0) for p in top10) or 1
+            # New entrant gets proportional share based on average
+            estimated_click_share = round((1 / max(len(top10), 1)) * 100, 1)
+        if estimated_click_share <= 0:
+            # Fallback based on monopoly status
+            if "Monopolio" in monopoly: estimated_click_share = 65.0
+            elif "Fragmentado" in monopoly: estimated_click_share = 8.0
+            else: estimated_click_share = 10.0
         
         # Top Keywords click share aggregation
         if market_metrics.get("top_keywords_data"):
@@ -176,9 +186,11 @@ class Nexus3Integrator:
             "has_financial_data": avg_price > 0,
             "avg_price": avg_price,
             "avg_fees": estimated_fees,
-            "net_margin_percent": round(((avg_price - estimated_fees - (avg_price*0.25))/avg_price)*100, 1) if avg_price > 0 else 0, # Rough margin calc
+            "fee_breakdown": {"referral_pct": 15, "fba_est": estimated_fba, "source": "STANDARD_ESTIMATE"},
+            "net_margin_percent": round(((avg_price - estimated_fees - (avg_price*0.30))/avg_price)*100, 1) if avg_price > 0 else 0,  # 30% COGS estimate
+            "cogs_assumption": {"pct": 30, "source": "INDUSTRY_STANDARD_ESTIMATE"},
             "avg_active_sellers": len(scout_context.get("top_10_products", [])) or 10,
-            "common_dimensions": "Standard Size", # Placeholder as we don't have dims yet
+            "common_dimensions": self._infer_product_size(scout_anchor),
             "avg_click_share": round(estimated_click_share, 1),
             "avg_conversion_rate": avg_cvr,
             "market_size_revenue": market_metrics.get("tam_monthly_revenue", 0)
@@ -242,12 +254,26 @@ class Nexus3Integrator:
         for t in trends:
             create.append(f"Innovar en {t.get('title')}")
 
+        anchor = scout_data.get("product_anchor", "mercado")
         return {
-            "eliminate": eliminate[:3] or ["Redundancias técnicas", "Embalaje excesivo"],
-            "reduce": reduce[:3] or ["Marketing genérico", "Complejidad de uso"],
-            "raise": raise_actions[:3] or ["Durabilidad percibida", "Velocidad de respuesta"],
-            "create": create[:3] or ["Ecosistema digital", "Experiencia de unboxing premium"]
+            "eliminate": eliminate[:3] or [f"Features de bajo valor en {anchor}"],
+            "reduce": reduce[:3] or [f"Complejidad innecesaria en {anchor}"],
+            "raise": raise_actions[:3] or [f"Estándares de calidad en {anchor}"],
+            "create": create[:3] or [f"Propuesta única para {anchor}"],
+            "source": "SCOUT_DERIVED" if (eliminate or reduce or raise_actions or create) else "FALLBACK_GENERIC"
         }
+
+    def _infer_product_size(self, anchor: str) -> str:
+        """Infer product size tier from product description."""
+        anchor_upper = anchor.upper() if anchor else ""
+        oversize_keywords = ["FURNITURE", "MATTRESS", "TABLE", "DESK", "CHAIR", "APPLIANCE", "MUEBLE", "COLCHÓN"]
+        small_keywords = ["PILL", "CAPSULE", "CABLE", "RING", "EARRING", "PASTILLA", "CÁPSULA"]
+        
+        if any(kw in anchor_upper for kw in oversize_keywords):
+            return "Oversize"
+        elif any(kw in anchor_upper for kw in small_keywords):
+            return "Small Standard"
+        return "Standard Size (Est.)"
 
     def _infer_summary(self, filename: str, file_lineage: dict = None) -> str:
         if file_lineage and file_lineage.get("accessed_data"):
