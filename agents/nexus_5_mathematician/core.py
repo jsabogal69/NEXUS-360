@@ -70,15 +70,9 @@ class Nexus5Mathematician:
         # 1. CORE NICHE DETECTION (Prioritize Scout Anchor)
         anchor = strategy_data.get("scout_anchor", "Mercado Analizado")
         norm_anchor = anchor.upper().replace("Á", "A").replace("É", "E").replace("Í", "I").replace("Ó", "O").replace("Ú", "U")
-        
-        is_lamp = any(x in norm_anchor for x in ["LAMP", "ILUMINACION", "LAMPARA", "LED", "LIGHTING"])
-        is_electronics = any(x in norm_anchor for x in ["65W", "GAN", "CHARGER", "ADAPTADOR", "POWER"])
-        is_baby = any(x in norm_anchor for x in ["BABY", "NIGHT LIGHT", "SLEEP AID", "BEBE", "NOCHE", "SUEÑO"])
-        is_supplement = any(x in norm_anchor for x in ["PROTEIN", "VITAMIN", "SUPPLEMENT"])
 
-        # ═══════════════════════════════════════════════════════════════════
         # v2.5: REAL FINANCIAL DATA INTEGRATION (Replacing Hardcoded Heuristics)
-        # ═══════════════════════════════════════════════════════════════════
+        # ═══════════════════════════════════════════════════════════════
         fin_data = strategy_data.get("financial_data", {})
         has_real_fin = fin_data.get("has_financial_data", False)
         
@@ -94,32 +88,8 @@ class Nexus5Mathematician:
             
             label = f"{anchor} Premium"
             logger.info(f"[{self.role}] 💰 Using REAL financial data: MSRP ${base_price}")
-            
-        elif is_baby:
-            base_price = 39.99
-            landed_cost = 7.20
-            kit_price = 119.99
-            kit_cost = 28.00
-            label = "Baby Sleep Tech"
-        elif is_lamp:
-            base_price = 49.99
-            landed_cost = 14.50
-            kit_price = 129.99
-            kit_cost = 38.00
-            label = "Lámpara LED Pro"
-        elif is_electronics:
-            base_price = 44.99
-            landed_cost = 11.20
-            kit_price = 89.99
-            kit_cost = 24.50
-            label = "Adaptador GaN 65W"
-        elif is_supplement:
-            base_price = 39.99
-            landed_cost = 8.50
-            kit_price = 110.00
-            kit_cost = 35.00
-            label = "Suplemento Premium"
         else:
+            # Generic fallback - NO niche-specific hardcoded prices
             base_price = 50.00
             landed_cost = 15.00
             kit_price = 125.00

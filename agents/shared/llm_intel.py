@@ -631,88 +631,32 @@ def generate_enhanced_mock(product_description: str) -> dict:
     desc_lower = product_description.lower()
     niche = product_description.split(" ")[0] if product_description else "Producto"
     
-    # Detect product category for more specific analysis
-    is_puzzle = any(x in desc_lower for x in ["puzzle", "rompecabeza", "jigsaw", "brain teaser"])
-    is_baby = any(x in desc_lower for x in ["baby", "bebé", "bebe", "niño", "kid", "child"])
-    is_tech = any(x in desc_lower for x in ["charger", "cable", "tech", "electronic", "usb", "power"])
-    is_home = any(x in desc_lower for x in ["home", "casa", "kitchen", "cocina", "lamp", "luz"])
-    
-    # Generate category-specific deep analysis
-    if is_puzzle:
-        pain_keywords = [
-            {"keyword": "puzzle imposible muy difícil", "search_intent": "problema", "volume": "Alto", "opportunity": "Crear tutoriales y guías de solución paso a paso"},
-            {"keyword": "puzzle transparente alternativas", "search_intent": "alternativa", "volume": "Medio", "opportunity": "Ofrecer diferentes niveles de dificultad (beginner/expert)"},
-            {"keyword": "puzzle acrílico se raya", "search_intent": "problema", "volume": "Medio", "opportunity": "Material anti-rayaduras o funda protectora incluida"},
-            {"keyword": "rompecabezas imposible opiniones", "search_intent": "comparación", "volume": "Alto", "opportunity": "Video testimoniales de clientes que lo completaron"},
-            {"keyword": "puzzle difícil para adultos regalo", "search_intent": "transaccional", "volume": "Alto", "opportunity": "Packaging premium para regalo + certificado de logro"}
-        ]
-        competitor_gaps = [
-            {"competitor": "The Clearly Impossible Puzzle", "ignored_issue": "Sin guía de hints para principiantes", "user_frustration": "'Llevo 3 semanas y no avanzo, necesito al menos una pista inicial'"},
-            {"competitor": "JIGSAW GENIUS Series", "ignored_issue": "Piezas que no encajan bien", "user_frustration": "'Las piezas parecen iguales pero no encajan perfecto, muy frustrante'"},
-            {"competitor": "Brain Teaser Master", "ignored_issue": "Empaque barato para producto premium", "user_frustration": "'Pagué $30+ y viene en bolsa plástica, imposible regalar así'"},
-            {"competitor": "Puzzle Challenge Pro", "ignored_issue": "Sin comunidad o foro de soluciones", "user_frustration": "'Me siento solo intentando resolverlo, nadie con quien compartir tips'"},
-            {"competitor": "Acrylic Mind Bender", "ignored_issue": "Sin diferentes niveles de dificultad", "user_frustration": "'O es imposible o muy fácil, no hay término medio'"}
-        ]
-        emotional = {
-            "frustration": "'He gastado $25 en algo que probablemente nunca termine. Me siento estúpido cada vez que lo veo en la mesa.' - Sentimiento dominante de impotencia y frustración por la dificultad extrema sin apoyo.",
-            "nostalgia": "'Recuerdo cuando los puzzles venían con la imagen completa como guía, ahora todo es ultra-difícil sin contexto.' - Añoranza por puzzles desafiantes pero completables.",
-            "humor": "Memes de '#3WeeksLater' con puzzles sin avance. Videos de gatos tirando puzzles imposibles. 'Este puzzle destruyó mi matrimonio' como broma recurrente.",
-            "desire": "'Quiero sentir la satisfacción de completar algo genuinamente difícil, pero necesito saber que ES posible.' - Deseo de logro con esperanza real.",
-            "skepticism": "'Las 5 estrellas son de gente que nunca lo terminó o que trabaja para la marca.' - Desconfianza en ratings de productos 'imposibles'."
-        }
-        tiktok = "Trending: #ImpossiblePuzzleChallenge (45M vistas). Creadores documentando el proceso durante semanas. Videos de 'finalmente lo terminé' con reacciones emotivas viralizan. @PuzzleMaster tiene 2.3M seguidores solo con este nicho."
-        reddit = "r/Jigsawpuzzles (890K miembros): Debates intensos sobre dificultad real. r/puzzles: Usuarios compartiendo estrategias de bordes falsos. r/BuyItForLife: Buscan puzzles de acrílico que no se rayen. Queja recurrente: 'El marketing dice imposible pero nadie prueba que alguien lo completó'."
-        cultural_vibe = "Comunidad polarizada: los 'hardcore' que completan y presumen vs. los 'abandonados' que sienten culpa por rendirse. Existe un orgullo extraño en la dificultad."
-        
-    elif is_baby:
-        pain_keywords = [
-            {"keyword": "luz nocturna bebé segura", "search_intent": "problema", "volume": "Alto", "opportunity": "Certificación de seguridad visible + materiales no tóxicos"},
-            {"keyword": "monitor bebé falsos positivos", "search_intent": "problema", "volume": "Medio", "opportunity": "IA de detección precisa sin falsas alarmas"},
-            {"keyword": "mejor producto bebé calidad", "search_intent": "comparación", "volume": "Alto", "opportunity": "Pruebas de durabilidad y seguridad verificables"},
-            {"keyword": "regalo baby shower útil", "search_intent": "transaccional", "volume": "Alto", "opportunity": "Sets curados con packaging premium"},
-            {"keyword": "producto bebé que dure", "search_intent": "problema", "volume": "Medio", "opportunity": "Garantía extendida + diseño que crece con el bebé"}
-        ]
-        competitor_gaps = [
-            {"competitor": "Hatch Baby Rest", "ignored_issue": "Precio premium sin justificación clara", "user_frustration": "'$70 por una luz, y aún necesito la app para todo'"},
-            {"competitor": "Baby Shusher", "ignored_issue": "Baterías se agotan rápido", "user_frustration": "'A media noche se apaga y el bebé despierta llorando'"},
-            {"competitor": "White Noise Machines Generic", "ignored_issue": "Sonidos artificiales y repetitivos", "user_frustration": "'Se nota que es un loop de 10 segundos, hasta el bebé lo nota'"}
-        ]
-        emotional = {
-            "frustration": "'Cada producto de bebé promete el mundo y entrega mediocridad. Ya no confío en las estrellas de Amazon.' - Padres exhaustos y escépticos.",
-            "nostalgia": "'Los productos de antes duraban toda la infancia, ahora hay que reemplazar cada 3 meses.' - Añoranza por durabilidad.",
-            "humor": "Memes de padres zombies. 'El bebé duerme pero yo ya estoy roto.' TikToks de fails de gadgets de bebé.",
-            "desire": "'Algo que FUNCIONE la primera noche y no requiera un PhD para configurar.' - Simplicidad sobre features.",
-            "skepticism": "'Si tiene más de 3 funciones, probablemente 2 no funcionan bien.' - Desconfianza en productos multi-función."
-        }
-        tiktok = "Trending: #NewMomEssentials (120M vistas). Videos de 'productos que REALMENTE uso' vs 'lo que compré y nunca usé'. Creadores de parenting como @TinyBeans (5M) hacen reviews brutalmente honestos."
-        reddit = "r/NewParents (450K): Recomendaciones peer-to-peer dominan. r/BuyOnceGoodForLife: Buscan versiones duraderas. Queja dominante: 'Todo es plástico barato de China'."
-        cultural_vibe = "Padres informados, exhaustos y escépticos. Valoran opiniones reales sobre marketing. Dispuestos a pagar premium si la calidad es REAL y verificable."
-        
-    else:  # Default generic but still deep
-        pain_keywords = [
-            {"keyword": f"problemas con {niche}", "search_intent": "problema", "volume": "Alto", "opportunity": "Contenido educativo sobre cómo evitar problemas comunes"},
-            {"keyword": f"mejor {niche} calidad precio", "search_intent": "comparación", "volume": "Alto", "opportunity": "Comparativas detalladas con pros/cons reales"},
-            {"keyword": f"{niche} alternativa premium", "search_intent": "alternativa", "volume": "Medio", "opportunity": "Posicionamiento en segmento de calidad superior"},
-            {"keyword": f"{niche} duradero", "search_intent": "problema", "volume": "Medio", "opportunity": "Garantía extendida y pruebas de durabilidad"},
-            {"keyword": f"opiniones reales {niche}", "search_intent": "investigación", "volume": "Alto", "opportunity": "UGC y testimoniales verificados"}
-        ]
-        competitor_gaps = [
-            {"competitor": "Líder de Categoría #1", "ignored_issue": "Soporte post-venta inexistente", "user_frustration": "'Enviié 5 correos y nadie responde, terrible experiencia'"},
-            {"competitor": "Marca Genérica #2", "ignored_issue": "Control de calidad inconsistente", "user_frustration": "'De 3 unidades que compré, 1 vino defectuosa'"},
-            {"competitor": "Premium Brand #3", "ignored_issue": "Precio injustificado", "user_frustration": "'Pago el triple por el mismo producto con diferente logo'"},
-            {"competitor": "Newcomer Brand #4", "ignored_issue": "Sin track record ni reviews verificados", "user_frustration": "'Parece bueno pero nadie lo ha probado por más de un mes'"},
-            {"competitor": "Budget Option #5", "ignored_issue": "Materiales de baja calidad", "user_frustration": "'Barato pero tuve que reemplazarlo 3 veces'"}
-        ]
-        emotional = {
-            "frustration": f"'He comprado 5 versiones de {niche} y todas fallan en algo diferente. ¿Es tan difícil hacer uno que funcione?' - Fatiga de decisión y decepción acumulada.",
-            "nostalgia": f"'Los {niche} de hace 10 años duraban una década. Ahora duran 10 meses.' - Percepción de declive en calidad general.",
-            "humor": f"Memes sobre la paradoja de elección en Amazon. 'Revisé 500 {niche}, todos iguales, diferente precio.' Videos de unboxings decepcionantes.",
-            "desire": f"'Solo quiero un {niche} que haga lo que promete, sin sorpresas desagradables después de un mes.' - Expectativas básicas incumplidas.",
-            "skepticism": "'Las reviews de 5 estrellas del día 1 son compradas. Las de 1 estrella del mes 6 son reales.' - Desconfianza en social proof inicial."
-        }
-        tiktok = f"Trending: #{niche}Review (25M+ vistas). Videos de 'Lo que no te dicen de este producto'. Pruebas de resistencia extrema viralizan. Creadores de nicho ganan tracción con honestidad brutal."
-        reddit = f"r/BuyItForLife: Constante búsqueda de versiones duraderas de {niche}. r/anticonsumption: Críticas a obsolescencia planificada. r/Frugal: Hacks para extender vida útil. Queja dominante: Inconsistencia de calidad entre unidades."
-        cultural_vibe = "Consumidores exhaustos de buscar, investigar y aún así decepcionarse. Valoran pruebas reales sobre claims de marketing. Comunidad activa compartiendo experiencias negativas para 'salvar' a otros."
+    # Generate context-aware analysis using product description
+    # NO hardcoded niche-specific data - always derive from the product description
+    pain_keywords = [
+        {"keyword": f"problemas con {niche}", "search_intent": "problema", "volume": "Alto", "opportunity": "Contenido educativo sobre cómo evitar problemas comunes"},
+        {"keyword": f"mejor {niche} calidad precio", "search_intent": "comparación", "volume": "Alto", "opportunity": "Comparativas detalladas con pros/cons reales"},
+        {"keyword": f"{niche} alternativa premium", "search_intent": "alternativa", "volume": "Medio", "opportunity": "Posicionamiento en segmento de calidad superior"},
+        {"keyword": f"{niche} duradero", "search_intent": "problema", "volume": "Medio", "opportunity": "Garantía extendida y pruebas de durabilidad"},
+        {"keyword": f"opiniones reales {niche}", "search_intent": "investigación", "volume": "Alto", "opportunity": "UGC y testimoniales verificados"}
+    ]
+    competitor_gaps = [
+        {"competitor": "Líder de Categoría #1", "ignored_issue": "Soporte post-venta inexistente", "user_frustration": "'Enviié 5 correos y nadie responde, terrible experiencia'"},
+        {"competitor": "Marca Genérica #2", "ignored_issue": "Control de calidad inconsistente", "user_frustration": "'De 3 unidades que compré, 1 vino defectuosa'"},
+        {"competitor": "Premium Brand #3", "ignored_issue": "Precio injustificado", "user_frustration": "'Pago el triple por el mismo producto con diferente logo'"},
+        {"competitor": "Newcomer Brand #4", "ignored_issue": "Sin track record ni reviews verificados", "user_frustration": "'Parece bueno pero nadie lo ha probado por más de un mes'"},
+        {"competitor": "Budget Option #5", "ignored_issue": "Materiales de baja calidad", "user_frustration": "'Barato pero tuve que reemplazarlo 3 veces'"}
+    ]
+    emotional = {
+        "frustration": f"'He comprado 5 versiones de {niche} y todas fallan en algo diferente. ¿Es tan difícil hacer uno que funcione?' - Fatiga de decisión y decepción acumulada.",
+        "nostalgia": f"'Los {niche} de hace 10 años duraban una década. Ahora duran 10 meses.' - Percepción de declive en calidad general.",
+        "humor": f"Memes sobre la paradoja de elección en Amazon. 'Revisé 500 {niche}, todos iguales, diferente precio.' Videos de unboxings decepcionantes.",
+        "desire": f"'Solo quiero un {niche} que haga lo que promete, sin sorpresas desagradables después de un mes.' - Expectativas básicas incumplidas.",
+        "skepticism": "'Las reviews de 5 estrellas del día 1 son compradas. Las de 1 estrella del mes 6 son reales.' - Desconfianza en social proof inicial."
+    }
+    tiktok = f"Trending: #{niche}Review (25M+ vistas). Videos de 'Lo que no te dicen de este producto'. Pruebas de resistencia extrema viralizan. Creadores de nicho ganan tracción con honestidad brutal."
+    reddit = f"r/BuyItForLife: Constante búsqueda de versiones duraderas de {niche}. r/anticonsumption: Críticas a obsolescencia planificada. r/Frugal: Hacks para extender vida útil. Queja dominante: Inconsistencia de calidad entre unidades."
+    cultural_vibe = "Consumidores exhaustos de buscar, investigar y aún así decepcionarse. Valoran pruebas reales sobre claims de marketing. Comunidad activa compartiendo experiencias negativas para 'salvar' a otros."
     
     return {
         "niche_name": product_description,

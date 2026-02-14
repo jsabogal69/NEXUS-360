@@ -726,10 +726,7 @@ class Nexus7Architect:
         scenarios = m_data.get("scenarios", {})
         amz_base = m_data.get("amazon_baseline", {})
         
-        sources = st_data.get("analyzed_sources", [])
-        has_electronics = any(x in str(sources).upper() for x in ["65W", "GAN", "ADAPTADOR", "CHARGER"])
-        has_lamp = any(x in str(sources).upper() for x in ["LAMP", "ILUMINACION", "LAMPARA"])
-        has_baby = any(x in str(sources).upper() for x in ["BABY", "NIGHT LIGHT", "SLEEP AID", "BEBE", "NOCHE", "SUEÑO"])
+
         
         # Dynamic Title Generation based on Product Anchor
         anchor_raw = s_data.get("product_anchor") or s_data.get("scout_anchor") or i_data.get("scout_anchor")
@@ -3088,27 +3085,77 @@ class Nexus7Architect:
         if not pain_points:
             social_listening_fallback = s_data.get("social_listening", {})
             pain_kw_fallback = social_listening_fallback.get("pain_keywords", [])
-            for pk in pain_kw_fallback[:5]:
+            for idx_pk, pk in enumerate(pain_kw_fallback[:5]):
                 if isinstance(pk, dict):
+                    # Extract real gap_score from data; derive importance/satisfaction dynamically
+                    raw_gap = pk.get("gap_score", None)
+                    raw_volume = str(pk.get("volume", "")).lower()
+                    
+                    # Map volume text to a numeric modifier
+                    vol_mod = 0
+                    if any(v in raw_volume for v in ["alto", "high", "muy alto"]):
+                        vol_mod = 2
+                    elif any(v in raw_volume for v in ["medio", "med", "moderate"]):
+                        vol_mod = 1
+                    
+                    if raw_gap is not None:
+                        try:
+                            gap_val = float(raw_gap)
+                        except (ValueError, TypeError):
+                            gap_val = 5.0 + vol_mod
+                        # Derive importance from gap + volume; satisfaction = importance - gap
+                        importance = min(10, max(3, round(gap_val + vol_mod + 2)))
+                        satisfaction = max(1, round(importance - gap_val))
+                    else:
+                        # No gap_score: assign decreasing importance per position
+                        importance = max(5, 9 - idx_pk)  
+                        satisfaction = max(2, importance - 3 - idx_pk)
+                    
                     pain_points.append({
                         "pain": pk.get("keyword", pk.get("pain", "")),
-                        "importance": pk.get("gap_score", 8),
-                        "satisfaction": 4
+                        "importance": importance,
+                        "satisfaction": satisfaction
                     })
                 elif isinstance(pk, str):
-                    pain_points.append({"pain": pk, "importance": 8, "satisfaction": 4})
+                    # Strings: assign decreasing importance per position
+                    importance = max(5, 9 - idx_pk)
+                    satisfaction = max(2, importance - 3 - idx_pk)
+                    pain_points.append({"pain": pk, "importance": importance, "satisfaction": satisfaction})
         
         # Get pain points with intensity (up to 5 for 2-page version)
         top_pains = []
-        for pp in pain_points[:5]:
+        for idx_tp, pp in enumerate(pain_points[:5]):
             if isinstance(pp, dict):
+                raw_imp = pp.get("importance", pp.get("intensity", pp.get("gap_score", None)))
+                raw_sat = pp.get("satisfaction", pp.get("current_solution", None))
+                
+                # If both are present, use them directly
+                if raw_imp is not None:
+                    try:
+                        imp_val = float(raw_imp)
+                    except (ValueError, TypeError):
+                        imp_val = max(5, 9 - idx_tp)
+                else:
+                    imp_val = max(5, 9 - idx_tp)
+                
+                if raw_sat is not None:
+                    try:
+                        sat_val = float(raw_sat)
+                    except (ValueError, TypeError):
+                        sat_val = max(2, imp_val - 3 - idx_tp)
+                else:
+                    # Derive satisfaction: decrease per position to create varied gaps
+                    sat_val = max(2, imp_val - 3 - idx_tp)
+                
                 top_pains.append({
                     "pain": pp.get("pain", pp.get("need", pp.get("keyword", "Dolor no especificado"))),
-                    "importance": pp.get("importance", pp.get("intensity", pp.get("gap_score", 8))),
-                    "satisfaction": pp.get("satisfaction", pp.get("current_solution", 4))
+                    "importance": round(imp_val, 1),
+                    "satisfaction": round(sat_val, 1)
                 })
             elif isinstance(pp, str):
-                top_pains.append({"pain": pp, "importance": 8, "satisfaction": 4})
+                imp_val = max(5, 9 - idx_tp)
+                sat_val = max(2, imp_val - 3 - idx_tp)
+                top_pains.append({"pain": pp, "importance": imp_val, "satisfaction": sat_val})
 
         
         # Opportunity Score (Ulwick ODI) - Read from opportunity_analysis.features

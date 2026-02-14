@@ -31,61 +31,9 @@ class Nexus4Strategist:
         
         ctx = anchor.upper()
         
-        # --- STRATEGY FOR BABY NICHE ---
-        if any(x in ctx for x in ["BABY", "NIGHT LIGHT", "SLEEP AID", "BEBE", "NOCHE", "SUEÑO"]):
-            gaps.append({
-                "niche": "Health & Pediatrics",
-                "gap": "Barrera de Melatonina: El 80% de las luces actuales emiten picos de luz azul nociva.",
-                "proposal": "Certificación 'SafeSleep' para espectro de luz roja pura (650nm) y materiales hipoalergénicos."
-            })
-            gaps.append({
-                "niche": "Privacy & Security",
-                "gap": "IoT Anxiety: Desconfianza masiva en cámaras chinas con almacenamiento en la nube.",
-                "proposal": "Diseño 'Privacy-First' con procesamiento Edge-AI local para detección de llanto sin internet."
-            })
-            gaps.append({
-                "niche": "Durability",
-                "gap": "Obsolescencia Programada: Componentes plásticos que se degradan con el uso continuo.",
-                "proposal": "Uso de Silicona Platino Grado Médico y chasis reforzado para ciclo de vida de 5+ años."
-            })
-            v_title = f"DOMINANCIA POR RESPONSABILIDAD Y SALUD EN {anchor.upper()}"
-            v_text = f"El mercado de {anchor} ha sido inundado por juguetes genéricos que descuidan lo más importante: la salud neurológica del lactante. Proponemos el 'Ecosistema de Sueño Consciente', posicionando a NEXUS como la autoridad médica en el hogar moderno. No vendemos una lámpara; vendemos noches de descanso certificadas."
-            roadmap = [
-                ("I. Certificación Clínica", "Validación científica de espectros de luz y sonido sin loops. Objetivo: Ser el #1 en recomendación pediatra."),
-                ("II. Ingeniería de Materiales", "Selección de materiales grado médico para contacto total. Certificación BPA-Free absoluta."),
-                ("III. Capa Digital Offline", "Desarrollo de algoritmos locales de detección de llanto. Privacidad total como foso defensivo."),
-                ("IV. Lanzamiento de Prestigio", "Colaboración con expertos en sueño infantil en TikTok y YouTube para educar sobre la luz roja."),
-                ("V. Expansión de Ecosistema", "Lanzamiento de la App de monitoreo local y accesorios de aromaterapia integrados.")
-            ]
-
-        # --- STRATEGY FOR ELECTRONICS (GaN) ---
-        elif any(x in ctx for x in ["65W", "GAN", "CHARGER", "ADAPTADOR", "POWER"]):
-            gaps.append({
-                "niche": "OLED Transparency",
-                "gap": "Opacidad Energética: El usuario no sabe si su cargador realmente entrega los Watts prometidos.",
-                "proposal": "Pantalla HD integrada que muestra Watts, temperatura y salud de batería en tiempo real."
-            })
-            gaps.append({
-                "niche": "Power Stability",
-                "gap": "Port Flapping: El reinicio de carga al conectar un segundo dispositivo estresa los circuitos.",
-                "proposal": "Arquitectura de energía ininterrumpida que reasigna carga sin cortes de milisegundos."
-            })
-            gaps.append({
-                "niche": "Moat: Status Design",
-                "gap": "Commoditization: El sector es una guerra de 'plástico negro' indistinguible.",
-                "proposal": "Chasis de aleación de aluminio CNC con estética 'Cyber-Professional' para desvincular precio de COGS."
-            })
-            v_title = f"DOMINANCIA POR TRANSPARENCIA Y PODER EN {anchor.upper()}"
-            v_text = "Transformamos un commodity (el cargador) en un centro de comando energético. Al integrar transparencia total (OLED data) y seguridad de grado industrial, capturamos a los usuarios de alto ticket que no aceptan riesgos en sus dispositivos de $2000+."
-            roadmap = [
-                ("I. Validación GaN V Pro", "Testeo de carga continua al 100% por 48h. Objetivo: Ser el cargador más frío del mercado."),
-                ("II. Estética & Materiales", "Carcasa de aluminio disipadora. No es plástico, es ingeniería aeroespacial."),
-                ("III. Centro OLED Integrado", "Implementación de telemetría de energía visible para generar confianza inmediata."),
-                ("IV. Campaña de Ingeniería Abierta", "Invitar a expertos a desarmar el producto para mostrar la calidad interna. Foso de transparencia."),
-                ("V. Dominancia de Escritorio", "Lanzamiento de estaciones fijas y cables de silicona con el mismo ADN de diseño.")
-            ]
-
-        # --- DEFAULT STRATEGY ---
+        # --- DEFAULT STRATEGY (Generic - applies to ALL niches) ---
+        # Niche-specific gaps are generated dynamically by the LLM via
+        # generate_strategic_verdict() below. No hardcoded niche data here.
         gaps.append({
             "niche": "Competitividad General",
             "gap": f"Commoditization en {anchor}: Falta de diferenciación clara en la propuesta de valor.",
