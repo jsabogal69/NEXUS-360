@@ -2,6 +2,7 @@ import logging
 import os
 import json
 from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
+from ..shared.nexus_rules import sanitize_product_name, validate_moat_for_low_tech
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-7")
@@ -742,6 +743,8 @@ class Nexus7Architect:
                  anchor_raw = kws[0].get("term") if isinstance(kws[0], dict) else str(kws[0])
         
         final_anchor = anchor_raw if anchor_raw else "Producto Analizado"
+        # REGLA 1: Sanitizar el anchor — elimina paréntesis, traducciones y ruido
+        final_anchor = sanitize_product_name(final_anchor)
         
         niche_title = f"Dossier de Viabilidad: {final_anchor}"
 
@@ -2068,7 +2071,7 @@ class Nexus7Architect:
                     </ul>
                     <div style="margin-top:15px; padding:12px; background:rgba(59,130,246,0.1); border-radius:8px;">
                         <div style="font-size:0.7rem; color:#1d4ed8; font-weight:700;">🎯 MOAT DEFENSIVO:</div>
-                        <div style="font-size:0.8rem; color:#1e40af; margin-top:5px;">{verdict.get('moat', 'Barrera competitiva sostenible')}</div>
+                        <div style="font-size:0.8rem; color:#1e40af; margin-top:5px;">{validate_moat_for_low_tech(verdict.get('moat', 'Barrera competitiva sostenible'), final_anchor)}</div>
                     </div>
                 </div>
                 
@@ -3254,6 +3257,14 @@ class Nexus7Architect:
         
         exec_summary = p_data.get("executive_summary", "Oportunidad de mercado en evaluación.")
         
+        # Convert markdown **bold** to HTML <strong> and newlines to <br>
+        _parts = exec_summary.split("**")
+        exec_summary = "".join(
+            f"<strong>{_p}</strong>" if _i % 2 == 1 else _p
+            for _i, _p in enumerate(_parts)
+        )
+        exec_summary = exec_summary.replace("\n", "<br>")
+        
         # ═══════════════════════════════════════════════════════════════════
         # SECTION 4: RISK ANALYSIS
         # ═══════════════════════════════════════════════════════════════════
@@ -3374,8 +3385,20 @@ class Nexus7Architect:
         source_metadata = i_data.get("source_metadata", [])
         source_count = len(source_metadata)
         
-        # Product Anchor
+        # Product Anchor — clean to a short readable title
         anchor = s_data.get("product_anchor", i_data.get("scout_anchor", "Producto Analizado"))
+        # REGLA 1: Sanitizar anchor — elimina paréntesis, traducciones y ruido del LLM
+        anchor = sanitize_product_name(anchor)
+        # Si el anchor sigue siendo largo, trim al primer cláusula
+        if len(anchor) > 60:
+            # Try splitting at period or comma
+            for sep in [".", ",", ":"]:
+                if sep in anchor:
+                    anchor = anchor.split(sep)[0].strip()
+                    break
+            # Still too long? Hard-trim at word boundary
+            if len(anchor) > 80:
+                anchor = anchor[:77].rsplit(" ", 1)[0] + "…"
         
         # Format helpers
         def format_currency(val):
@@ -3711,7 +3734,7 @@ class Nexus7Architect:
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <div style="font-size: 0.6rem; font-weight: 700; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">🎯 NEXUS-360 • Reporte Ejecutivo de Viabilidad</div>
-                        <div style="font-size: 1.3rem; font-weight: 800; line-height: 1.3;">{anchor}</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{anchor}</div>
                         <div style="font-size: 0.7rem; color: #cbd5e1; margin-top: 4px; font-style: italic;">Análisis Integral de Mercado, Competencia y Oportunidad Estratégica</div>
                     </div>
                     <div style="text-align:right;">
