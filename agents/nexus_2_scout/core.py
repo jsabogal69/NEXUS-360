@@ -412,53 +412,56 @@ class Nexus2Scout:
             logger.warning(f"[{self.role}] ⚠️ LLM MODE: No verified POE data found. Using LLM estimates (Risk of hallucination).")
             final_top_10 = llm_top_10
             
-        # ═══════════════════════════════════════════════════════════════════
-        # v2.3: MARKET SHARE CALCULATION FROM REVIEWS (Data-Driven)
-        # ═══════════════════════════════════════════════════════════════════
-        # Instead of trusting LLM or using flat defaults, we calculate Share of Voice
-        # based on Review Count of the identified Top 10 products.
-        
-        try:
-            # Robust extraction of Total Reviews
-            total_reviews = 0
-            for p in final_top_10:
-                try:
-                     raw_reviews = str(p.get("reviews", "0")).lower().replace(",", "")
-                     if 'k' in raw_reviews:
-                         val = float(raw_reviews.replace("k", "")) * 1000
-                     else:
-                         val = float(raw_reviews)
-                     total_reviews += int(val)
-                except:
-                     pass
+        # ══ DEDUPLICACIÓN: GROUP BY brand_name, SUM(reviews) ══
+        # Bug anterior: usaba name.split()[0] → duplicaba marcas como "Kitsure"
+        # Fix: agrupa por campo brand real y suma reviews antes de calcular shares
 
-            if total_reviews > 0:
-                calculated_shares = []
-                for p in final_top_10[:5]: # Top 5 only for the chart
-                    try:
-                        # Cleaning review count (handle strings like '1,200', '1.5k')
-                        raw_reviews = str(p.get("reviews", "0")).lower().replace(",", "")
-                        if 'k' in raw_reviews:
-                            r_val = float(raw_reviews.replace("k", "")) * 1000
-                        else:
-                            r_val = float(raw_reviews)
-                        
-                        reviews_val = int(r_val)
-                    except:
-                        reviews_val = 0
-                    
-                    share_pct = int((reviews_val / total_reviews) * 100) if total_reviews > 0 else 0
-                    calculated_shares.append({
-                        "brand": p.get("name", "Unknown").split()[0], # Short brand name
-                        "share": share_pct,
-                        "status": "Calculated from Reviews"
-                    })
-                
-                # Update the sales_intelligence with this REAL data
-                sales_intelligence["market_share_by_brand"] = calculated_shares
-                logger.info(f"[{self.role}] ✅ Market Share calculated from Review Counts (Total: {total_reviews})")
-        except Exception as e:
-            logger.warning(f"[{self.role}] Failed to calculate market share from reviews: {e}")
+        brand_totals: dict = {}
+        for p in final_top_10:
+            # Priorizar campo brand real; fallback a primera parte del nombre
+            raw_brand = (
+                p.get("brand")
+                or p.get("seller_name")
+                or p.get("name", "Unknown Brand").split()[0]
+            ).strip()
+            # Normalizar: eliminar variantes de casing
+            brand_key = raw_brand.title() if raw_brand else "Unknown Brand"
+
+            raw_reviews = str(p.get("reviews", "0")).lower().replace(",", "")
+            try:
+                if "k" in raw_reviews:
+                    reviews_val = int(float(raw_reviews.replace("k", "")) * 1000)
+                else:
+                    reviews_val = int(float(raw_reviews))
+            except Exception:
+                reviews_val = 0
+
+            brand_totals[brand_key] = brand_totals.get(brand_key, 0) + reviews_val
+
+        total_reviews = sum(brand_totals.values())
+
+        if total_reviews > 0:
+            # Ordenar por volumen desc, tomar top 5 ÚNICOS
+            calculated_shares = [
+                {
+                    "brand": brand,
+                    "share": int((rev / total_reviews) * 100),
+                    "status": "Calculated from Reviews (Grouped by Brand)",
+                }
+                for brand, rev in sorted(brand_totals.items(), key=lambda x: -x[1])[:5]
+            ]
+            # Normalizar shares para que sumen ~100% (rounding fix)
+            total_share = sum(s["share"] for s in calculated_shares)
+            if total_share > 0 and total_share != 100 and len(calculated_shares) > 0:
+                diff = 100 - total_share
+                calculated_shares[0]["share"] += diff
+
+            sales_intelligence["market_share_by_brand"] = calculated_shares
+            logger.info(
+                f"[{self.role}] ✅ Market Share deduplicado por MARCA "
+                f"({len(brand_totals)} marcas únicas → top 5 mostradas)"
+            )
+
         
         # ═══════════════════════════════════════════════════════════════════
         # PASO 4: Construir findings CON TRANSPARENCIA

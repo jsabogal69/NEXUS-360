@@ -4,6 +4,26 @@ import json
 from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
 from ..shared.nexus_rules import sanitize_product_name, validate_moat_for_low_tech
 
+# ── TAREA 1: Error Handling — Filtro de strings tóxicos / data leakage ──
+_TOXIC_PATTERNS = [
+    "Configure GEMINI", "GEMINI_API_KEY", "No Auth", "401", "403",
+    "Requiere LLM", "System Error", "API_KEY", "configure_",
+    "PermissionError", "Traceback", "HTTPError",
+]
+
+def _clean_field(value, fallback: str = "Dato en validación") -> str:
+    """
+    Limpia un campo antes de renderizarlo en el HTML del reporte.
+    Si el valor está vacío, es None, o contiene strings tóxicos del sistema,
+    retorna el fallback limpio.
+    """
+    if not value:
+        return fallback
+    val_str = str(value)
+    if any(p in val_str for p in _TOXIC_PATTERNS):
+        return fallback
+    return val_str
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-7")
 
@@ -2043,8 +2063,8 @@ class Nexus7Architect:
                 <div style="position:absolute; bottom:0; left:0; width:150px; height:150px; background:rgba(255,255,255,0.03); border-radius:50%; transform:translate(-30%, 30%);"></div>
                 
                 <span style="letter-spacing:3px; font-weight:bold; font-size:0.75rem; color:#60a5fa; text-transform:uppercase;">🎯 VEREDICTO NEXUS</span>
-                <h2 style="font-family:var(--serif); margin:15px 0; font-size:2.2rem; line-height:1.2;">{verdict.get('title', 'PROPUESTA ESTRATÉGICA').upper()}</h2>
-                <p style="font-size:1.1rem; opacity:0.9; max-width:800px; line-height:1.6;">{verdict.get('text', '')}</p>
+                <h2 style="font-family:var(--serif); margin:15px 0; font-size:2.2rem; line-height:1.2;">{_clean_field(verdict.get('title'), 'PROPUESTA ESTRATÉGICA').upper()}</h2>
+                <p style="font-size:1.1rem; opacity:0.9; max-width:800px; line-height:1.6;">{_clean_field(verdict.get('text'), 'Análisis estratégico en proceso.')}</p>
             </div>
             
             <!-- Propuesta Concreta Grid -->
@@ -2053,11 +2073,11 @@ class Nexus7Architect:
                 <!-- Producto Propuesto -->
                 <div style="background:linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border:2px solid #22c55e; border-radius:16px; padding:25px;">
                     <div style="font-size:0.7rem; color:#15803d; font-weight:800; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">📦 PRODUCTO PROPUESTO</div>
-                    <div style="font-size:1.3rem; font-weight:800; color:#166534; margin-bottom:15px;">{verdict.get('product_name', 'NEXUS Premium Edition')}</div>
-                    <div style="font-size:0.85rem; color:#166534; line-height:1.5;">{verdict.get('product_concept', 'Producto premium que resuelve las brechas identificadas en el análisis competitivo.')}</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:#166534; margin-bottom:15px;">{_clean_field(verdict.get('product_name'), 'NEXUS Premium Edition')}</div>
+                    <div style="font-size:0.85rem; color:#166534; line-height:1.5;">{_clean_field(verdict.get('product_concept'), 'Producto premium que resuelve las brechas identificadas en el análisis competitivo.')}</div>
                     <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #22c55e;">
                         <div style="font-size:0.7rem; color:#15803d; font-weight:700;">🏷️ POSICIONAMIENTO:</div>
-                        <div style="font-size:0.8rem; color:#166534; margin-top:5px;">{verdict.get('positioning', 'Premium / Best-in-Class')}</div>
+                        <div style="font-size:0.8rem; color:#166534; margin-top:5px;">{_clean_field(verdict.get('positioning'), 'Premium / Best-in-Class')}</div>
                     </div>
                 </div>
                 
@@ -2071,7 +2091,7 @@ class Nexus7Architect:
                     </ul>
                     <div style="margin-top:15px; padding:12px; background:rgba(59,130,246,0.1); border-radius:8px;">
                         <div style="font-size:0.7rem; color:#1d4ed8; font-weight:700;">🎯 MOAT DEFENSIVO:</div>
-                        <div style="font-size:0.8rem; color:#1e40af; margin-top:5px;">{validate_moat_for_low_tech(verdict.get('moat', 'Barrera competitiva sostenible'), final_anchor)}</div>
+                        <div style="font-size:0.8rem; color:#1e40af; margin-top:5px;">{validate_moat_for_low_tech(_clean_field(verdict.get('moat'), 'Barrera competitiva sostenible'), final_anchor)}</div>
                     </div>
                 </div>
                 
@@ -2222,15 +2242,15 @@ class Nexus7Architect:
                     <div style="display:flex; flex-direction:column; gap:10px;">
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span style="background:#d946ef; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">1</span>
-                            <span style="font-size:0.85rem; color:#7e22ce;">{verdict.get('action_1', 'Validar concepto con muestra de mercado')}</span>
+                            <span style="font-size:0.85rem; color:#7e22ce;">{_clean_field(verdict.get('action_1'), 'Validar concepto con muestra de mercado')}</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span style="background:#d946ef; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">2</span>
-                            <span style="font-size:0.85rem; color:#7e22ce;">{verdict.get('action_2', 'Desarrollar MVP con diferenciadores clave')}</span>
+                            <span style="font-size:0.85rem; color:#7e22ce;">{_clean_field(verdict.get('action_2'), 'Desarrollar MVP con diferenciadores clave')}</span>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span style="background:#d946ef; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:800;">3</span>
-                            <span style="font-size:0.85rem; color:#7e22ce;">{verdict.get('action_3', 'Lanzar campaña piloto en mercado objetivo')}</span>
+                            <span style="font-size:0.85rem; color:#7e22ce;">{_clean_field(verdict.get('action_3'), 'Lanzar campaña piloto en mercado objetivo')}</span>
                         </div>
                     </div>
                 </div>
@@ -2548,8 +2568,13 @@ class Nexus7Architect:
         budget_tier = price_tiers.get("budget_tier", {})
         mid_tier = price_tiers.get("mid_range_tier", {})
         premium_tier = price_tiers.get("premium_tier", {})
-        sweet_spot = price_tiers.get("sweet_spot_price", 0)
-        sweet_spot_rationale = price_tiers.get("sweet_spot_rationale", "Punto óptimo de valor percibido")
+        sweet_spot_raw = price_tiers.get("sweet_spot_price")
+        # TAREA 1 Fix: No renderizar $0.00 si el valor no existe o es 0
+        sweet_spot = float(sweet_spot_raw) if sweet_spot_raw and float(sweet_spot_raw) > 0 else None
+        sweet_spot_rationale = _clean_field(
+            price_tiers.get("sweet_spot_rationale"),
+            fallback="Punto óptimo de valor percibido"
+        )
         
         # Calculate market distribution if we have prices
         budget_count = mid_count = premium_count = 0
@@ -2578,7 +2603,9 @@ class Nexus7Architect:
             </div>
             <div style="background:#f0fdf4; border:1px solid #22c55e; border-radius:12px; padding:20px; text-align:center;">
                 <div style="font-size:0.65rem; color:#166534; font-weight:800; text-transform:uppercase; margin-bottom:8px;">🎯 SWEET SPOT</div>
-                <div style="font-size:1.3rem; font-weight:900; color:#22c55e;">${sweet_spot:.2f}</div>
+                <div style="font-size:1.3rem; font-weight:900; color:#22c55e;">
+                    {'${:.2f}'.format(sweet_spot) if sweet_spot else 'Precio en validación'}
+                </div>
             </div>
             <div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:12px; padding:20px; text-align:center;">
                 <div style="font-size:0.65rem; color:#92400e; font-weight:800; text-transform:uppercase; margin-bottom:8px;">📈 PRODUCTOS</div>
