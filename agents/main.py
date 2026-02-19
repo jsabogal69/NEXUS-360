@@ -1,16 +1,12 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 import logging
 import os
 from .shared.data_expert import DataExpert
-from dotenv import load_dotenv
-
-# Load env vars globally
-load_dotenv()
 
 # Import Agents
 from .nexus_1_harvester.core import Nexus1Harvester
@@ -20,7 +16,7 @@ from .nexus_4_strategist.core import Nexus4Strategist
 from .nexus_5_mathematician.core import Nexus5Mathematician
 from .nexus_6_senior_partner.core import Nexus6SeniorPartner
 from .nexus_7_architect.core import Nexus7Architect
-from .nexus_10_guardian.core import Nexus10Guardian
+from .nexus_8_guardian.core import Nexus8Guardian
 from .nexus_8_archivist.core import Nexus8Archivist
 from .nexus_9_inspector.core import Nexus9Inspector
 
@@ -30,14 +26,15 @@ logger = logging.getLogger("NEXUS-GATEWAY")
 
 app = FastAPI(title="NEXUS-360 API", version="1.0.0")
 
-# CORS: Allow direct calls from Firebase Hosting to Cloud Run
+# CORS: allow Firebase Hosting + local dev
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://nexus-360-suite-c3e6c.web.app",
         "https://nexus-360-suite-c3e6c.firebaseapp.com",
-        "http://localhost:8000",
+        "http://localhost:8080",
         "http://localhost:3000",
+        "http://127.0.0.1:8080",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -94,7 +91,7 @@ async def latest_report():
         return {"message": "Report file not found"}
 
 # --- FIREBASE REPORTS API ---
-from .shared.utils import get_db, clear_mock_db
+from .shared.utils import get_db
 
 @app.get("/api/reports")
 async def list_firebase_reports():
@@ -167,13 +164,6 @@ async def run_folder_workflow(request: FolderIngestRequest):
     Triggers the NEXUS-360 pipeline starting from a Google Drive Folder.
     """
     try:
-        # ═══════════════════════════════════════════════════════════════════
-        # MANDATORY: Clear all in-memory state from previous pipeline runs
-        # This ensures NO data contamination between analyses
-        # ═══════════════════════════════════════════════════════════════════
-        clear_mock_db()
-        logger.info("[PIPELINE] 🧹 Memory cleared — starting fresh analysis")
-        
         # Helper to save artifacts
         import json
         
@@ -205,9 +195,7 @@ async def run_folder_workflow(request: FolderIngestRequest):
             ingestion_msg = ""
         
         if not ingested_ids:
-            error_detail = ingestion_msg or "No files found or ingestion failed."
-            logger.error(f"Harvester returned no IDs. Mode: {ingestion_mode}, Msg: {error_detail}")
-            raise HTTPException(status_code=400, detail=f"Ingesta fallida: {error_detail}")
+            return {"status": "error", "message": "No files found or ingestion failed."}
         
         # Save Harvester Artifact
         harvester_url = save_artifact("harvester", {
@@ -220,7 +208,7 @@ async def run_folder_workflow(request: FolderIngestRequest):
         # In real life, this might trigger 8 instances or a consolidated analysis
         
         # 2. Guardian Validation (Batch)
-        guardian = Nexus10Guardian()
+        guardian = Nexus8Guardian()
         validation_results = []
         for doc_id in ingested_ids:
             res = await guardian.validate_input(doc_id, {"raw_content": "batch_processing"})
@@ -249,7 +237,6 @@ async def run_folder_workflow(request: FolderIngestRequest):
         search_terms_data = ingestion_result.get("search_terms_data") if isinstance(ingestion_result, dict) else None
         
         findings = await scout.perform_osint_scan(scout_input, poe_data=poe_xray_data, search_terms_data=search_terms_data, raw_text_context=scout_field_text)
-        logger.info(f"DEBUG: Scout Findings Keys: {list(findings.keys())}")
         scout_url = save_artifact("scout", findings)
 
         integrator = Nexus3Integrator()
@@ -282,18 +269,11 @@ async def run_folder_workflow(request: FolderIngestRequest):
             "strategist": strategy,
             "mathematician": models,
             "senior_partner": summary,
-            "guardian": guardian_audit,
-            "search_terms_data": search_terms_data if search_terms_data else {}
+            "guardian": guardian_audit
         }
         
         architect = Nexus7Architect()
         report = await architect.generate_report_artifacts(full_data)
-        
-        # 8b. EXECUTIVE BRIEF (2-Page Market-First)
-        report_id_for_brief = report.get("pdf_url", "").split("report_")[-1].replace(".html", "")
-        brief_result = await architect.generate_executive_brief(full_data, report_id_for_brief)
-        brief_url = brief_result.get("brief_path", brief_result.get("pdf_url", ""))
-        logger.info(f"[ARCHITECT] Executive Brief generated: {brief_url}")
         
         # 9. ARCHIVIST - Archive case for longitudinal studies
         archivist = Nexus8Archivist()
@@ -330,16 +310,14 @@ async def run_folder_workflow(request: FolderIngestRequest):
                 "scout_data": findings,  # Include scout data for Executive Brief
                 "integrator": integrator_url,
                 "strategist": strategist_url,
+                "strategist": strategist_url,
                 "senior_partner": senior_url,
-                "inspector": blueprint_url,
-                "executive_brief": brief_url
+                "inspector": blueprint_url
             },
-            "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect", "Executive Brief", "Archivist"]
+            "steps_completed": ["Multi-File Harvester", "Guardian", "Scout", "Integrator (Batch)", "Strategist", "Mathematician", "Senior Partner", "Architect", "Archivist"]
         }
 
 
-    except HTTPException:
-        raise  # Let HTTPException pass through with original status code
     except Exception as e:
         logger.error(f"Folder Workflow Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -379,7 +357,7 @@ async def step_1_harvester(request: FolderIngestRequest):
 async def step_2_guardian(payload: dict):
     """Executes ONLY the Guardian Step (Batch Validation)"""
     ingested_ids = payload.get("data", {}).get("ids", [])
-    guardian = Nexus10Guardian()
+    guardian = Nexus8Guardian()
     results = []
     for doc_id in ingested_ids:
         is_valid = await guardian.validate_input(doc_id, {"raw_content": "batch"})
@@ -534,12 +512,6 @@ async def run_full_cycle(request: IngestRequest):
     Triggers the complete NEXUS-360 pipeline from Ingestion to Report Generation.
     """
     try:
-        # ═══════════════════════════════════════════════════════════════════
-        # MANDATORY: Clear all in-memory state from previous pipeline runs
-        # ═══════════════════════════════════════════════════════════════════
-        clear_mock_db()
-        logger.info("[PIPELINE] 🧹 Memory cleared — starting fresh full cycle")
-        
         # 1. HARVESTER
         harvester = Nexus1Harvester()
         input_id = harvester.ingest_mock_data(request.source_name, request.content_text)
@@ -547,7 +519,7 @@ async def run_full_cycle(request: IngestRequest):
             raise HTTPException(status_code=500, detail="Ignition Failed during Harvester step")
 
         # 2. GUARDIAN (Validate Input)
-        guardian = Nexus10Guardian()
+        guardian = Nexus8Guardian()
         # Mock payload construction
         is_valid = await guardian.validate_input(input_id, {"raw_content": request.content_text})
         if not is_valid:
@@ -603,8 +575,7 @@ async def run_full_cycle(request: IngestRequest):
             "integrator": ssot,
             "strategist": strategy,
             "mathematician": models,
-            "senior_partner": summary,
-            "search_terms_data": {}
+            "senior_partner": summary
         }
         
         architect = Nexus7Architect()
@@ -612,14 +583,12 @@ async def run_full_cycle(request: IngestRequest):
 
         # 9. ARCHIVIST (NEW)
         archivist = Nexus8Archivist()
-        archive_result = await archivist.archive_case(
+        archive_result = archivist.archive_case(
             case_id=f"case_{input_id}",
             product_query=request.source_name,
-            ssot_snapshot=ssot,
-            verdict_summary=summary.get("executive_point_1", "Market Analysis Complete"),
-            verdict_text=summary.get("partner_verdict", ""),
+            ssot=ssot,
             report_html=report.get("html_content", ""),
-            verdict=strategy.get("dynamic_verdict", {}),
+            verdict=summary.get("partner_verdict", ""), # Use summary directly instead of weird field
             metadata={"ingestion_mode": "manual_entry", "files_count": 1}
         )
 
