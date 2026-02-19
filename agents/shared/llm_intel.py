@@ -9,6 +9,12 @@ import random
 import re
 from datetime import datetime
 from .utils import sanitize_text_field
+from .nexus_rules import (
+    sanitize_product_name,
+    get_system_rules_block,
+    validate_moat_for_low_tech,
+    validate_competitive_analysis,
+)
 
 # Load environment variables from .env file
 try:
@@ -80,14 +86,23 @@ def generate_market_intel(product_description: str, additional_context: str = No
     model = get_gemini_model()
     if not model:
         return generate_enhanced_mock(product_description)
-    
+
+    # ── REGLA 1: Sanitizar el nombre del producto antes de usarlo ──
+    clean_product_name = sanitize_product_name(product_description)
+    logger.info(f"[REGLA-1] Anchor sanitizado: '{product_description[:40]}' → '{clean_product_name}'")
+
     context_block = ""
     if additional_context:
         context_block = f"\n═══════════════════════════════════════════════════════════════════════════════\nINFORMACIÓN EXTRAÍDA DE DOCUMENTOS DEL USUARIO (PRIORIDAD ALTA):\n═══════════════════════════════════════════════════════════════════════════════\n{additional_context}\n"
 
-    prompt = f"""Eres un experto en Social Listening que combina el análisis de datos de Neil Patel con la estrategia de atención de GaryVee.
+    # ── REGLAS 1-4: Bloque de instrucciones de sistema ──
+    # avg_price=0 porque aún no tenemos precios (Scout aún no los extrajo)
+    system_rules = get_system_rules_block(clean_product_name, avg_price=0.0)
 
-PRODUCTO A ANALIZAR: "{product_description}"
+    prompt = f"""{system_rules}
+Eres un experto en Social Listening que combina el análisis de datos de Neil Patel con la estrategia de atención de GaryVee.
+
+PRODUCTO A ANALIZAR: "{clean_product_name}"
 {context_block}
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -462,6 +477,16 @@ REGLAS CRÍTICAS:
             return obj
         
         data = clean_stutters(data)
+
+        # ── REGLA 4: Validar análisis competitivo anti-pereza ──
+        top_10 = data.get("top_10_products", [])
+        if top_10:
+            validated_top_10 = validate_competitive_analysis(top_10)
+            data["top_10_products"] = validated_top_10
+
+        # ── REGLA 1: Normalizar niche_name con nombre sanitizado ──
+        if clean_product_name:
+            data["niche_name"] = data.get("niche_name") or clean_product_name
         
         # v2.2: MARKET SHARE LOGIC FIX (Pareto Enforcer)
         # Prevents "10%, 10%, 10%" flat distributions
@@ -625,16 +650,19 @@ def generate_enhanced_mock(product_description: str) -> dict:
     
     # Extract context from product description
     desc_lower = product_description.lower()
-    niche = product_description.split(" ")[0] if product_description else "Producto"
+    # Extract meaningful niche name: strip articles/prepositions, take up to 5 words
+    _skip_words = {"el", "la", "los", "las", "un", "una", "de", "del", "para", "en", "nicho", "mercado", "y", "o", "con", "es"}
+    _meaningful = [w for w in product_description.split() if w.lower() not in _skip_words]
+    niche = " ".join(_meaningful[:5]) if _meaningful else product_description[:40]
     
     # Generate context-aware analysis using product description
     # NO hardcoded niche-specific data - always derive from the product description
     pain_keywords = [
-        {"keyword": f"problemas con {niche}", "search_intent": "problema", "volume": "Alto", "opportunity": "Contenido educativo sobre cómo evitar problemas comunes"},
-        {"keyword": f"mejor {niche} calidad precio", "search_intent": "comparación", "volume": "Alto", "opportunity": "Comparativas detalladas con pros/cons reales"},
-        {"keyword": f"{niche} alternativa premium", "search_intent": "alternativa", "volume": "Medio", "opportunity": "Posicionamiento en segmento de calidad superior"},
-        {"keyword": f"{niche} duradero", "search_intent": "problema", "volume": "Medio", "opportunity": "Garantía extendida y pruebas de durabilidad"},
-        {"keyword": f"opiniones reales {niche}", "search_intent": "investigación", "volume": "Alto", "opportunity": "UGC y testimoniales verificados"}
+        {"keyword": f"problemas con {niche}", "search_intent": "problema", "volume": "Alto", "gap_score": 7.5, "opportunity": "Contenido educativo sobre cómo evitar problemas comunes"},
+        {"keyword": f"mejor {niche} calidad precio", "search_intent": "comparación", "volume": "Alto", "gap_score": 6.0, "opportunity": "Comparativas detalladas con pros/cons reales"},
+        {"keyword": f"{niche} alternativa premium", "search_intent": "alternativa", "volume": "Medio", "gap_score": 5.0, "opportunity": "Posicionamiento en segmento de calidad superior"},
+        {"keyword": f"{niche} duradero", "search_intent": "problema", "volume": "Medio", "gap_score": 4.5, "opportunity": "Garantía extendida y pruebas de durabilidad"},
+        {"keyword": f"opiniones reales {niche}", "search_intent": "investigación", "volume": "Alto", "gap_score": 3.5, "opportunity": "UGC y testimoniales verificados"}
     ]
     competitor_gaps = [
         {"competitor": "Líder de Categoría #1", "ignored_issue": "Soporte post-venta inexistente", "user_frustration": "'Enviié 5 correos y nadie responde, terrible experiencia'"},
@@ -792,9 +820,15 @@ def generate_strategic_avatars(product_context: str, scout_data: dict) -> dict:
     # Extract price range from competitors if available
     prices = [p.get("price", 0) for p in top_products if p.get("price", 0) > 0]
     avg_price = sum(prices) / len(prices) if prices else 0
+
+    # ── REGLA 1: Sanitizar el nombre del producto ──
+    clean_product_context = sanitize_product_name(product_context)
+
+    # ── REGLAS 1-4: Bloque de instrucciones de sistema con precio anclado ──
+    system_rules = get_system_rules_block(clean_product_context, avg_price=avg_price)
     
     prompt = f"""
-    ═══════════════════════════════════════════════════════════════════════════
+    {system_rules}
     NEXUS STRATEGIC INTELLIGENCE ENGINE - CONSULTORÍA DE ÉLITE
     ═══════════════════════════════════════════════════════════════════════════
     
@@ -806,7 +840,8 @@ def generate_strategic_avatars(product_context: str, scout_data: dict) -> dict:
     INTELLIGENCE BRIEF
     ═══════════════════════════════════════════════════════════════════════════
     
-    PRODUCTO/NICHO: "{product_context}"
+    PRODUCTO/NICHO: "{clean_product_context}"
+    PRECIO PROMEDIO REAL (ANCLAR TODOS LOS CÁLCULOS A ESTE VALOR — REGLA 2): ${avg_price:.2f}
     
     COMPETENCIA (Top 5):
     {json.dumps(top_products, indent=2, default=str)}

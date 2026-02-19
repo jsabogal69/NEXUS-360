@@ -1,5 +1,6 @@
 import logging
 from ..shared.utils import get_db, generate_id, timestamp_now, report_agent_activity
+from ..shared.nexus_rules import is_low_tech_product, validate_moat_for_low_tech
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("NEXUS-5")
@@ -96,6 +97,35 @@ class Nexus5Mathematician:
             kit_cost = 40.00
             label = "Unidad Base"
 
+        # ── REGLA 3: Detectar categoría del producto para moats realistas ──
+        _is_low_tech = is_low_tech_product(anchor)
+        if _is_low_tech:
+            kit_composition = (
+                f"1x {label} Premium (acero inoxidable 304 extra-grosor) + "
+                f"1x Accesorio Físico VIP + Guía impresa de uso y cuidado + "
+                f"Garantía física extendida 3 años + Empaque anti-roturas premium."
+            )
+            kit_premium_notes = (
+                "La culminación de la propuesta de valor NEXUS para productos de hogar/organización. "
+                "Al usar materiales de calibre superior (acero 304/316, bambú premium, acabado powder-coated) "
+                "y una garantía física extendida, desacoplamos el precio del costo base. "
+                "Diferenciación 100% material: sin apps, sin cables, sin suscripciones digitales. "
+                "El foso defensivo se construye con calidad demostrable y empaque premium."
+            )
+        else:
+            kit_composition = (
+                f"1x {label} Premium + 1x Accesorio VIP + Acceso Lifetime App/Masterclass + "
+                f"Garantía Extendida + Cable Reforzado."
+            )
+            kit_premium_notes = (
+                "La culminación de la propuesta de valor NEXUS. Al inyectar valor intangible "
+                "(Capa de Software, Garantía VIP, Ecosistema Digital), desacoplamos el precio final "
+                "del costo físico de los materiales (BOM). Este escenario crea un 'Foso Defensivo' "
+                "inexpugnable contra la competencia de bajo costo, permitiendo un Premium del 40% "
+                "sobre el MSRP promedio del mercado sin erosionar la tasa de conversión."
+            )
+
+
         # 1. CORE UNIT ECONOMICS MODELS (AMAZON CALIBRATION)
         sales = strategy_data.get("sales_intelligence", {})
         peaks = sales.get("seasonality", {}).get("peaks", [])
@@ -153,8 +183,8 @@ class Nexus5Mathematician:
                 "notes": "Optimización de Unit Economics mediante la dilución radical de costos logísticos fijos. Al compartir el 'Last-Mile Delivery' y el 'FBA Fulfillment' entre múltiples unidades, el margen neto se expande significativamente. Estrategia de guerrilla ideal para capturar al segmento 'Pro-sumer', maximizando el Lifetime Value (LTV) desde el primer contacto y reduciendo la dependencia de la compra única. El 'Average Order Value' (AOV) superior compensa la inversión inicial en PPC de manera más acelerada."
             },
             "kit_premium": {
-                "name": f"NEXUS Masterpiece: Digital Kit / Ecosistema",
-                "composition": f"1x {label} Premium + 1x Accesorio VIP + Acceso Lifetime App/Masterclass + Garantía Extendida + Cable Reforzado.",
+                "name": f"NEXUS Masterpiece: {'Kit Físico Premium' if _is_low_tech else 'Digital Kit / Ecosistema'}",
+                "composition": kit_composition,
                 "price": kit_price,
                 "landed": kit_cost,
                 "opex": amazon_economics["total_amz_opex"] + 5.00,
@@ -167,7 +197,7 @@ class Nexus5Mathematician:
                     "High Ticket Buffer": f"${round(kit_price * 0.10, 2)}",
                     "Net Margin": f"${round(kit_price - (kit_cost + amazon_economics['total_amz_opex'] + 5.00), 2)}"
                 },
-                "notes": "La culminación de la propuesta de valor NEXUS. Al inyectar valor intangible (Capa de Software, Garantía VIP, Ecosistema Digital), desacoplamos el precio final del costo físico de los materiales (BOM). Este escenario crea un 'Foso Defensivo' inexpugnable contra la competencia de bajo costo, permitiendo un Premium del 40% sobre el MSRP promedio del mercado sin erosionar la tasa de conversión. El payback es el más rápido de todos los modelos debido a la alta contribución marginal por cada venta."
+                "notes": kit_premium_notes
             },
             "dtc_exclusive": {
                 "name": "DTC Strategy: Venta Directa (Web Propia)",
