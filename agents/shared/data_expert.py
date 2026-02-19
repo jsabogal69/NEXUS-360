@@ -316,7 +316,7 @@ class DataExpert:
             "revenue": ["revenue", "ingresos", "facturación", "est_revenue", "est. revenue", "revenue (30 days)"],
             "bsr": ["bsr", "rank", "ranking", "best sellers rank", "best_sellers_rank", "sales rank"],
             "asin": ["asin", "product id", "product_id", "id"],
-            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "description", "item name", "name", "listing name", "listing_name", "item", "product title", "product_title"],
+            "title": ["title", "título", "product name", "nombre", "product_name", "product_details", "product details", "description", "item name", "name", "listing name", "listing_name", "listing title", "listing_title", "listing", "item", "product title", "product_title", "product info", "product_info", "detail", "details"],
             "reviews": ["reviews", "reseñas", "total ratings", "review count", "review_count", "rating count", "rating_count", "number of ratings", "total_ratings", "reviews count", "customer reviews"],
             "rating_score": ["star rating", "star_rating", "avg_rating", "average_rating", "avg rating", "average rating", "rating", "score", "stars", "puntuación", "estrellas"],
             "fees": ["fees", "fba fees", "tarifas", "amazon fees", "fba_fees", "fulfillment fee"],
@@ -382,6 +382,27 @@ class DataExpert:
         if "price" not in col_map and "sales" not in col_map and "click_count" not in col_map:
             logger.warning(f"[DATA-EXPERT] Missing essential columns in {filename}")
             return result
+        
+        # Auto-detect title column if not mapped: find the longest-text column
+        if "title" not in col_map:
+            logger.warning(f"[DATA-EXPERT] ⚠️ No 'title' column mapped for {filename}. Auto-detecting...")
+            best_text_col = None
+            best_avg_len = 0
+            mapped_cols_set = set(col_map.values())
+            for col in df.columns:
+                if col in mapped_cols_set:
+                    continue
+                sample = df[col].dropna().head(10).astype(str)
+                avg_len = sample.str.len().mean() if len(sample) > 0 else 0
+                # A title column typically has avg text length > 20 and isn't all numeric
+                is_numeric = sample.str.match(r'^-?[\d\s,.%$]+$').all() if len(sample) > 0 else True
+                if avg_len > 20 and avg_len > best_avg_len and not is_numeric:
+                    best_avg_len = avg_len
+                    best_text_col = col
+            if best_text_col:
+                col_map["title"] = best_text_col
+                logger.info(f"[DATA-EXPERT] ✅ Auto-detected title column: '{best_text_col}' (avg len: {best_avg_len:.0f})")
+
             
         products = []
         prices = []
